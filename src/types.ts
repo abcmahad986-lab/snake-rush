@@ -1,0 +1,256 @@
+// ============ TYPES ============
+export type Direction = 'UP' | 'DOWN' | 'LEFT' | 'RIGHT';
+export type Position = { x: number; y: number };
+export type GameState = 'IDLE' | 'PLAYING' | 'PAUSED' | 'GAME_OVER';
+export type Difficulty = 'easy' | 'medium' | 'hard' | 'insane';
+export type GameMode = 'classic' | 'timed' | 'multiplayer' | 'event' | 'zen';
+export type Screen = 'login' | 'menu' | 'game' | 'profile' | 'trophies' | 'shop' | 'events' | 'leaderboard' | 'settings' | 'rewards';
+
+export interface Player {
+  id: string;
+  username: string;
+  avatar: string;
+  level: number;
+  xp: number;
+  xpToNext: number;
+  coins: number;
+  gems: number;
+  totalScore: number;
+  gamesPlayed: number;
+  totalFoodEaten: number;
+  longestSnake: number;
+  totalTimePlayed: number;
+  highScores: Record<Difficulty, number>;
+  timedHighScores: Record<Difficulty, number>;
+  trophies: string[];
+  equippedSkin: string;
+  ownedSkins: string[];
+  equippedTrail: string;
+  ownedTrails: string[];
+  dailyStreak: number;
+  lastDailyClaim: string;
+  lastLogin: string;
+  createdAt: string;
+  achievements: Record<string, number>;
+  eventProgress: Record<string, number>;
+}
+
+export interface Trophy {
+  id: string;
+  name: string;
+  description: string;
+  icon: string;
+  category: 'gameplay' | 'score' | 'collection' | 'social' | 'special';
+  rarity: 'bronze' | 'silver' | 'gold' | 'platinum' | 'diamond';
+  xpReward: number;
+  coinReward: number;
+  condition: (player: Player) => boolean;
+}
+
+export interface ShopItem {
+  id: string;
+  name: string;
+  description: string;
+  icon: string;
+  type: 'skin' | 'trail' | 'powerup' | 'boost';
+  price: number;
+  currency: 'coins' | 'gems';
+  rarity: 'common' | 'rare' | 'epic' | 'legendary';
+}
+
+export interface DailyEvent {
+  id: string;
+  name: string;
+  description: string;
+  icon: string;
+  type: 'daily_challenge' | 'weekly' | 'seasonal';
+  target: number;
+  reward: { coins: number; gems: number; xp: number };
+  expiresAt: string;
+}
+
+export interface LeaderboardEntry {
+  username: string;
+  avatar: string;
+  score: number;
+  level: number;
+  mode: GameMode;
+  difficulty: Difficulty;
+  date: string;
+}
+
+export interface MultiplayerState {
+  player1: { snake: Position[]; direction: Direction; score: number; alive: boolean };
+  player2: { snake: Position[]; direction: Direction; score: number; alive: boolean };
+  food: Position;
+  powerups: PowerUp[];
+}
+
+export interface PowerUp {
+  position: Position;
+  type: 'speed' | 'slow' | 'double' | 'shrink' | 'shield';
+  icon: string;
+  expiresAt: number;
+}
+
+export interface TimedModeState {
+  timeLeft: number;
+  totalTime: number;
+  multiplier: number;
+  combo: number;
+}
+
+// ============ CONSTANTS ============
+export const GRID_SIZE = 20;
+
+export const DIFFICULTY_SPEEDS: Record<Difficulty, number> = {
+  easy: 180,
+  medium: 120,
+  hard: 75,
+  insane: 45,
+};
+
+export const DIFFICULTY_LABELS: Record<Difficulty, string> = {
+  easy: '🟢 Easy',
+  medium: '🟡 Medium',
+  hard: '🔴 Hard',
+  insane: '💀 Insane',
+};
+
+export const TIMED_DURATIONS: Record<Difficulty, number> = {
+  easy: 120,
+  medium: 90,
+  hard: 60,
+  insane: 45,
+};
+
+export const XP_PER_LEVEL = 100;
+export const XP_MULTIPLIER = 1.5;
+
+export function getXpForLevel(level: number): number {
+  return Math.floor(XP_PER_LEVEL * Math.pow(XP_MULTIPLIER, level - 1));
+}
+
+// ============ AVATARS ============
+export const AVATARS = [
+  '🐍', '🐉', '🦎', '🐊', '🐲', '👾', '🤖', '👽',
+  '🦊', '🐱', '🐶', '🦁', '🐯', '🐻', '🐼', '🦄',
+  '🎮', '🕹️', '🏆', '⭐', '💎', '🔥', '⚡', '🌟',
+];
+
+// ============ SKINS ============
+export const SNAKE_SKINS: ShopItem[] = [
+  { id: 'classic', name: 'Classic Green', description: 'The original snake', icon: '🟢', type: 'skin', price: 0, currency: 'coins', rarity: 'common' },
+  { id: 'fire', name: 'Fire Snake', description: 'Blazing hot!', icon: '🔥', type: 'skin', price: 100, currency: 'coins', rarity: 'common' },
+  { id: 'ice', name: 'Ice Snake', description: 'Cool and collected', icon: '🧊', type: 'skin', price: 100, currency: 'coins', rarity: 'common' },
+  { id: 'gold', name: 'Golden Snake', description: 'Shiny and valuable', icon: '✨', type: 'skin', price: 300, currency: 'coins', rarity: 'rare' },
+  { id: 'rainbow', name: 'Rainbow Snake', description: 'All the colors!', icon: '🌈', type: 'skin', price: 500, currency: 'coins', rarity: 'rare' },
+  { id: 'neon', name: 'Neon Glow', description: 'Lights up the dark', icon: '💜', type: 'skin', price: 500, currency: 'coins', rarity: 'rare' },
+  { id: 'galaxy', name: 'Galaxy Serpent', description: 'From outer space', icon: '🌌', type: 'skin', price: 1000, currency: 'coins', rarity: 'epic' },
+  { id: 'dragon', name: 'Dragon Scale', description: 'Ancient power', icon: '🐉', type: 'skin', price: 1500, currency: 'coins', rarity: 'epic' },
+  { id: 'phantom', name: 'Phantom', description: 'Ghostly presence', icon: '👻', type: 'skin', price: 50, currency: 'gems', rarity: 'legendary' },
+  { id: 'cosmic', name: 'Cosmic Worm', description: 'Bends reality', icon: '🪐', type: 'skin', price: 100, currency: 'gems', rarity: 'legendary' },
+];
+
+export const SNAKE_TRAILS: ShopItem[] = [
+  { id: 'none', name: 'No Trail', description: 'Clean look', icon: '—', type: 'trail', price: 0, currency: 'coins', rarity: 'common' },
+  { id: 'sparkle', name: 'Sparkle', description: 'Sparkly trail', icon: '✨', type: 'trail', price: 200, currency: 'coins', rarity: 'common' },
+  { id: 'fire_trail', name: 'Fire Trail', description: 'Leave flames behind', icon: '🔥', type: 'trail', price: 400, currency: 'coins', rarity: 'rare' },
+  { id: 'stars', name: 'Star Trail', description: 'Stardust follows', icon: '⭐', type: 'trail', price: 600, currency: 'coins', rarity: 'rare' },
+  { id: 'hearts', name: 'Love Trail', description: 'Spread the love', icon: '💖', type: 'trail', price: 30, currency: 'gems', rarity: 'epic' },
+];
+
+// ============ TROPHIES ============
+export const TROPHIES: Trophy[] = [
+  // Gameplay
+  { id: 'first_bite', name: 'First Bite', description: 'Eat your first food', icon: '🍎', category: 'gameplay', rarity: 'bronze', xpReward: 10, coinReward: 5, condition: (p) => p.totalFoodEaten >= 1 },
+  { id: 'hungry', name: 'Hungry', description: 'Eat 50 food items', icon: '🍔', category: 'gameplay', rarity: 'bronze', xpReward: 25, coinReward: 15, condition: (p) => p.totalFoodEaten >= 50 },
+  { id: 'feast', name: 'Grand Feast', description: 'Eat 200 food items', icon: '🍕', category: 'gameplay', rarity: 'silver', xpReward: 50, coinReward: 30, condition: (p) => p.totalFoodEaten >= 200 },
+  { id: 'glutton', name: 'Glutton', description: 'Eat 500 food items', icon: '🎂', category: 'gameplay', rarity: 'gold', xpReward: 100, coinReward: 75, condition: (p) => p.totalFoodEaten >= 500 },
+  { id: 'legendary_eater', name: 'Legendary Eater', description: 'Eat 1000 food items', icon: '👑', category: 'gameplay', rarity: 'platinum', xpReward: 250, coinReward: 150, condition: (p) => p.totalFoodEaten >= 1000 },
+  
+  // Score
+  { id: 'score_100', name: 'Century', description: 'Score 100 points', icon: '💯', category: 'score', rarity: 'bronze', xpReward: 15, coinReward: 10, condition: (p) => p.totalScore >= 100 },
+  { id: 'score_500', name: 'High Roller', description: 'Score 500 points', icon: '🎰', category: 'score', rarity: 'silver', xpReward: 40, coinReward: 25, condition: (p) => p.totalScore >= 500 },
+  { id: 'score_1000', name: 'Thousand Club', description: 'Score 1000 points', icon: '🏅', category: 'score', rarity: 'gold', xpReward: 80, coinReward: 50, condition: (p) => p.totalScore >= 1000 },
+  { id: 'score_5000', name: 'Legend', description: 'Score 5000 points', icon: '🏆', category: 'score', rarity: 'platinum', xpReward: 200, coinReward: 125, condition: (p) => p.totalScore >= 5000 },
+  { id: 'score_10000', name: 'Mythic', description: 'Score 10000 points', icon: '💎', category: 'score', rarity: 'diamond', xpReward: 500, coinReward: 300, condition: (p) => p.totalScore >= 10000 },
+  
+  // Collection
+  { id: 'games_10', name: 'Getting Started', description: 'Play 10 games', icon: '🎮', category: 'collection', rarity: 'bronze', xpReward: 15, coinReward: 10, condition: (p) => p.gamesPlayed >= 10 },
+  { id: 'games_50', name: 'Dedicated', description: 'Play 50 games', icon: '🕹️', category: 'collection', rarity: 'silver', xpReward: 40, coinReward: 25, condition: (p) => p.gamesPlayed >= 50 },
+  { id: 'games_100', name: 'Veteran', description: 'Play 100 games', icon: '🎖️', category: 'collection', rarity: 'gold', xpReward: 80, coinReward: 50, condition: (p) => p.gamesPlayed >= 100 },
+  { id: 'long_snake', name: 'Ssssuper Long', description: 'Reach length 25', icon: '📏', category: 'collection', rarity: 'silver', xpReward: 35, coinReward: 20, condition: (p) => p.longestSnake >= 25 },
+  { id: 'mega_snake', name: 'Mega Snake', description: 'Reach length 50', icon: '🐍', category: 'collection', rarity: 'gold', xpReward: 75, coinReward: 45, condition: (p) => p.longestSnake >= 50 },
+  
+  // Special
+  { id: 'daily_3', name: 'Regular', description: '3 day login streak', icon: '📅', category: 'special', rarity: 'bronze', xpReward: 20, coinReward: 15, condition: (p) => p.dailyStreak >= 3 },
+  { id: 'daily_7', name: 'Committed', description: '7 day login streak', icon: '🗓️', category: 'special', rarity: 'silver', xpReward: 50, coinReward: 35, condition: (p) => p.dailyStreak >= 7 },
+  { id: 'daily_30', name: 'Unstoppable', description: '30 day login streak', icon: '🔥', category: 'special', rarity: 'gold', xpReward: 150, coinReward: 100, condition: (p) => p.dailyStreak >= 30 },
+  { id: 'level_5', name: 'Rising Star', description: 'Reach level 5', icon: '⭐', category: 'special', rarity: 'bronze', xpReward: 20, coinReward: 10, condition: (p) => p.level >= 5 },
+  { id: 'level_10', name: 'Superstar', description: 'Reach level 10', icon: '🌟', category: 'special', rarity: 'silver', xpReward: 60, coinReward: 40, condition: (p) => p.level >= 10 },
+  { id: 'level_25', name: 'Mega Star', description: 'Reach level 25', icon: '💫', category: 'special', rarity: 'gold', xpReward: 150, coinReward: 100, condition: (p) => p.level >= 25 },
+  { id: 'hard_master', name: 'Hard Master', description: 'Score 200+ on Hard', icon: '🎯', category: 'special', rarity: 'gold', xpReward: 100, coinReward: 60, condition: (p) => p.highScores.hard >= 200 },
+  { id: 'insane_master', name: 'Insane Master', description: 'Score 100+ on Insane', icon: '💀', category: 'special', rarity: 'platinum', xpReward: 200, coinReward: 120, condition: (p) => p.highScores.insane >= 100 },
+];
+
+// ============ EVENTS ============
+export function generateDailyEvents(): DailyEvent[] {
+  const today = new Date().toISOString().split('T')[0];
+  const seed = today.split('-').reduce((a, b) => a + parseInt(b), 0);
+  
+  const allEvents: DailyEvent[] = [
+    { id: 'eat_20', name: 'Quick Feast', description: 'Eat 20 food in one game', icon: '🍎', type: 'daily_challenge', target: 20, reward: { coins: 50, gems: 2, xp: 30 }, expiresAt: today + 'T23:59:59' },
+    { id: 'score_100', name: 'Century Run', description: 'Score 100 in one game', icon: '💯', type: 'daily_challenge', target: 100, reward: { coins: 75, gems: 3, xp: 50 }, expiresAt: today + 'T23:59:59' },
+    { id: 'play_3', name: 'Warm Up', description: 'Play 3 games today', icon: '🎮', type: 'daily_challenge', target: 3, reward: { coins: 30, gems: 1, xp: 20 }, expiresAt: today + 'T23:59:59' },
+    { id: 'length_15', name: 'Growing', description: 'Reach snake length 15', icon: '📏', type: 'daily_challenge', target: 15, reward: { coins: 40, gems: 2, xp: 25 }, expiresAt: today + 'T23:59:59' },
+    { id: 'timed_50', name: 'Speed Demon', description: 'Score 50 in timed mode', icon: '⚡', type: 'daily_challenge', target: 50, reward: { coins: 60, gems: 2, xp: 35 }, expiresAt: today + 'T23:59:59' },
+    { id: 'play_5', name: 'Marathon', description: 'Play 5 games today', icon: '🏃', type: 'daily_challenge', target: 5, reward: { coins: 60, gems: 3, xp: 40 }, expiresAt: today + 'T23:59:59' },
+    { id: 'score_200', name: 'Double Century', description: 'Score 200 in one game', icon: '🏆', type: 'daily_challenge', target: 200, reward: { coins: 100, gems: 5, xp: 75 }, expiresAt: today + 'T23:59:59' },
+  ];
+
+  // Pick 3 events based on seed
+  const shuffled = [...allEvents].sort((a, b) => {
+    const ha = (seed * 31 + a.id.charCodeAt(0)) % 100;
+    const hb = (seed * 31 + b.id.charCodeAt(0)) % 100;
+    return ha - hb;
+  });
+
+  return shuffled.slice(0, 3).map(e => ({ ...e, expiresAt: today + 'T23:59:59' }));
+}
+
+// ============ BOT PLAYERS (for multiplayer leaderboard) ============
+export const BOT_NAMES = [
+  'SnakeKing', 'PyMaster', 'ViperX', 'Cobra99', 'Slither',
+  'NeonByte', 'PixelPro', 'TurboTail', 'ShadowFang', 'CosmicCoil',
+  'GhostSnake', 'ToxicVenom', 'RoyalPython', 'DiamondBack', 'ThunderScale',
+  'IceFang', 'BlazeWorm', 'StarSerpent', 'MoonSnake', 'SunScale',
+];
+
+export function generateBotLeaderboard(difficulty: Difficulty): LeaderboardEntry[] {
+  const seed = difficulty.charCodeAt(0);
+  return BOT_NAMES.slice(0, 15).map((name, i) => {
+    const baseScore = difficulty === 'easy' ? 200 : difficulty === 'medium' ? 150 : difficulty === 'hard' ? 100 : 60;
+    const score = Math.max(10, baseScore + Math.floor(Math.sin(seed + i * 7) * 80 + (15 - i) * 15));
+    return {
+      username: name,
+      avatar: AVATARS[(i * 3 + seed) % AVATARS.length],
+      score,
+      level: Math.floor(score / 50) + 1,
+      mode: 'classic' as GameMode,
+      difficulty,
+      date: new Date(Date.now() - i * 3600000).toISOString(),
+    };
+  }).sort((a, b) => b.score - a.score);
+}
+
+// ============ DAILY REWARDS ============
+export const DAILY_REWARDS = [
+  { day: 1, coins: 20, gems: 0, xp: 10, icon: '🪙' },
+  { day: 2, coins: 30, gems: 1, xp: 15, icon: '💰' },
+  { day: 3, coins: 50, gems: 1, xp: 20, icon: '🎁' },
+  { day: 4, coins: 40, gems: 2, xp: 25, icon: '🎀' },
+  { day: 5, coins: 60, gems: 2, xp: 30, icon: '🎊' },
+  { day: 6, coins: 80, gems: 3, xp: 40, icon: '🏅' },
+  { day: 7, coins: 150, gems: 5, xp: 100, icon: '👑' },
+];
