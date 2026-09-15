@@ -3,9 +3,42 @@ export type Direction = 'UP' | 'DOWN' | 'LEFT' | 'RIGHT';
 export type Position = { x: number; y: number };
 export type GameState = 'IDLE' | 'PLAYING' | 'PAUSED' | 'GAME_OVER';
 export type Difficulty = 'easy' | 'medium' | 'hard' | 'insane';
-export type GameMode = 'classic' | 'timed' | 'multiplayer' | 'event' | 'zen';
-export type Screen = 'login' | 'menu' | 'game' | 'profile' | 'trophies' | 'titles' | 'shop' | 'events' | 'leaderboard' | 'settings' | 'rewards';
+export type GameMode = 'classic' | 'timed' | 'multiplayer' | 'event' | 'zen' | 'online';
+export type Screen = 'login' | 'menu' | 'game' | 'profile' | 'trophies' | 'titles' | 'shop' | 'events' | 'leaderboard' | 'settings' | 'rewards' | 'subscription' | 'battlepass' | 'online' | 'google';
 export type Theme = 'light' | 'dark';
+
+export type SubscriptionTier = 'free' | 'basic' | 'premium' | 'ultimate';
+export type SubscriptionStatus = 'active' | 'expired' | 'cancelled' | 'none';
+
+export interface Subscription {
+  tier: SubscriptionTier;
+  status: SubscriptionStatus;
+  startDate: string;
+  endDate: string;
+  autoRenew: boolean;
+  paymentMethod?: string;
+}
+
+export interface Friend {
+  id: string;
+  username: string;
+  avatar: string;
+  level: number;
+  lastSeen: string;
+  isOnline: boolean;
+  subscriptionTier: SubscriptionTier;
+}
+
+export interface OnlineGame {
+  id: string;
+  host: string;
+  players: string[];
+  maxPlayers: number;
+  mode: GameMode;
+  difficulty: Difficulty;
+  status: 'waiting' | 'playing' | 'finished';
+  createdAt: string;
+}
 
 export interface Player {
   id: string;
@@ -38,6 +71,16 @@ export interface Player {
   eventProgress: Record<string, number>;
   gamesWonVsBot: number;
   zenGamesPlayed: number;
+  // Premium features
+  subscription: Subscription;
+  friends: string[];
+  friendRequests: string[];
+  googleAccount?: string;
+  isPremium: boolean;
+  premiumSkinsUnlocked: string[];
+  battlePassLevel: number;
+  battlePassXp: number;
+  battlePassRewards: string[];
 }
 
 export interface Title {
@@ -269,6 +312,111 @@ export const DAILY_REWARDS = [
   { day: 5, coins: 60, gems: 2, xp: 30, icon: '🎊' },
   { day: 6, coins: 80, gems: 3, xp: 40, icon: '🏅' },
   { day: 7, coins: 150, gems: 5, xp: 100, icon: '👑' },
+];
+
+// ============ SUBSCRIPTION PLANS ============
+export interface SubscriptionPlan {
+  id: SubscriptionTier;
+  name: string;
+  price: number;
+  currency: string;
+  duration: string;
+  features: string[];
+  color: string;
+  icon: string;
+  popular?: boolean;
+}
+
+export const SUBSCRIPTION_PLANS: SubscriptionPlan[] = [
+  {
+    id: 'free',
+    name: 'Free',
+    price: 0,
+    currency: 'USD',
+    duration: 'Forever',
+    features: ['Basic skins', 'Classic mode', 'Local multiplayer', 'Ads supported'],
+    color: 'from-gray-600 to-gray-800',
+    icon: '🆓',
+  },
+  {
+    id: 'basic',
+    name: 'Snake Pass Basic',
+    price: 2.99,
+    currency: 'USD',
+    duration: '1 Month',
+    features: ['Remove ads', '5 premium skins', 'Battle Pass access', 'Daily bonus gems', 'Priority support'],
+    color: 'from-blue-600 to-blue-800',
+    icon: '🎫',
+  },
+  {
+    id: 'premium',
+    name: 'Snake Pass Premium',
+    price: 5.99,
+    currency: 'USD',
+    duration: '1 Month',
+    features: ['All Basic features', 'All premium skins', 'Online multiplayer', 'Exclusive titles', '2x XP boost', 'Custom trails', 'Early access to new features'],
+    color: 'from-purple-600 to-purple-800',
+    icon: '⭐',
+    popular: true,
+  },
+  {
+    id: 'ultimate',
+    name: 'Snake Pass Ultimate',
+    price: 9.99,
+    currency: 'USD',
+    duration: '1 Month',
+    features: ['All Premium features', 'All current & future skins', 'Unlimited friends', 'Tournament access', 'VIP support', 'Exclusive events', 'Beta features', '3x XP boost'],
+    color: 'from-yellow-600 to-orange-700',
+    icon: '👑',
+  },
+];
+
+// ============ PREMIUM SKINS ============
+export const PREMIUM_SKINS: ShopItem[] = [
+  { id: 'diamond', name: 'Diamond Serpent', description: 'Sparkling diamond scales', icon: '💎', type: 'skin', price: 0, currency: 'gems', rarity: 'legendary' },
+  { id: 'neon_glow', name: 'Neon Glow', description: 'Glowing neon colors', icon: '✨', type: 'skin', price: 0, currency: 'gems', rarity: 'legendary' },
+  { id: 'galaxy', name: 'Galaxy Worm', description: 'Cosmic galaxy pattern', icon: '🌌', type: 'skin', price: 0, currency: 'gems', rarity: 'legendary' },
+  { id: 'fire_dragon', name: 'Fire Dragon', description: 'Blazing fire dragon', icon: '🐉', type: 'skin', price: 0, currency: 'gems', rarity: 'legendary' },
+  { id: 'ice_crystal', name: 'Ice Crystal', description: 'Frozen crystal scales', icon: '❄️', type: 'skin', price: 0, currency: 'gems', rarity: 'legendary' },
+  { id: 'rainbow_pride', name: 'Rainbow Pride', description: 'All rainbow colors', icon: '🌈', type: 'skin', price: 0, currency: 'gems', rarity: 'legendary' },
+  { id: 'shadow_ninja', name: 'Shadow Ninja', description: 'Stealth shadow mode', icon: '🥷', type: 'skin', price: 0, currency: 'gems', rarity: 'legendary' },
+  { id: 'golden_king', name: 'Golden King', description: 'Royal golden scales', icon: '👑', type: 'skin', price: 0, currency: 'gems', rarity: 'legendary' },
+];
+
+// ============ BATTLE PASS REWARDS ============
+export interface BattlePassReward {
+  level: number;
+  reward: string;
+  type: 'coins' | 'gems' | 'skin' | 'title' | 'xp';
+  amount: number;
+  premium: boolean;
+}
+
+export const BATTLE_PASS_REWARDS: BattlePassReward[] = [
+  { level: 1, reward: '100 Coins', type: 'coins', amount: 100, premium: false },
+  { level: 2, reward: '5 Gems', type: 'gems', amount: 5, premium: false },
+  { level: 3, reward: '200 Coins', type: 'coins', amount: 200, premium: false },
+  { level: 4, reward: '10 Gems', type: 'gems', amount: 10, premium: false },
+  { level: 5, reward: 'Diamond Skin', type: 'skin', amount: 1, premium: true },
+  { level: 6, reward: '300 Coins', type: 'coins', amount: 300, premium: false },
+  { level: 7, reward: '15 Gems', type: 'gems', amount: 15, premium: false },
+  { level: 8, reward: '500 Coins', type: 'coins', amount: 500, premium: false },
+  { level: 9, reward: 'Neon Glow Skin', type: 'skin', amount: 1, premium: true },
+  { level: 10, reward: '20 Gems', type: 'gems', amount: 20, premium: false },
+  { level: 11, reward: 'Galaxy Skin', type: 'skin', amount: 1, premium: true },
+  { level: 12, reward: '1000 Coins', type: 'coins', amount: 1000, premium: false },
+  { level: 13, reward: '30 Gems', type: 'gems', amount: 30, premium: false },
+  { level: 14, reward: 'Fire Dragon Skin', type: 'skin', amount: 1, premium: true },
+  { level: 15, reward: 'VIP Title', type: 'title', amount: 1, premium: true },
+];
+
+// ============ MOCK FRIENDS (for online multiplayer) ============
+export const MOCK_FRIENDS: Friend[] = [
+  { id: 'friend1', username: 'SnakeMaster99', avatar: '🐍', level: 15, lastSeen: '2 mins ago', isOnline: true, subscriptionTier: 'premium' },
+  { id: 'friend2', username: 'ProGamer', avatar: '🎮', level: 22, lastSeen: '5 mins ago', isOnline: true, subscriptionTier: 'ultimate' },
+  { id: 'friend3', username: 'NoodleKing', avatar: '🍜', level: 8, lastSeen: '1 hour ago', isOnline: false, subscriptionTier: 'basic' },
+  { id: 'friend4', username: 'SpeedDemon', avatar: '⚡', level: 18, lastSeen: '30 mins ago', isOnline: true, subscriptionTier: 'premium' },
+  { id: 'friend5', username: 'ChillPlayer', avatar: '😎', level: 12, lastSeen: '3 hours ago', isOnline: false, subscriptionTier: 'free' },
 ];
 
 // ============ TITLES ============

@@ -3,6 +3,7 @@ import { Player, Screen, GameMode, Difficulty, TROPHIES, TITLES, Theme } from '.
 import { loadPlayer, savePlayer, createNewPlayer, addXp } from './store';
 import Game from './components/Game';
 import { LoginScreen, MainMenu, ProfileScreen, TrophiesScreen, ShopScreen, EventsScreen, LeaderboardScreen, RewardsScreen, SettingsScreen, TitlesScreen } from './components/Screens';
+import { SubscriptionScreen, BattlePassScreen, OnlineMultiplayerScreen, GoogleLoginScreen } from './components/PremiumScreens';
 
 type MultiplayerType = 'bot' | 'player';
 
@@ -268,6 +269,18 @@ function App() {
       return <RewardsScreen player={player} setPlayer={handleUpdatePlayer} onBack={() => setScreen('menu')} theme={theme} />;
     case 'settings':
       return <SettingsScreen player={player} onBack={() => setScreen('menu')} onLogout={handleLogout} theme={theme} toggleTheme={toggleTheme} />;
+    case 'subscription':
+      return <SubscriptionScreen player={player} setPlayer={handleUpdatePlayer} onBack={() => setScreen('menu')} theme={theme} />;
+    case 'battlepass':
+      return <BattlePassScreen player={player} setPlayer={handleUpdatePlayer} onBack={() => setScreen('menu')} theme={theme} />;
+    case 'online':
+      return <OnlineMultiplayerScreen player={player} onBack={() => setScreen('menu')} theme={theme} onSelectMode={(mode, difficulty) => {
+        setGameMode(mode);
+        setGameDifficulty(difficulty);
+        setScreen('game');
+      }} />;
+    case 'google':
+      return <GoogleLoginScreen player={player} setPlayer={handleUpdatePlayer} onBack={() => setScreen('menu')} theme={theme} />;
     default:
       return <MainMenu player={player} onSelectMode={handleSelectMode} onNavigate={setScreen} theme={theme} toggleTheme={toggleTheme} />;
   }

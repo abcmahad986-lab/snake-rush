@@ -35,6 +35,22 @@ export function createNewPlayer(username: string): Player {
     eventProgress: {},
     gamesWonVsBot: 0,
     zenGamesPlayed: 0,
+    // Premium features
+    subscription: {
+      tier: 'free',
+      status: 'none',
+      startDate: '',
+      endDate: '',
+      autoRenew: false,
+    },
+    friends: [],
+    friendRequests: [],
+    googleAccount: undefined,
+    isPremium: false,
+    premiumSkinsUnlocked: [],
+    battlePassLevel: 1,
+    battlePassXp: 0,
+    battlePassRewards: [],
   };
 }
 
@@ -69,6 +85,38 @@ export function loadPlayer(): Player | null {
     }
     if (player.zenGamesPlayed === undefined) {
       player.zenGamesPlayed = 0;
+    }
+    
+    // Migration: Premium features
+    if (!player.subscription) {
+      player.subscription = {
+        tier: 'free',
+        status: 'none',
+        startDate: '',
+        endDate: '',
+        autoRenew: false,
+      };
+    }
+    if (!player.friends) {
+      player.friends = [];
+    }
+    if (!player.friendRequests) {
+      player.friendRequests = [];
+    }
+    if (player.isPremium === undefined) {
+      player.isPremium = false;
+    }
+    if (!player.premiumSkinsUnlocked) {
+      player.premiumSkinsUnlocked = [];
+    }
+    if (player.battlePassLevel === undefined) {
+      player.battlePassLevel = 1;
+    }
+    if (player.battlePassXp === undefined) {
+      player.battlePassXp = 0;
+    }
+    if (!player.battlePassRewards) {
+      player.battlePassRewards = [];
     }
     
     return player;

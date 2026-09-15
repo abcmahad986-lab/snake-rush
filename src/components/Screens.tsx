@@ -238,6 +238,73 @@ export function MainMenu({ player, onSelectMode, onNavigate, theme, toggleTheme 
         ))}
       </div>
 
+      {/* Premium Features */}
+      <div className="w-full max-w-md mt-4 space-y-2">
+        <h3 className={`text-xs ${t(theme, 'text-gray-400', 'text-gray-600')} uppercase tracking-wide mb-2`}>Premium</h3>
+        <div className="grid grid-cols-2 gap-2">
+          <button
+            onClick={() => onNavigate('subscription')}
+            className={`flex items-center gap-3 p-3 ${
+              player.isPremium 
+                ? 'bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500' 
+                : t(theme, 'bg-gradient-to-r from-purple-900/40 to-blue-900/40 hover:from-purple-900/60 hover:to-blue-900/60 border-purple-500/30', 'bg-gradient-to-r from-purple-100 to-blue-100 hover:from-purple-200 hover:to-blue-200 border-purple-300')
+            } border rounded-xl transition-all transform hover:scale-105`}
+          >
+            <div className="text-2xl">{player.isPremium ? '⭐' : '🎫'}</div>
+            <div className="text-left flex-1">
+              <div className={`text-sm font-bold ${player.isPremium ? 'text-white' : t(theme, 'text-white', 'text-gray-900')}`}>
+                {player.isPremium ? 'Premium Active' : 'Snake Pass'}
+              </div>
+              <div className={`text-[10px] ${player.isPremium ? 'text-gray-200' : t(theme, 'text-gray-300', 'text-gray-600')}`}>
+                {player.isPremium ? 'Enjoy benefits!' : 'Unlock features'}
+              </div>
+            </div>
+          </button>
+
+          <button
+            onClick={() => onNavigate('battlepass')}
+            className={`flex items-center gap-3 p-3 ${t(theme, 'bg-gradient-to-r from-yellow-900/40 to-orange-900/40 hover:from-yellow-900/60 hover:to-orange-900/60 border-yellow-500/30', 'bg-gradient-to-r from-yellow-100 to-orange-100 hover:from-yellow-200 hover:to-orange-200 border-yellow-300')} border rounded-xl transition-all transform hover:scale-105`}
+          >
+            <div className="text-2xl">🎖️</div>
+            <div className="text-left flex-1">
+              <div className={`text-sm font-bold ${t(theme, 'text-white', 'text-gray-900')}`}>Battle Pass</div>
+              <div className={`text-[10px] ${t(theme, 'text-gray-300', 'text-gray-600')}`}>Level {player.battlePassLevel}</div>
+            </div>
+          </button>
+
+          <button
+            onClick={() => onNavigate('online')}
+            className={`flex items-center gap-3 p-3 ${
+              player.isPremium 
+                ? t(theme, 'bg-gradient-to-r from-green-900/40 to-teal-900/40 hover:from-green-900/60 hover:to-teal-900/60 border-green-500/30', 'bg-gradient-to-r from-green-100 to-teal-100 hover:from-green-200 hover:to-teal-200 border-green-300')
+                : t(theme, 'bg-gray-800/40 border-gray-700/30 opacity-60', 'bg-gray-200 border-gray-300 opacity-60')
+            } border rounded-xl transition-all ${player.isPremium ? 'transform hover:scale-105' : ''}`}
+            disabled={!player.isPremium}
+          >
+            <div className="text-2xl">🌐</div>
+            <div className="text-left flex-1">
+              <div className={`text-sm font-bold ${t(theme, 'text-white', 'text-gray-900')}`}>Online</div>
+              <div className={`text-[10px] ${t(theme, 'text-gray-300', 'text-gray-600')}`}>
+                {player.isPremium ? 'Play with friends' : 'Premium only'}
+              </div>
+            </div>
+          </button>
+
+          <button
+            onClick={() => onNavigate('google')}
+            className={`flex items-center gap-3 p-3 ${t(theme, 'bg-gradient-to-r from-red-900/40 to-pink-900/40 hover:from-red-900/60 hover:to-pink-900/60 border-red-500/30', 'bg-gradient-to-r from-red-100 to-pink-100 hover:from-red-200 hover:to-pink-200 border-red-300')} border rounded-xl transition-all transform hover:scale-105`}
+          >
+            <div className="text-2xl">{player.googleAccount ? '✅' : '🔐'}</div>
+            <div className="text-left flex-1">
+              <div className={`text-sm font-bold ${t(theme, 'text-white', 'text-gray-900')}`}>Google</div>
+              <div className={`text-[10px] ${t(theme, 'text-gray-300', 'text-gray-600')}`}>
+                {player.googleAccount ? 'Connected' : 'Sync progress'}
+              </div>
+            </div>
+          </button>
+        </div>
+      </div>
+
       {/* Stats Summary */}
       <div className="w-full max-w-md mt-4 grid grid-cols-4 gap-2">
         <div className={`${t(theme, 'bg-gray-800/40 border-gray-700/30', 'bg-white border-gray-200 shadow-sm')} rounded-xl p-2 text-center border`}>
