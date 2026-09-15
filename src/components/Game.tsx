@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { Position, Direction, GameState, Difficulty, GameMode, GRID_SIZE, DIFFICULTY_SPEEDS, TIMED_DURATIONS, Player, PowerUp } from '../types';
+import { Position, Direction, GameState, Difficulty, GameMode, GRID_SIZE, DIFFICULTY_SPEEDS, TIMED_DURATIONS, Player, PowerUp, TITLES } from '../types';
 import { savePlayer, addXp } from '../store';
 
 type MultiplayerType = 'bot' | 'player';
@@ -111,6 +111,7 @@ export default function Game({ player, setPlayer, mode, difficulty, onBack, isMu
   const [finalScore, setFinalScore] = useState(0);
   const [xpEarned, setXpEarned] = useState(0);
   const [coinsEarned, setCoinsEarned] = useState(0);
+  const [newTitles, setNewTitles] = useState<string[]>([]);
 
   const dirRef = useRef<Direction>('RIGHT');
   const dir2Ref = useRef<Direction>('LEFT');
@@ -411,6 +412,16 @@ export default function Game({ player, setPlayer, mode, difficulty, onBack, isMu
       updated.longestSnake = Math.max(updated.longestSnake, snake.length);
       updated.coins += coins;
       
+      // Track zen games
+      if (mode === 'zen') {
+        updated.zenGamesPlayed += 1;
+      }
+      
+      // Track bot wins
+      if (isMultiplayer && multiplayerType === 'bot' && score > score2) {
+        updated.gamesWonVsBot += 1;
+      }
+      
       if (mode === 'timed') {
         if (finalS > updated.timedHighScores[difficulty]) {
           updated.timedHighScores[difficulty] = finalS;
@@ -422,6 +433,18 @@ export default function Game({ player, setPlayer, mode, difficulty, onBack, isMu
       }
 
       updated = addXp(updated, xp);
+      
+      // Check for new titles
+      const unlockedTitles: string[] = [];
+      for (const title of TITLES) {
+        if (!player.titles.includes(title.id) && title.condition(updated)) {
+          unlockedTitles.push(title.id);
+          updated.titles = [...updated.titles, title.id];
+          updated.coins += title.coinReward;
+        }
+      }
+      setNewTitles(unlockedTitles);
+      
       setPlayer(updated);
       savePlayer(updated);
 
@@ -483,6 +506,9 @@ export default function Game({ player, setPlayer, mode, difficulty, onBack, isMu
           ← Back
         </button>
         <div className="flex items-center gap-2">
+          <span className="text-[10px] text-indigo-300 hidden md:inline">
+            {TITLES.find(t => t.id === player.equippedTitle)?.icon} {TITLES.find(t => t.id === player.equippedTitle)?.name}
+          </span>
           <span className="text-xs text-gray-400 uppercase">{getModeLabel()}</span>
           <span className={`text-xs px-2 py-0.5 rounded-full ${
             difficulty === 'easy' ? 'bg-green-900/50 text-green-400' :
@@ -647,6 +673,12 @@ export default function Game({ player, setPlayer, mode, difficulty, onBack, isMu
               <h2 className="text-xl font-bold text-red-400 mb-1">
                 {isMultiplayer ? (score > score2 ? 'You Win!' : score2 > score ? (multiplayerType === 'bot' ? 'Bot Wins!' : 'Player 2 Wins!') : 'Tie!') : 'Game Over!'}
               </h2>
+              <div className="flex items-center gap-1 mb-2">
+                <span className="text-xs text-gray-400">{player.avatar} {player.username}</span>
+                <span className="text-[10px] text-indigo-300">
+                  {TITLES.find(t => t.id === player.equippedTitle)?.icon} {TITLES.find(t => t.id === player.equippedTitle)?.name}
+                </span>
+              </div>
               
               <div className="bg-gray-800/80 rounded-xl p-3 mb-3 w-full max-w-[250px] border border-gray-700/50">
                 <div className="flex justify-between text-sm mb-1">
@@ -673,6 +705,29 @@ export default function Game({ player, setPlayer, mode, difficulty, onBack, isMu
                   <span className="text-yellow-500 font-bold">{coinsEarned}</span>
                 </div>
               </div>
+
+              {/* New Titles Unlocked */}
+              {newTitles.length > 0 && (
+                <div className="w-full max-w-[250px] mb-3 bg-gradient-to-r from-indigo-900/40 to-purple-900/40 rounded-xl p-3 border border-indigo-500/30 animate-fade-in">
+                  <div className="text-xs text-indigo-300 font-bold mb-2 text-center">🎖️ New Title{newTitles.length > 1 ? 's' : ''} Unlocked!</div>
+                  <div className="space-y-1">
+                    {newTitles.map(titleId => {
+                      const title = TITLES.find(t => t.id === titleId);
+                      if (!title) return null;
+                      return (
+                        <div key={titleId} className="flex items-center gap-2 bg-gray-800/60 rounded-lg px-2 py-1.5">
+                          <span className="text-lg">{title.icon}</span>
+                          <div className="flex-1">
+                            <div className="text-xs font-bold text-white">{title.name}</div>
+                            <div className="text-[10px] text-gray-400">{title.description}</div>
+                          </div>
+                          <span className="text-[10px] text-yellow-400">+{title.coinReward}🪙</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
 
               <div className="flex gap-2">
                 <button onClick={startGame} className="px-4 py-2 bg-green-500 hover:bg-green-400 text-white font-bold rounded-xl transition-all transform hover:scale-105 active:scale-95">↺ Again</button>

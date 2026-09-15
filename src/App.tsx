@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
-import { Player, Screen, GameMode, Difficulty, TROPHIES } from './types';
+import { Player, Screen, GameMode, Difficulty, TROPHIES, TITLES } from './types';
 import { loadPlayer, savePlayer, createNewPlayer, addXp } from './store';
 import Game from './components/Game';
-import { LoginScreen, MainMenu, ProfileScreen, TrophiesScreen, ShopScreen, EventsScreen, LeaderboardScreen, RewardsScreen, SettingsScreen } from './components/Screens';
+import { LoginScreen, MainMenu, ProfileScreen, TrophiesScreen, ShopScreen, EventsScreen, LeaderboardScreen, RewardsScreen, SettingsScreen, TitlesScreen } from './components/Screens';
 
 type MultiplayerType = 'bot' | 'player';
 
@@ -31,18 +31,28 @@ function App() {
 
   const checkTrophies = (p: Player) => {
     let updated = { ...p };
-    let newTrophies: string[] = [];
+    let changed = false;
 
+    // Check trophies
     for (const trophy of TROPHIES) {
       if (!updated.trophies.includes(trophy.id) && trophy.condition(updated)) {
-        newTrophies.push(trophy.id);
         updated.trophies = [...updated.trophies, trophy.id];
         updated.coins += trophy.coinReward;
         updated = addXp(updated, trophy.xpReward);
+        changed = true;
       }
     }
 
-    if (newTrophies.length > 0) {
+    // Check titles
+    for (const title of TITLES) {
+      if (!updated.titles.includes(title.id) && title.condition(updated)) {
+        updated.titles = [...updated.titles, title.id];
+        updated.coins += title.coinReward;
+        changed = true;
+      }
+    }
+
+    if (changed) {
       setPlayer(updated);
       savePlayer(updated);
     }
@@ -226,9 +236,11 @@ function App() {
     case 'menu':
       return <MainMenu player={player} onSelectMode={handleSelectMode} onNavigate={setScreen} />;
     case 'profile':
-      return <ProfileScreen player={player} setPlayer={handleUpdatePlayer} onBack={() => setScreen('menu')} />;
+      return <ProfileScreen player={player} setPlayer={handleUpdatePlayer} onBack={() => setScreen('menu')} onNavigate={setScreen} />;
     case 'trophies':
       return <TrophiesScreen player={player} onBack={() => setScreen('menu')} />;
+    case 'titles':
+      return <TitlesScreen player={player} setPlayer={handleUpdatePlayer} onBack={() => setScreen('menu')} />;
     case 'shop':
       return <ShopScreen player={player} setPlayer={handleUpdatePlayer} onBack={() => setScreen('menu')} />;
     case 'events':

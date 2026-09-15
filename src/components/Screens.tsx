@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Player, Screen, Difficulty, GameMode, TROPHIES, SNAKE_SKINS, SNAKE_TRAILS, AVATARS, generateDailyEvents, generateBotLeaderboard, DAILY_REWARDS, DIFFICULTY_LABELS } from '../types';
+import { Player, Screen, Difficulty, GameMode, TROPHIES, TITLES, SNAKE_SKINS, SNAKE_TRAILS, AVATARS, generateDailyEvents, generateBotLeaderboard, DAILY_REWARDS, DIFFICULTY_LABELS } from '../types';
 import type { ShopItem } from '../types';
 import { savePlayer, claimDailyReward, getLoginReward } from '../store';
 
@@ -93,7 +93,13 @@ export function MainMenu({ player, onSelectMode, onNavigate }: {
           <span className="text-2xl">{player.avatar}</span>
           <div>
             <div className="text-sm font-bold text-white leading-tight">{player.username}</div>
-            <div className="text-[10px] text-green-400">Lvl {player.level}</div>
+            <div className="flex items-center gap-1">
+              <span className="text-[10px] text-green-400">Lvl {player.level}</span>
+              <span className="text-[10px] text-gray-500">•</span>
+              <span className="text-[10px] text-indigo-300">
+                {TITLES.find(t => t.id === player.equippedTitle)?.icon} {TITLES.find(t => t.id === player.equippedTitle)?.name}
+              </span>
+            </div>
           </div>
         </button>
         <div className="flex items-center gap-3">
@@ -185,9 +191,10 @@ export function MainMenu({ player, onSelectMode, onNavigate }: {
       </button>
 
       {/* Navigation */}
-      <div className="w-full max-w-md grid grid-cols-4 gap-2">
+      <div className="w-full max-w-md grid grid-cols-5 gap-2">
         {[
           { screen: 'trophies' as Screen, icon: '🏆', label: 'Trophies' },
+          { screen: 'titles' as Screen, icon: '🎖️', label: 'Titles' },
           { screen: 'shop' as Screen, icon: '🛒', label: 'Shop' },
           { screen: 'events' as Screen, icon: '🎯', label: 'Events' },
           { screen: 'leaderboard' as Screen, icon: '📊', label: 'Ranks' },
@@ -204,18 +211,22 @@ export function MainMenu({ player, onSelectMode, onNavigate }: {
       </div>
 
       {/* Stats Summary */}
-      <div className="w-full max-w-md mt-4 grid grid-cols-3 gap-2">
+      <div className="w-full max-w-md mt-4 grid grid-cols-4 gap-2">
         <div className="bg-gray-800/40 rounded-xl p-2 text-center border border-gray-700/30">
           <div className="text-lg font-bold text-white">{player.gamesPlayed}</div>
           <div className="text-[10px] text-gray-400">Games</div>
         </div>
         <div className="bg-gray-800/40 rounded-xl p-2 text-center border border-gray-700/30">
           <div className="text-lg font-bold text-green-400">{player.totalScore}</div>
-          <div className="text-[10px] text-gray-400">Total Score</div>
+          <div className="text-[10px] text-gray-400">Score</div>
         </div>
         <div className="bg-gray-800/40 rounded-xl p-2 text-center border border-gray-700/30">
           <div className="text-lg font-bold text-yellow-400">{player.trophies.length}/{TROPHIES.length}</div>
           <div className="text-[10px] text-gray-400">Trophies</div>
+        </div>
+        <div className="bg-gray-800/40 rounded-xl p-2 text-center border border-gray-700/30">
+          <div className="text-lg font-bold text-indigo-400">{player.titles.length}/{TITLES.length}</div>
+          <div className="text-[10px] text-gray-400">Titles</div>
         </div>
       </div>
     </div>
@@ -223,7 +234,7 @@ export function MainMenu({ player, onSelectMode, onNavigate }: {
 }
 
 // ============ PROFILE SCREEN ============
-export function ProfileScreen({ player, setPlayer, onBack }: { player: Player; setPlayer: (p: Player) => void; onBack: () => void }) {
+export function ProfileScreen({ player, setPlayer, onBack, onNavigate }: { player: Player; setPlayer: (p: Player) => void; onBack: () => void; onNavigate?: (screen: Screen) => void }) {
   const [editing, setEditing] = useState(false);
   const [newUsername, setNewUsername] = useState(player.username);
   const [showAvatarPicker, setShowAvatarPicker] = useState(false);
@@ -275,8 +286,18 @@ export function ProfileScreen({ player, setPlayer, onBack }: { player: Player; s
             </div>
           )}
           
-          <div className="mt-2">
+          <div className="mt-2 flex flex-wrap gap-2 justify-center">
             <span className="px-3 py-1 bg-green-600/20 text-green-400 rounded-full text-sm font-medium">Level {player.level}</span>
+            {onNavigate && (
+              <button onClick={() => onNavigate('titles')} className="px-3 py-1 bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-300 rounded-full text-sm font-medium flex items-center gap-1 transition-all">
+                {TITLES.find(t => t.id === player.equippedTitle)?.icon} {TITLES.find(t => t.id === player.equippedTitle)?.name} →
+              </button>
+            )}
+            {!onNavigate && (
+              <span className="px-3 py-1 bg-indigo-600/20 text-indigo-300 rounded-full text-sm font-medium flex items-center gap-1">
+                {TITLES.find(t => t.id === player.equippedTitle)?.icon} {TITLES.find(t => t.id === player.equippedTitle)?.name}
+              </span>
+            )}
           </div>
         </div>
 
@@ -315,6 +336,8 @@ export function ProfileScreen({ player, setPlayer, onBack }: { player: Player; s
             <div className="flex justify-between"><span className="text-gray-400">Longest Snake</span><span className="text-white font-medium">{player.longestSnake}</span></div>
             <div className="flex justify-between"><span className="text-gray-400">Daily Streak</span><span className="text-white font-medium">{player.dailyStreak} 🔥</span></div>
             <div className="flex justify-between"><span className="text-gray-400">Trophies</span><span className="text-white font-medium">{player.trophies.length}/{TROPHIES.length}</span></div>
+            <div className="flex justify-between"><span className="text-gray-400">Titles</span><span className="text-indigo-400 font-medium">{player.titles.length}/{TITLES.length}</span></div>
+            <div className="flex justify-between"><span className="text-gray-400">Bot Wins</span><span className="text-blue-400 font-medium">{player.gamesWonVsBot}</span></div>
           </div>
         </div>
 
@@ -662,13 +685,24 @@ export function LeaderboardScreen({ player, onBack }: { player: Player; onBack: 
         <div className="space-y-1">
           {fullBoard.map((entry, i) => {
             const isPlayer = entry.username === player.username;
+            const playerTitle = isPlayer ? TITLES.find(t => t.id === player.equippedTitle) : null;
             return (
               <div key={i} className={`flex items-center gap-2 px-3 py-2 rounded-lg ${isPlayer ? 'bg-green-900/30 border border-green-500/30' : 'bg-gray-800/40'}`}>
                 <span className="text-xs text-gray-400 w-5 text-right font-mono">#{i + 1}</span>
                 <span className="text-lg">{entry.avatar}</span>
                 <div className="flex-1 min-w-0">
-                  <div className={`text-xs font-bold truncate ${isPlayer ? 'text-green-400' : 'text-white'}`}>{entry.username}{isPlayer && ' (You)'}</div>
-                  <div className="text-[10px] text-gray-500">Lvl {entry.level}</div>
+                  <div className={`text-xs font-bold truncate ${isPlayer ? 'text-green-400' : 'text-white'}`}>
+                    {entry.username}{isPlayer && ' (You)'}
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <span className="text-[10px] text-gray-500">Lvl {entry.level}</span>
+                    {playerTitle && (
+                      <>
+                        <span className="text-[10px] text-gray-600">•</span>
+                        <span className="text-[10px] text-indigo-300">{playerTitle.icon} {playerTitle.name}</span>
+                      </>
+                    )}
+                  </div>
                 </div>
                 <span className="text-sm font-bold text-white">{entry.score}</span>
               </div>
@@ -800,6 +834,109 @@ export function SettingsScreen({ player, onBack, onLogout }: { player: Player; o
             <p>Snake Game v2.0</p>
             <p>Made with ❤️</p>
           </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ============ TITLES SCREEN ============
+export function TitlesScreen({ player, setPlayer, onBack }: { player: Player; setPlayer: (p: Player) => void; onBack: () => void }) {
+  const [filter, setFilter] = useState<string>('all');
+  const categories = ['all', 'beginner', 'score', 'collection', 'combat', 'special', 'legendary'];
+  
+  const filtered = filter === 'all' ? TITLES : TITLES.filter(t => t.category === filter);
+  const unlocked = player.titles.length;
+
+  const rarityColors: Record<string, string> = {
+    common: 'from-gray-600 to-gray-800 border-gray-500/30',
+    uncommon: 'from-green-700 to-green-900 border-green-500/30',
+    rare: 'from-blue-700 to-blue-900 border-blue-500/30',
+    epic: 'from-purple-700 to-purple-900 border-purple-500/30',
+    legendary: 'from-yellow-600 to-orange-800 border-yellow-500/40',
+  };
+
+  const equipTitle = (titleId: string) => {
+    const updated = { ...player, equippedTitle: titleId };
+    setPlayer(updated);
+    savePlayer(updated);
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-slate-900 to-gray-800 p-4">
+      <div className="max-w-md mx-auto">
+        <button onClick={onBack} className="mb-3 px-3 py-1.5 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg text-sm border border-gray-700/50">← Back</button>
+        
+        <div className="text-center mb-4">
+          <h2 className="text-2xl font-bold text-white">🎖️ Titles</h2>
+          <p className="text-sm text-gray-400">{unlocked}/{TITLES.length} Unlocked</p>
+        </div>
+
+        {/* Current Title */}
+        <div className="bg-gradient-to-r from-indigo-900/40 to-purple-900/40 rounded-xl p-4 mb-4 border border-indigo-500/30 text-center">
+          <div className="text-xs text-gray-400 mb-1">Currently Equipped</div>
+          <div className="text-2xl mb-1">
+            {TITLES.find(t => t.id === player.equippedTitle)?.icon || '🏷️'}
+          </div>
+          <div className="text-sm font-bold text-white">
+            {TITLES.find(t => t.id === player.equippedTitle)?.name || 'None'}
+          </div>
+        </div>
+
+        {/* Progress */}
+        <div className="bg-gray-800/60 rounded-xl p-3 mb-4 border border-gray-700/50">
+          <div className="h-3 bg-gray-900 rounded-full overflow-hidden">
+            <div className="h-full bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full transition-all" style={{ width: `${(unlocked / TITLES.length) * 100}%` }} />
+          </div>
+          <div className="text-xs text-gray-400 mt-1 text-center">{Math.floor((unlocked / TITLES.length) * 100)}% Complete</div>
+        </div>
+
+        {/* Filter */}
+        <div className="flex gap-1 mb-4 overflow-x-auto pb-1">
+          {categories.map(c => (
+            <button key={c} onClick={() => setFilter(c)} className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-all ${filter === c ? 'bg-indigo-600 text-white' : 'bg-gray-800 text-gray-400 hover:text-white'}`}>
+              {c.charAt(0).toUpperCase() + c.slice(1)}
+            </button>
+          ))}
+        </div>
+
+        {/* Title List */}
+        <div className="space-y-2">
+          {filtered.map(title => {
+            const isUnlocked = player.titles.includes(title.id);
+            const isEquipped = player.equippedTitle === title.id;
+            return (
+              <div key={title.id} className={`flex items-center gap-3 p-3 rounded-xl border transition-all ${isUnlocked ? `bg-gradient-to-r ${rarityColors[title.rarity]}` : 'bg-gray-800/40 border-gray-700/30 opacity-60'} ${isEquipped ? 'ring-2 ring-white/30' : ''}`}>
+                <div className={`text-2xl ${isUnlocked ? '' : 'grayscale'}`}>{title.icon}</div>
+                <div className="flex-1 min-w-0">
+                  <div className="text-sm font-bold text-white">{title.name}</div>
+                  <div className="text-[10px] text-gray-300">{title.description}</div>
+                  <div className="flex gap-2 mt-0.5">
+                    <span className="text-[10px] text-yellow-400">+{title.coinReward} 🪙</span>
+                    <span className={`text-[10px] ${
+                      title.rarity === 'common' ? 'text-gray-400' :
+                      title.rarity === 'uncommon' ? 'text-green-400' :
+                      title.rarity === 'rare' ? 'text-blue-400' :
+                      title.rarity === 'epic' ? 'text-purple-400' :
+                      'text-yellow-400'
+                    }`}>{title.rarity.toUpperCase()}</span>
+                  </div>
+                </div>
+                {isUnlocked ? (
+                  <button
+                    onClick={() => equipTitle(title.id)}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                      isEquipped ? 'bg-white/20 text-white border border-white/30' : 'bg-indigo-600/30 text-indigo-300 border border-indigo-500/30 hover:bg-indigo-600/50'
+                    }`}
+                  >
+                    {isEquipped ? '✓ Equipped' : 'Equip'}
+                  </button>
+                ) : (
+                  <div className="px-3 py-1.5 rounded-lg text-xs text-gray-500 border border-gray-700/30">🔒</div>
+                )}
+              </div>
+            );
+          })}
         </div>
       </div>
     </div>

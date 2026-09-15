@@ -21,6 +21,8 @@ export function createNewPlayer(username: string): Player {
     highScores: { easy: 0, medium: 0, hard: 0, insane: 0 },
     timedHighScores: { easy: 0, medium: 0, hard: 0, insane: 0 },
     trophies: [],
+    titles: ['newbie'],
+    equippedTitle: 'newbie',
     equippedSkin: 'classic',
     ownedSkins: ['classic'],
     equippedTrail: 'none',
@@ -31,6 +33,8 @@ export function createNewPlayer(username: string): Player {
     createdAt: new Date().toISOString(),
     achievements: {},
     eventProgress: {},
+    gamesWonVsBot: 0,
+    zenGamesPlayed: 0,
   };
 }
 
