@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { Position, Direction, GameState, Difficulty, GameMode, GRID_SIZE, DIFFICULTY_SPEEDS, TIMED_DURATIONS, Player, PowerUp, TITLES } from '../types';
+import { Position, Direction, GameState, Difficulty, GameMode, GRID_SIZE, DIFFICULTY_SPEEDS, TIMED_DURATIONS, Player, PowerUp, TITLES, Theme } from '../types';
 import { savePlayer, addXp } from '../store';
 
 type MultiplayerType = 'bot' | 'player';
@@ -12,6 +12,8 @@ interface GameProps {
   onBack: () => void;
   isMultiplayer?: boolean;
   multiplayerType?: MultiplayerType;
+  theme: Theme;
+  toggleTheme: () => void;
 }
 
 function getRandomFood(snake: Position[]): Position {
@@ -93,7 +95,7 @@ function getBotDirection(snake: Position[], food: Position, currentDir: Directio
   return scores[0]?.dir || currentDir;
 }
 
-export default function Game({ player, setPlayer, mode, difficulty, onBack, isMultiplayer, multiplayerType = 'player' }: GameProps) {
+export default function Game({ player, setPlayer, mode, difficulty, onBack, isMultiplayer, multiplayerType = 'player', theme, toggleTheme }: GameProps) {
   const [snake, setSnake] = useState<Position[]>([{ x: 10, y: 10 }, { x: 9, y: 10 }, { x: 8, y: 10 }]);
   const [snake2, setSnake2] = useState<Position[]>([{ x: 10, y: 15 }, { x: 9, y: 15 }, { x: 8, y: 15 }]);
   const [food, setFood] = useState<Position>(() => getRandomFood([{ x: 10, y: 10 }]));
@@ -499,19 +501,19 @@ export default function Game({ player, setPlayer, mode, difficulty, onBack, isMu
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-slate-900 to-gray-800 flex flex-col items-center p-2 md:p-4 select-none">
+    <div className={`min-h-screen ${theme === 'dark' ? 'bg-gradient-to-br from-gray-900 via-slate-900 to-gray-800' : 'bg-gradient-to-br from-gray-50 via-slate-50 to-white'} flex flex-col items-center p-2 md:p-4 select-none`}>
       {/* Top Bar */}
       <div className="w-full max-w-lg flex items-center justify-between mb-2">
-        <button onClick={onBack} className="px-3 py-1.5 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg text-sm border border-gray-700/50">
+        <button onClick={onBack} className={`px-3 py-1.5 ${theme === 'dark' ? 'bg-gray-800 hover:bg-gray-700 text-gray-300 border-gray-700/50' : 'bg-white hover:bg-gray-50 text-gray-700 border-gray-300'} rounded-lg text-sm border`}>
           ← Back
         </button>
         <div className="flex items-center gap-2">
           {player.equippedTitle && (
-            <span className="text-[10px] text-indigo-300 hidden md:inline">
-              {TITLES.find(t => t.id === player.equippedTitle)?.icon} {TITLES.find(t => t.id === player.equippedTitle)?.name}
+            <span className={`text-[10px] ${theme === 'dark' ? 'text-indigo-300' : 'text-indigo-600'} hidden md:inline`}>
+              {TITLES.find(ti => ti.id === player.equippedTitle)?.icon} {TITLES.find(ti => ti.id === player.equippedTitle)?.name}
             </span>
           )}
-          <span className="text-xs text-gray-400 uppercase">{getModeLabel()}</span>
+          <span className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'} uppercase`}>{getModeLabel()}</span>
           <span className={`text-xs px-2 py-0.5 rounded-full ${
             difficulty === 'easy' ? 'bg-green-900/50 text-green-400' :
             difficulty === 'medium' ? 'bg-yellow-900/50 text-yellow-400' :
@@ -522,32 +524,32 @@ export default function Game({ player, setPlayer, mode, difficulty, onBack, isMu
       </div>
 
       {/* Score Bar */}
-      <div className="w-full max-w-lg flex justify-between items-center bg-gray-800/80 rounded-xl px-3 py-2 mb-2 border border-gray-700/50">
+      <div className={`w-full max-w-lg flex justify-between items-center ${theme === 'dark' ? 'bg-gray-800/80 border-gray-700/50' : 'bg-white border-gray-200 shadow-sm'} rounded-xl px-3 py-2 mb-2 border`}>
         <div className="text-center">
-          <div className="text-[10px] text-gray-400">{isMultiplayer ? 'P1' : 'Score'}</div>
+          <div className={`text-[10px] ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>{isMultiplayer ? 'P1' : 'Score'}</div>
           <div className="text-lg font-bold text-green-400">{score}</div>
         </div>
         {mode === 'timed' && (
           <div className="text-center">
-            <div className="text-[10px] text-gray-400">Time</div>
-            <div className={`text-lg font-bold ${timeLeft <= 10 ? 'text-red-400 animate-pulse' : 'text-white'}`}>{formatTime(timeLeft)}</div>
+            <div className={`text-[10px] ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Time</div>
+            <div className={`text-lg font-bold ${timeLeft <= 10 ? 'text-red-400 animate-pulse' : theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>{formatTime(timeLeft)}</div>
           </div>
         )}
         {combo > 2 && (
           <div className="text-center">
-            <div className="text-[10px] text-gray-400">Combo</div>
+            <div className={`text-[10px] ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Combo</div>
             <div className="text-lg font-bold text-orange-400">x{combo}</div>
           </div>
         )}
         {isMultiplayer && (
           <div className="text-center">
-            <div className="text-[10px] text-gray-400">{multiplayerType === 'bot' ? 'Bot' : 'P2'}</div>
+            <div className={`text-[10px] ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>{multiplayerType === 'bot' ? 'Bot' : 'P2'}</div>
             <div className="text-lg font-bold text-blue-400">{score2}</div>
           </div>
         )}
         {!isMultiplayer && mode !== 'timed' && (
           <div className="text-center">
-            <div className="text-[10px] text-gray-400">Length</div>
+            <div className={`text-[10px] ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Length</div>
             <div className="text-lg font-bold text-green-400">{snake.length}</div>
           </div>
         )}

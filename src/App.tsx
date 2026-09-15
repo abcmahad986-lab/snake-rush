@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Player, Screen, GameMode, Difficulty, TROPHIES, TITLES } from './types';
+import { Player, Screen, GameMode, Difficulty, TROPHIES, TITLES, Theme } from './types';
 import { loadPlayer, savePlayer, createNewPlayer, addXp } from './store';
 import Game from './components/Game';
 import { LoginScreen, MainMenu, ProfileScreen, TrophiesScreen, ShopScreen, EventsScreen, LeaderboardScreen, RewardsScreen, SettingsScreen, TitlesScreen } from './components/Screens';
@@ -15,6 +15,10 @@ function App() {
   const [showMultiplayerChoice, setShowMultiplayerChoice] = useState(false);
   const [pendingDifficulty, setPendingDifficulty] = useState<Difficulty>('medium');
   const [loading, setLoading] = useState(true);
+  const [theme, setTheme] = useState<Theme>(() => {
+    const saved = localStorage.getItem('snake-theme');
+    return (saved as Theme) || 'dark';
+  });
 
   // Load player on mount
   useEffect(() => {
@@ -28,6 +32,17 @@ function App() {
     }
     setLoading(false);
   }, []);
+
+  // Apply theme to document
+  useEffect(() => {
+    document.documentElement.classList.remove('light', 'dark');
+    document.documentElement.classList.add(theme);
+    localStorage.setItem('snake-theme', theme);
+  }, [theme]);
+
+  const toggleTheme = () => {
+    setTheme(prev => prev === 'dark' ? 'light' : 'dark');
+  };
 
   const checkTrophies = (p: Player) => {
     let updated = { ...p };
@@ -161,7 +176,7 @@ function App() {
   }
 
   if (!player || screen === 'login') {
-    return <LoginScreen onLogin={handleLogin} />;
+    return <LoginScreen onLogin={handleLogin} theme={theme} toggleTheme={toggleTheme} />;
   }
 
   if (screen === 'game') {
@@ -174,6 +189,8 @@ function App() {
         onBack={() => setScreen('menu')}
         isMultiplayer={gameMode === 'multiplayer'}
         multiplayerType={multiplayerType}
+        theme={theme}
+        toggleTheme={toggleTheme}
       />
     );
   }
@@ -181,26 +198,26 @@ function App() {
   // Multiplayer choice modal
   if (showMultiplayerChoice) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-slate-900 to-gray-800 flex items-center justify-center p-4">
+      <div className={`min-h-screen ${theme === 'dark' ? 'bg-gradient-to-br from-gray-900 via-slate-900 to-gray-800' : 'bg-gradient-to-br from-gray-100 via-slate-100 to-gray-200'} flex items-center justify-center p-4`}>
         <div className="w-full max-w-sm animate-fade-in">
           <div className="text-center mb-6">
             <div className="text-5xl mb-3">👥</div>
-            <h2 className="text-2xl font-bold text-white">Multiplayer Mode</h2>
-            <p className="text-sm text-gray-400 mt-1">Choose your opponent</p>
+            <h2 className={`text-2xl font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>Multiplayer Mode</h2>
+            <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'} mt-1`}>Choose your opponent</p>
           </div>
 
           <div className="space-y-3">
             {/* vs Bot */}
             <button
               onClick={() => handleMultiplayerChoice('bot')}
-              className="w-full bg-gradient-to-r from-blue-900/40 to-purple-900/40 hover:from-blue-900/60 hover:to-purple-900/60 border border-blue-500/30 hover:border-blue-400/50 rounded-2xl p-5 transition-all transform hover:scale-[1.02] active:scale-95 text-left"
+              className={`w-full ${theme === 'dark' ? 'bg-gradient-to-r from-blue-900/40 to-purple-900/40 hover:from-blue-900/60 hover:to-purple-900/60 border-blue-500/30 hover:border-blue-400/50' : 'bg-gradient-to-r from-blue-100 to-purple-100 hover:from-blue-200 hover:to-purple-200 border-blue-300 hover:border-blue-400'} rounded-2xl p-5 transition-all transform hover:scale-[1.02] active:scale-95 text-left border`}
             >
               <div className="flex items-center gap-4">
                 <div className="text-4xl">🤖</div>
                 <div>
-                  <h3 className="text-lg font-bold text-white">vs Bot</h3>
-                  <p className="text-xs text-gray-400">Challenge an AI opponent</p>
-                  <p className="text-[10px] text-blue-400 mt-1">Single player • Use arrow keys</p>
+                  <h3 className={`text-lg font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>vs Bot</h3>
+                  <p className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Challenge an AI opponent</p>
+                  <p className={`text-[10px] ${theme === 'dark' ? 'text-blue-400' : 'text-blue-600'} mt-1`}>Single player • Use arrow keys</p>
                 </div>
               </div>
             </button>
@@ -208,14 +225,14 @@ function App() {
             {/* vs Player */}
             <button
               onClick={() => handleMultiplayerChoice('player')}
-              className="w-full bg-gradient-to-r from-green-900/40 to-teal-900/40 hover:from-green-900/60 hover:to-teal-900/60 border border-green-500/30 hover:border-green-400/50 rounded-2xl p-5 transition-all transform hover:scale-[1.02] active:scale-95 text-left"
+              className={`w-full ${theme === 'dark' ? 'bg-gradient-to-r from-green-900/40 to-teal-900/40 hover:from-green-900/60 hover:to-teal-900/60 border-green-500/30 hover:border-green-400/50' : 'bg-gradient-to-r from-green-100 to-teal-100 hover:from-green-200 hover:to-teal-200 border-green-300 hover:border-green-400'} rounded-2xl p-5 transition-all transform hover:scale-[1.02] active:scale-95 text-left border`}
             >
               <div className="flex items-center gap-4">
                 <div className="text-4xl">👥</div>
                 <div>
-                  <h3 className="text-lg font-bold text-white">vs Player</h3>
-                  <p className="text-xs text-gray-400">Local 2-player battle</p>
-                  <p className="text-[10px] text-green-400 mt-1">P1: WASD • P2: IJKL</p>
+                  <h3 className={`text-lg font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>vs Player</h3>
+                  <p className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Local 2-player battle</p>
+                  <p className={`text-[10px] ${theme === 'dark' ? 'text-green-400' : 'text-green-600'} mt-1`}>P1: WASD • P2: IJKL</p>
                 </div>
               </div>
             </button>
@@ -223,7 +240,7 @@ function App() {
 
           <button
             onClick={() => setShowMultiplayerChoice(false)}
-            className="w-full mt-4 py-2.5 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-xl border border-gray-700/50 transition-all text-sm"
+            className={`w-full mt-4 py-2.5 ${theme === 'dark' ? 'bg-gray-800 hover:bg-gray-700 text-gray-300 border-gray-700/50' : 'bg-white hover:bg-gray-50 text-gray-700 border-gray-300'} rounded-xl border transition-all text-sm`}
           >
             ← Back to Menu
           </button>
@@ -234,25 +251,25 @@ function App() {
 
   switch (screen) {
     case 'menu':
-      return <MainMenu player={player} onSelectMode={handleSelectMode} onNavigate={setScreen} />;
+      return <MainMenu player={player} onSelectMode={handleSelectMode} onNavigate={setScreen} theme={theme} toggleTheme={toggleTheme} />;
     case 'profile':
-      return <ProfileScreen player={player} setPlayer={handleUpdatePlayer} onBack={() => setScreen('menu')} onNavigate={setScreen} />;
+      return <ProfileScreen player={player} setPlayer={handleUpdatePlayer} onBack={() => setScreen('menu')} onNavigate={setScreen} theme={theme} />;
     case 'trophies':
-      return <TrophiesScreen player={player} onBack={() => setScreen('menu')} />;
+      return <TrophiesScreen player={player} onBack={() => setScreen('menu')} theme={theme} />;
     case 'titles':
-      return <TitlesScreen player={player} setPlayer={handleUpdatePlayer} onBack={() => setScreen('menu')} />;
+      return <TitlesScreen player={player} setPlayer={handleUpdatePlayer} onBack={() => setScreen('menu')} theme={theme} />;
     case 'shop':
-      return <ShopScreen player={player} setPlayer={handleUpdatePlayer} onBack={() => setScreen('menu')} />;
+      return <ShopScreen player={player} setPlayer={handleUpdatePlayer} onBack={() => setScreen('menu')} theme={theme} />;
     case 'events':
-      return <EventsScreen player={player} setPlayer={handleUpdatePlayer} onBack={() => setScreen('menu')} />;
+      return <EventsScreen player={player} setPlayer={handleUpdatePlayer} onBack={() => setScreen('menu')} theme={theme} />;
     case 'leaderboard':
-      return <LeaderboardScreen player={player} onBack={() => setScreen('menu')} />;
+      return <LeaderboardScreen player={player} onBack={() => setScreen('menu')} theme={theme} />;
     case 'rewards':
-      return <RewardsScreen player={player} setPlayer={handleUpdatePlayer} onBack={() => setScreen('menu')} />;
+      return <RewardsScreen player={player} setPlayer={handleUpdatePlayer} onBack={() => setScreen('menu')} theme={theme} />;
     case 'settings':
-      return <SettingsScreen player={player} onBack={() => setScreen('menu')} onLogout={handleLogout} />;
+      return <SettingsScreen player={player} onBack={() => setScreen('menu')} onLogout={handleLogout} theme={theme} toggleTheme={toggleTheme} />;
     default:
-      return <MainMenu player={player} onSelectMode={handleSelectMode} onNavigate={setScreen} />;
+      return <MainMenu player={player} onSelectMode={handleSelectMode} onNavigate={setScreen} theme={theme} toggleTheme={toggleTheme} />;
   }
 }
 

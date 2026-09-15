@@ -5,6 +5,7 @@ export type GameState = 'IDLE' | 'PLAYING' | 'PAUSED' | 'GAME_OVER';
 export type Difficulty = 'easy' | 'medium' | 'hard' | 'insane';
 export type GameMode = 'classic' | 'timed' | 'multiplayer' | 'event' | 'zen';
 export type Screen = 'login' | 'menu' | 'game' | 'profile' | 'trophies' | 'titles' | 'shop' | 'events' | 'leaderboard' | 'settings' | 'rewards';
+export type Theme = 'light' | 'dark';
 
 export interface Player {
   id: string;

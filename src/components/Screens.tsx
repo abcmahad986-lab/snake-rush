@@ -1,25 +1,46 @@
 import { useState } from 'react';
-import { Player, Screen, Difficulty, GameMode, TROPHIES, TITLES, SNAKE_SKINS, SNAKE_TRAILS, AVATARS, generateDailyEvents, generateBotLeaderboard, DAILY_REWARDS, DIFFICULTY_LABELS } from '../types';
+import { Player, Screen, Difficulty, GameMode, TROPHIES, TITLES, SNAKE_SKINS, SNAKE_TRAILS, AVATARS, generateDailyEvents, generateBotLeaderboard, DAILY_REWARDS, DIFFICULTY_LABELS, Theme } from '../types';
 import type { ShopItem } from '../types';
 import { savePlayer, claimDailyReward, getLoginReward } from '../store';
 
+// Theme helper
+const t = (theme: Theme, dark: string, light: string) => theme === 'dark' ? dark : light;
+
+// Theme toggle button component
+function ThemeToggle({ theme, toggleTheme }: { theme: Theme; toggleTheme: () => void }) {
+  return (
+    <button
+      onClick={toggleTheme}
+      className={`p-2 rounded-lg transition-all ${t(theme, 'bg-gray-800 hover:bg-gray-700 text-yellow-400', 'bg-white hover:bg-gray-100 text-gray-700 border border-gray-300')}`}
+      title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+    >
+      {theme === 'dark' ? '☀️' : '🌙'}
+    </button>
+  );
+}
+
 // ============ LOGIN SCREEN ============
-export function LoginScreen({ onLogin }: { onLogin: (username: string) => void }) {
+export function LoginScreen({ onLogin, theme, toggleTheme }: { onLogin: (username: string) => void; theme: Theme; toggleTheme: () => void }) {
   const [username, setUsername] = useState('');
   const [selectedAvatar, setSelectedAvatar] = useState(AVATARS[0]);
   const [showAvatarPicker, setShowAvatarPicker] = useState(false);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-slate-900 to-gray-800 flex items-center justify-center p-4">
+    <div className={`min-h-screen ${t(theme, 'bg-gradient-to-br from-gray-900 via-slate-900 to-gray-800', 'bg-gradient-to-br from-gray-50 via-slate-50 to-white')} flex items-center justify-center p-4`}>
       <div className="w-full max-w-sm animate-fade-in">
+        {/* Theme toggle */}
+        <div className="flex justify-end mb-2">
+          <ThemeToggle theme={theme} toggleTheme={toggleTheme} />
+        </div>
+        
         <div className="text-center mb-6">
           <div className="text-6xl mb-3 animate-bounce-subtle">🐍</div>
-          <h1 className="text-3xl font-bold text-green-400 tracking-wider">SNAKE</h1>
-          <p className="text-gray-400 text-sm mt-1">The Ultimate Challenge</p>
+          <h1 className={`text-3xl font-bold ${t(theme, 'text-green-400', 'text-green-600')} tracking-wider`}>SNAKE</h1>
+          <p className={`${t(theme, 'text-gray-400', 'text-gray-600')} text-sm mt-1`}>The Ultimate Challenge</p>
         </div>
 
-        <div className="bg-gray-800/80 rounded-2xl p-5 border border-gray-700/50 shadow-xl">
-          <h2 className="text-lg font-bold text-white mb-4 text-center">Welcome Back!</h2>
+        <div className={`${t(theme, 'bg-gray-800/80 border-gray-700/50', 'bg-white border-gray-200')} rounded-2xl p-5 border shadow-xl`}>
+          <h2 className={`text-lg font-bold ${t(theme, 'text-white', 'text-gray-900')} mb-4 text-center`}>Welcome Back!</h2>
           
           {/* Avatar */}
           <div className="flex justify-center mb-4">
@@ -40,7 +61,7 @@ export function LoginScreen({ onLogin }: { onLogin: (username: string) => void }
 
           {/* Username */}
           <div className="mb-4">
-            <label className="text-xs text-gray-400 uppercase tracking-wide mb-1 block">Username</label>
+            <label className={`text-xs ${t(theme, 'text-gray-400', 'text-gray-600')} uppercase tracking-wide mb-1 block`}>Username</label>
             <input
               type="text"
               value={username}
@@ -48,7 +69,7 @@ export function LoginScreen({ onLogin }: { onLogin: (username: string) => void }
               onKeyDown={e => { if (e.key === 'Enter' && username.trim()) onLogin(username.trim()); }}
               placeholder="Enter your name..."
               maxLength={16}
-              className="w-full px-4 py-2.5 bg-gray-900/60 border border-gray-600/50 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-green-500/50 focus:ring-1 focus:ring-green-500/30 transition-all"
+              className={`w-full px-4 py-2.5 ${t(theme, 'bg-gray-900/60 border-gray-600/50 text-white placeholder-gray-500', 'bg-gray-50 border-gray-300 text-gray-900 placeholder-gray-400')} border rounded-xl focus:outline-none focus:border-green-500/50 focus:ring-1 focus:ring-green-500/30 transition-all`}
             />
           </div>
 
@@ -61,17 +82,19 @@ export function LoginScreen({ onLogin }: { onLogin: (username: string) => void }
           </button>
         </div>
 
-        <p className="text-center text-gray-600 text-xs mt-4">Progress saved locally • No account needed</p>
+        <p className={`text-center ${t(theme, 'text-gray-600', 'text-gray-500')} text-xs mt-4`}>Progress saved locally • No account needed</p>
       </div>
     </div>
   );
 }
 
 // ============ MAIN MENU ============
-export function MainMenu({ player, onSelectMode, onNavigate }: {
+export function MainMenu({ player, onSelectMode, onNavigate, theme, toggleTheme }: {
   player: Player;
   onSelectMode: (mode: GameMode, difficulty: Difficulty) => void;
   onNavigate: (screen: Screen) => void;
+  theme: Theme;
+  toggleTheme: () => void;
 }) {
   const [selectedMode, setSelectedMode] = useState<GameMode>('classic');
   const [selectedDiff, setSelectedDiff] = useState<Difficulty>('medium');
@@ -86,20 +109,20 @@ export function MainMenu({ player, onSelectMode, onNavigate }: {
   const dailyReward = getLoginReward(player);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-slate-900 to-gray-800 flex flex-col items-center p-3 md:p-4">
+    <div className={`min-h-screen ${t(theme, 'bg-gradient-to-br from-gray-900 via-slate-900 to-gray-800', 'bg-gradient-to-br from-gray-50 via-slate-50 to-white')} flex flex-col items-center p-3 md:p-4`}>
       {/* Player Bar */}
-      <div className="w-full max-w-md flex items-center justify-between bg-gray-800/80 rounded-xl px-3 py-2 mb-3 border border-gray-700/50">
-        <button onClick={() => onNavigate('profile')} className="flex items-center gap-2 hover:bg-gray-700/50 rounded-lg px-2 py-1 transition-all">
+      <div className={`w-full max-w-md flex items-center justify-between ${t(theme, 'bg-gray-800/80 border-gray-700/50', 'bg-white border-gray-200')} rounded-xl px-3 py-2 mb-3 border`}>
+        <button onClick={() => onNavigate('profile')} className={`flex items-center gap-2 ${t(theme, 'hover:bg-gray-700/50', 'hover:bg-gray-100')} rounded-lg px-2 py-1 transition-all`}>
           <span className="text-2xl">{player.avatar}</span>
           <div>
-            <div className="text-sm font-bold text-white leading-tight">{player.username}</div>
+            <div className={`text-sm font-bold ${t(theme, 'text-white', 'text-gray-900')} leading-tight`}>{player.username}</div>
             <div className="flex items-center gap-1">
               <span className="text-[10px] text-green-400">Lvl {player.level}</span>
               {player.equippedTitle && (
                 <>
-                  <span className="text-[10px] text-gray-500">•</span>
-                  <span className="text-[10px] text-indigo-300">
-                    {TITLES.find(t => t.id === player.equippedTitle)?.icon} {TITLES.find(t => t.id === player.equippedTitle)?.name}
+                  <span className={`text-[10px] ${t(theme, 'text-gray-500', 'text-gray-400')}`}>•</span>
+                  <span className={`text-[10px] ${t(theme, 'text-indigo-300', 'text-indigo-600')}`}>
+                    {TITLES.find(ti => ti.id === player.equippedTitle)?.icon} {TITLES.find(ti => ti.id === player.equippedTitle)?.name}
                   </span>
                 </>
               )}
@@ -113,28 +136,29 @@ export function MainMenu({ player, onSelectMode, onNavigate }: {
           <div className="text-center">
             <div className="text-xs font-bold text-purple-400">💎 {player.gems}</div>
           </div>
+          <ThemeToggle theme={theme} toggleTheme={toggleTheme} />
         </div>
       </div>
 
       {/* XP Bar */}
       <div className="w-full max-w-md mb-3">
-        <div className="flex justify-between text-[10px] text-gray-400 mb-0.5">
+        <div className={`flex justify-between text-[10px] ${t(theme, 'text-gray-400', 'text-gray-600')} mb-0.5`}>
           <span>XP</span>
           <span>{player.xp}/{player.xpToNext}</span>
         </div>
-        <div className="h-2 bg-gray-800 rounded-full overflow-hidden border border-gray-700/50">
+        <div className={`h-2 ${t(theme, 'bg-gray-800 border-gray-700/50', 'bg-gray-200 border-gray-300')} rounded-full overflow-hidden border`}>
           <div className="h-full bg-gradient-to-r from-green-500 to-emerald-400 rounded-full transition-all duration-500" style={{ width: `${(player.xp / player.xpToNext) * 100}%` }} />
         </div>
       </div>
 
       {/* Daily Reward Notification */}
       {dailyReward && (
-        <button onClick={() => onNavigate('rewards')} className="w-full max-w-md mb-3 bg-gradient-to-r from-yellow-900/40 to-orange-900/40 border border-yellow-600/30 rounded-xl px-3 py-2 flex items-center justify-between animate-pulse hover:from-yellow-900/60 hover:to-orange-900/60 transition-all">
+        <button onClick={() => onNavigate('rewards')} className={`w-full max-w-md mb-3 ${t(theme, 'bg-gradient-to-r from-yellow-900/40 to-orange-900/40 border-yellow-600/30 hover:from-yellow-900/60 hover:to-orange-900/60', 'bg-gradient-to-r from-yellow-100 to-orange-100 border-yellow-300 hover:from-yellow-200 hover:to-orange-200')} border rounded-xl px-3 py-2 flex items-center justify-between animate-pulse transition-all`}>
           <div className="flex items-center gap-2">
             <span className="text-xl">🎁</span>
             <div className="text-left">
-              <div className="text-xs font-bold text-yellow-300">Daily Reward Ready!</div>
-              <div className="text-[10px] text-yellow-400/70">Day {player.dailyStreak + 1} streak</div>
+              <div className={`text-xs font-bold ${t(theme, 'text-yellow-300', 'text-yellow-700')}`}>Daily Reward Ready!</div>
+              <div className={`text-[10px] ${t(theme, 'text-yellow-400/70', 'text-yellow-600/70')}`}>Day {player.dailyStreak + 1} streak</div>
             </div>
           </div>
           <span className="text-yellow-400">→</span>
@@ -143,7 +167,7 @@ export function MainMenu({ player, onSelectMode, onNavigate }: {
 
       {/* Game Mode Selection */}
       <div className="w-full max-w-md mb-3">
-        <h3 className="text-xs text-gray-400 uppercase tracking-wide mb-2">Game Mode</h3>
+        <h3 className={`text-xs ${t(theme, 'text-gray-400', 'text-gray-600')} uppercase tracking-wide mb-2`}>Game Mode</h3>
         <div className="grid grid-cols-2 gap-2">
           {modes.map(m => (
             <button
@@ -152,12 +176,12 @@ export function MainMenu({ player, onSelectMode, onNavigate }: {
               className={`p-3 rounded-xl border transition-all text-left ${
                 selectedMode === m.id
                   ? `bg-gradient-to-br ${m.color} border-white/20 shadow-lg scale-[1.02]`
-                  : 'bg-gray-800/60 border-gray-700/50 hover:border-gray-600'
+                  : t(theme, 'bg-gray-800/60 border-gray-700/50 hover:border-gray-600', 'bg-white border-gray-200 hover:border-gray-400 shadow-sm')
               }`}
             >
               <div className="text-xl mb-1">{m.icon}</div>
-              <div className="text-sm font-bold text-white">{m.name}</div>
-              <div className="text-[10px] text-gray-300">{m.desc}</div>
+              <div className={`text-sm font-bold ${selectedMode === m.id ? 'text-white' : t(theme, 'text-white', 'text-gray-900')}`}>{m.name}</div>
+              <div className={`text-[10px] ${selectedMode === m.id ? 'text-gray-300' : t(theme, 'text-gray-300', 'text-gray-600')}`}>{m.desc}</div>
             </button>
           ))}
         </div>
@@ -165,7 +189,7 @@ export function MainMenu({ player, onSelectMode, onNavigate }: {
 
       {/* Difficulty */}
       <div className="w-full max-w-md mb-4">
-        <h3 className="text-xs text-gray-400 uppercase tracking-wide mb-2">Difficulty</h3>
+        <h3 className={`text-xs ${t(theme, 'text-gray-400', 'text-gray-600')} uppercase tracking-wide mb-2`}>Difficulty</h3>
         <div className="flex gap-1.5">
           {(['easy', 'medium', 'hard', 'insane'] as Difficulty[]).map(d => (
             <button
@@ -177,8 +201,8 @@ export function MainMenu({ player, onSelectMode, onNavigate }: {
                     d === 'medium' ? 'bg-yellow-600 text-white shadow-lg shadow-yellow-600/30' :
                     d === 'hard' ? 'bg-red-600 text-white shadow-lg shadow-red-600/30' :
                     'bg-purple-600 text-white shadow-lg shadow-purple-600/30'
-                  : 'bg-gray-800/60 text-gray-400 border border-gray-700/50 hover:border-gray-600'
-              }`}
+                  : t(theme, 'bg-gray-800/60 text-gray-400 border-gray-700/50 hover:border-gray-600', 'bg-white text-gray-600 border-gray-200 hover:border-gray-400 shadow-sm')
+              } border`}
             >
               {DIFFICULTY_LABELS[d]}
             </button>
@@ -206,31 +230,31 @@ export function MainMenu({ player, onSelectMode, onNavigate }: {
           <button
             key={item.screen}
             onClick={() => onNavigate(item.screen)}
-            className="flex flex-col items-center gap-1 py-2.5 bg-gray-800/60 hover:bg-gray-700/60 rounded-xl border border-gray-700/50 transition-all"
+            className={`flex flex-col items-center gap-1 py-2.5 ${t(theme, 'bg-gray-800/60 hover:bg-gray-700/60 border-gray-700/50', 'bg-white hover:bg-gray-50 border-gray-200 shadow-sm')} rounded-xl border transition-all`}
           >
             <span className="text-xl">{item.icon}</span>
-            <span className="text-[10px] text-gray-400">{item.label}</span>
+            <span className={`text-[10px] ${t(theme, 'text-gray-400', 'text-gray-600')}`}>{item.label}</span>
           </button>
         ))}
       </div>
 
       {/* Stats Summary */}
       <div className="w-full max-w-md mt-4 grid grid-cols-4 gap-2">
-        <div className="bg-gray-800/40 rounded-xl p-2 text-center border border-gray-700/30">
-          <div className="text-lg font-bold text-white">{player.gamesPlayed}</div>
-          <div className="text-[10px] text-gray-400">Games</div>
+        <div className={`${t(theme, 'bg-gray-800/40 border-gray-700/30', 'bg-white border-gray-200 shadow-sm')} rounded-xl p-2 text-center border`}>
+          <div className={`text-lg font-bold ${t(theme, 'text-white', 'text-gray-900')}`}>{player.gamesPlayed}</div>
+          <div className={`text-[10px] ${t(theme, 'text-gray-400', 'text-gray-600')}`}>Games</div>
         </div>
-        <div className="bg-gray-800/40 rounded-xl p-2 text-center border border-gray-700/30">
+        <div className={`${t(theme, 'bg-gray-800/40 border-gray-700/30', 'bg-white border-gray-200 shadow-sm')} rounded-xl p-2 text-center border`}>
           <div className="text-lg font-bold text-green-400">{player.totalScore}</div>
-          <div className="text-[10px] text-gray-400">Score</div>
+          <div className={`text-[10px] ${t(theme, 'text-gray-400', 'text-gray-600')}`}>Score</div>
         </div>
-        <div className="bg-gray-800/40 rounded-xl p-2 text-center border border-gray-700/30">
+        <div className={`${t(theme, 'bg-gray-800/40 border-gray-700/30', 'bg-white border-gray-200 shadow-sm')} rounded-xl p-2 text-center border`}>
           <div className="text-lg font-bold text-yellow-400">{player.trophies.length}/{TROPHIES.length}</div>
-          <div className="text-[10px] text-gray-400">Trophies</div>
+          <div className={`text-[10px] ${t(theme, 'text-gray-400', 'text-gray-600')}`}>Trophies</div>
         </div>
-        <div className="bg-gray-800/40 rounded-xl p-2 text-center border border-gray-700/30">
+        <div className={`${t(theme, 'bg-gray-800/40 border-gray-700/30', 'bg-white border-gray-200 shadow-sm')} rounded-xl p-2 text-center border`}>
           <div className="text-lg font-bold text-indigo-400">{player.titles.length}/{TITLES.length}</div>
-          <div className="text-[10px] text-gray-400">Titles</div>
+          <div className={`text-[10px] ${t(theme, 'text-gray-400', 'text-gray-600')}`}>Titles</div>
         </div>
       </div>
     </div>
@@ -238,7 +262,7 @@ export function MainMenu({ player, onSelectMode, onNavigate }: {
 }
 
 // ============ PROFILE SCREEN ============
-export function ProfileScreen({ player, setPlayer, onBack, onNavigate }: { player: Player; setPlayer: (p: Player) => void; onBack: () => void; onNavigate?: (screen: Screen) => void }) {
+export function ProfileScreen({ player, setPlayer, onBack, onNavigate, theme }: { player: Player; setPlayer: (p: Player) => void; onBack: () => void; onNavigate?: (screen: Screen) => void; theme: Theme }) {
   const [editing, setEditing] = useState(false);
   const [newUsername, setNewUsername] = useState(player.username);
   const [showAvatarPicker, setShowAvatarPicker] = useState(false);
@@ -366,7 +390,7 @@ export function ProfileScreen({ player, setPlayer, onBack, onNavigate }: { playe
 }
 
 // ============ TROPHIES SCREEN ============
-export function TrophiesScreen({ player, onBack }: { player: Player; onBack: () => void }) {
+export function TrophiesScreen({ player, onBack, theme }: { player: Player; onBack: () => void; theme: Theme }) {
   const [filter, setFilter] = useState<string>('all');
   const categories = ['all', 'gameplay', 'score', 'collection', 'special'];
   
@@ -442,7 +466,7 @@ export function TrophiesScreen({ player, onBack }: { player: Player; onBack: () 
 }
 
 // ============ SHOP SCREEN ============
-export function ShopScreen({ player, setPlayer, onBack }: { player: Player; setPlayer: (p: Player) => void; onBack: () => void }) {
+export function ShopScreen({ player, setPlayer, onBack, theme }: { player: Player; setPlayer: (p: Player) => void; onBack: () => void; theme: Theme }) {
   const [tab, setTab] = useState<'skins' | 'trails'>('skins');
 
   const buyItem = (item: ShopItem) => {
@@ -541,7 +565,7 @@ export function ShopScreen({ player, setPlayer, onBack }: { player: Player; setP
 }
 
 // ============ EVENTS SCREEN ============
-export function EventsScreen({ player, setPlayer, onBack }: { player: Player; setPlayer: (p: Player) => void; onBack: () => void }) {
+export function EventsScreen({ player, setPlayer, onBack, theme }: { player: Player; setPlayer: (p: Player) => void; onBack: () => void; theme: Theme }) {
   const events = generateDailyEvents();
 
   const claimEvent = (eventId: string) => {
@@ -625,7 +649,7 @@ export function EventsScreen({ player, setPlayer, onBack }: { player: Player; se
 }
 
 // ============ LEADERBOARD SCREEN ============
-export function LeaderboardScreen({ player, onBack }: { player: Player; onBack: () => void }) {
+export function LeaderboardScreen({ player, onBack, theme }: { player: Player; onBack: () => void; theme: Theme }) {
   const [selectedDiff, setSelectedDiff] = useState<Difficulty>('medium');
   const botBoard = generateBotLeaderboard(selectedDiff);
 
@@ -719,7 +743,7 @@ export function LeaderboardScreen({ player, onBack }: { player: Player; onBack: 
 }
 
 // ============ REWARDS SCREEN ============
-export function RewardsScreen({ player, setPlayer, onBack }: { player: Player; setPlayer: (p: Player) => void; onBack: () => void }) {
+export function RewardsScreen({ player, setPlayer, onBack, theme }: { player: Player; setPlayer: (p: Player) => void; onBack: () => void; theme: Theme }) {
   const reward = getLoginReward(player);
   const [claimed, setClaimed] = useState(false);
 
@@ -791,38 +815,59 @@ export function RewardsScreen({ player, setPlayer, onBack }: { player: Player; s
 }
 
 // ============ SETTINGS SCREEN ============
-export function SettingsScreen({ player, onBack, onLogout }: { player: Player; onBack: () => void; onLogout: () => void }) {
+export function SettingsScreen({ player, onBack, onLogout, theme, toggleTheme }: { player: Player; onBack: () => void; onLogout: () => void; theme: Theme; toggleTheme: () => void }) {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-slate-900 to-gray-800 p-4">
+    <div className={`min-h-screen ${t(theme, 'bg-gradient-to-br from-gray-900 via-slate-900 to-gray-800', 'bg-gradient-to-br from-gray-50 via-slate-50 to-white')} p-4`}>
       <div className="max-w-md mx-auto">
-        <button onClick={onBack} className="mb-3 px-3 py-1.5 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg text-sm border border-gray-700/50">← Back</button>
+        <button onClick={onBack} className={`mb-3 px-3 py-1.5 ${t(theme, 'bg-gray-800 hover:bg-gray-700 text-gray-300 border-gray-700/50', 'bg-white hover:bg-gray-50 text-gray-700 border-gray-300')} rounded-lg text-sm border`}>← Back</button>
         
-        <h2 className="text-2xl font-bold text-white text-center mb-6">⚙️ Settings</h2>
+        <h2 className={`text-2xl font-bold ${t(theme, 'text-white', 'text-gray-900')} text-center mb-6`}>⚙️ Settings</h2>
 
         <div className="space-y-3">
-          <div className="bg-gray-800/60 rounded-xl p-4 border border-gray-700/50">
-            <h3 className="text-sm font-bold text-white mb-2">Account</h3>
+          {/* Theme Toggle */}
+          <div className={`${t(theme, 'bg-gray-800/60 border-gray-700/50', 'bg-white border-gray-200 shadow-sm')} rounded-xl p-4 border`}>
+            <h3 className={`text-sm font-bold ${t(theme, 'text-white', 'text-gray-900')} mb-2`}>🎨 Appearance</h3>
+            <div className="flex items-center justify-between">
+              <div>
+                <div className={`text-sm ${t(theme, 'text-white', 'text-gray-900')}`}>Theme</div>
+                <div className={`text-xs ${t(theme, 'text-gray-400', 'text-gray-600')}`}>{theme === 'dark' ? 'Dark Mode' : 'Light Mode'}</div>
+              </div>
+              <button
+                onClick={toggleTheme}
+                className={`px-4 py-2 rounded-lg font-medium transition-all ${
+                  theme === 'dark' 
+                    ? 'bg-yellow-500 hover:bg-yellow-400 text-gray-900' 
+                    : 'bg-gray-800 hover:bg-gray-700 text-white'
+                }`}
+              >
+                {theme === 'dark' ? '☀️ Light' : '🌙 Dark'}
+              </button>
+            </div>
+          </div>
+
+          <div className={`${t(theme, 'bg-gray-800/60 border-gray-700/50', 'bg-white border-gray-200 shadow-sm')} rounded-xl p-4 border`}>
+            <h3 className={`text-sm font-bold ${t(theme, 'text-white', 'text-gray-900')} mb-2`}>Account</h3>
             <div className="flex items-center gap-3">
               <span className="text-2xl">{player.avatar}</span>
               <div>
-                <div className="text-sm font-medium text-white">{player.username}</div>
-                <div className="text-xs text-gray-400">Level {player.level} • ID: {player.id.slice(0, 8)}</div>
+                <div className={`text-sm font-medium ${t(theme, 'text-white', 'text-gray-900')}`}>{player.username}</div>
+                <div className={`text-xs ${t(theme, 'text-gray-400', 'text-gray-600')}`}>Level {player.level} • ID: {player.id.slice(0, 8)}</div>
               </div>
             </div>
           </div>
 
-          <div className="bg-gray-800/60 rounded-xl p-4 border border-gray-700/50">
-            <h3 className="text-sm font-bold text-white mb-2">Game Info</h3>
-            <div className="text-xs text-gray-400 space-y-1">
+          <div className={`${t(theme, 'bg-gray-800/60 border-gray-700/50', 'bg-white border-gray-200 shadow-sm')} rounded-xl p-4 border`}>
+            <h3 className={`text-sm font-bold ${t(theme, 'text-white', 'text-gray-900')} mb-2`}>Game Info</h3>
+            <div className={`text-xs ${t(theme, 'text-gray-400', 'text-gray-600')} space-y-1`}>
               <p>• Progress is saved locally in your browser</p>
               <p>• Use the same browser to continue your progress</p>
               <p>• Clearing browser data will reset your progress</p>
             </div>
           </div>
 
-          <div className="bg-gray-800/60 rounded-xl p-4 border border-gray-700/50">
-            <h3 className="text-sm font-bold text-white mb-2">Controls</h3>
-            <div className="text-xs text-gray-400 space-y-1">
+          <div className={`${t(theme, 'bg-gray-800/60 border-gray-700/50', 'bg-white border-gray-200 shadow-sm')} rounded-xl p-4 border`}>
+            <h3 className={`text-sm font-bold ${t(theme, 'text-white', 'text-gray-900')} mb-2`}>Controls</h3>
+            <div className={`text-xs ${t(theme, 'text-gray-400', 'text-gray-600')} space-y-1`}>
               <p>🖥️ <b>Desktop:</b> Arrow keys or WASD to move</p>
               <p>📱 <b>Mobile:</b> Swipe or use D-pad buttons</p>
               <p>👥 <b>Multiplayer:</b> P1: WASD, P2: IJKL</p>
@@ -830,11 +875,11 @@ export function SettingsScreen({ player, onBack, onLogout }: { player: Player; o
             </div>
           </div>
 
-          <button onClick={onLogout} className="w-full py-3 bg-red-900/30 hover:bg-red-900/50 text-red-400 font-medium rounded-xl border border-red-700/30 transition-all">
+          <button onClick={onLogout} className={`w-full py-3 ${t(theme, 'bg-red-900/30 hover:bg-red-900/50 text-red-400 border-red-700/30', 'bg-red-50 hover:bg-red-100 text-red-600 border-red-200')} font-medium rounded-xl border transition-all`}>
             🚪 Switch Account
           </button>
 
-          <div className="text-center text-gray-600 text-xs mt-4">
+          <div className={`text-center ${t(theme, 'text-gray-600', 'text-gray-500')} text-xs mt-4`}>
             <p>Snake Game v2.0</p>
             <p>Made with ❤️</p>
           </div>
@@ -845,7 +890,7 @@ export function SettingsScreen({ player, onBack, onLogout }: { player: Player; o
 }
 
 // ============ TITLES SCREEN ============
-export function TitlesScreen({ player, setPlayer, onBack }: { player: Player; setPlayer: (p: Player) => void; onBack: () => void }) {
+export function TitlesScreen({ player, setPlayer, onBack, theme }: { player: Player; setPlayer: (p: Player) => void; onBack: () => void; theme: Theme }) {
   const [filter, setFilter] = useState<string>('all');
   const categories = ['all', 'beginner', 'score', 'collection', 'combat', 'special', 'legendary'];
   
