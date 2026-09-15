@@ -55,7 +55,23 @@ export function loadPlayer(): Player | null {
   const data = localStorage.getItem(STORAGE_KEY);
   if (!data) return null;
   try {
-    return JSON.parse(data) as Player;
+    const player = JSON.parse(data) as Player;
+    
+    // Migration: Add missing fields for existing players
+    if (!player.titles) {
+      player.titles = ['newbie'];
+    }
+    if (!player.equippedTitle) {
+      player.equippedTitle = 'newbie';
+    }
+    if (player.gamesWonVsBot === undefined) {
+      player.gamesWonVsBot = 0;
+    }
+    if (player.zenGamesPlayed === undefined) {
+      player.zenGamesPlayed = 0;
+    }
+    
+    return player;
   } catch {
     return null;
   }

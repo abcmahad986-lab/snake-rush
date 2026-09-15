@@ -45,8 +45,8 @@ function App() {
 
     // Check titles
     for (const title of TITLES) {
-      if (!updated.titles.includes(title.id) && title.condition(updated)) {
-        updated.titles = [...updated.titles, title.id];
+      if (!updated.titles?.includes(title.id) && title.condition(updated)) {
+        updated.titles = [...(updated.titles || []), title.id];
         updated.coins += title.coinReward;
         changed = true;
       }
@@ -136,7 +136,7 @@ function App() {
       updated.eventProgress = { ...updated.eventProgress, 'length_15': 15 };
     }
 
-    const bestScore = Math.max(...Object.values(player.highScores));
+    const bestScore = player.highScores ? Math.max(...Object.values(player.highScores)) : 0;
     if (bestScore >= 100) {
       updated.eventProgress = { ...updated.eventProgress, 'score_100': 100 };
     }
@@ -144,7 +144,7 @@ function App() {
       updated.eventProgress = { ...updated.eventProgress, 'score_200': 200 };
     }
 
-    const bestTimed = Math.max(...Object.values(player.timedHighScores));
+    const bestTimed = player.timedHighScores ? Math.max(...Object.values(player.timedHighScores)) : 0;
     if (bestTimed >= 50) {
       updated.eventProgress = { ...updated.eventProgress, 'timed_50': 50 };
     }

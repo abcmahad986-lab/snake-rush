@@ -506,9 +506,11 @@ export default function Game({ player, setPlayer, mode, difficulty, onBack, isMu
           ← Back
         </button>
         <div className="flex items-center gap-2">
-          <span className="text-[10px] text-indigo-300 hidden md:inline">
-            {TITLES.find(t => t.id === player.equippedTitle)?.icon} {TITLES.find(t => t.id === player.equippedTitle)?.name}
-          </span>
+          {player.equippedTitle && (
+            <span className="text-[10px] text-indigo-300 hidden md:inline">
+              {TITLES.find(t => t.id === player.equippedTitle)?.icon} {TITLES.find(t => t.id === player.equippedTitle)?.name}
+            </span>
+          )}
           <span className="text-xs text-gray-400 uppercase">{getModeLabel()}</span>
           <span className={`text-xs px-2 py-0.5 rounded-full ${
             difficulty === 'easy' ? 'bg-green-900/50 text-green-400' :
@@ -675,9 +677,11 @@ export default function Game({ player, setPlayer, mode, difficulty, onBack, isMu
               </h2>
               <div className="flex items-center gap-1 mb-2">
                 <span className="text-xs text-gray-400">{player.avatar} {player.username}</span>
-                <span className="text-[10px] text-indigo-300">
-                  {TITLES.find(t => t.id === player.equippedTitle)?.icon} {TITLES.find(t => t.id === player.equippedTitle)?.name}
-                </span>
+                {player.equippedTitle && (
+                  <span className="text-[10px] text-indigo-300">
+                    {TITLES.find(t => t.id === player.equippedTitle)?.icon} {TITLES.find(t => t.id === player.equippedTitle)?.name}
+                  </span>
+                )}
               </div>
               
               <div className="bg-gray-800/80 rounded-xl p-3 mb-3 w-full max-w-[250px] border border-gray-700/50">

@@ -280,8 +280,8 @@ export const TITLES: Title[] = [
   
   // Score
   { id: 'scorer', name: 'Scorer', icon: '🎯', description: 'Score 50 points', category: 'score', rarity: 'common', coinReward: 10, condition: (p) => p.totalScore >= 50 },
-  { id: 'century', name: 'Century', icon: '💯', description: 'Score 100 in one game', category: 'score', rarity: 'uncommon', coinReward: 25, condition: (p) => Math.max(...Object.values(p.highScores)) >= 100 },
-  { id: 'double_century', name: 'Double Century', icon: '🏆', description: 'Score 200 in one game', category: 'score', rarity: 'rare', coinReward: 50, condition: (p) => Math.max(...Object.values(p.highScores)) >= 200 },
+  { id: 'century', name: 'Century', icon: '💯', description: 'Score 100 in one game', category: 'score', rarity: 'uncommon', coinReward: 25, condition: (p) => p.highScores && Math.max(...Object.values(p.highScores)) >= 100 },
+  { id: 'double_century', name: 'Double Century', icon: '🏆', description: 'Score 200 in one game', category: 'score', rarity: 'rare', coinReward: 50, condition: (p) => p.highScores && Math.max(...Object.values(p.highScores)) >= 200 },
   { id: 'score_king', name: 'Score King', icon: '👑', description: 'Reach 1000 total score', category: 'score', rarity: 'rare', coinReward: 75, condition: (p) => p.totalScore >= 1000 },
   { id: 'score_legend', name: 'Score Legend', icon: '🌟', description: 'Reach 5000 total score', category: 'score', rarity: 'epic', coinReward: 150, condition: (p) => p.totalScore >= 5000 },
   { id: 'mythic_scorer', name: 'Mythic Scorer', icon: '💎', description: 'Reach 10000 total score', category: 'score', rarity: 'legendary', coinReward: 300, condition: (p) => p.totalScore >= 10000 },
@@ -296,16 +296,16 @@ export const TITLES: Title[] = [
   { id: 'trophy_master', name: 'Trophy Master', icon: '🏆', description: 'Collect 20 trophies', category: 'collection', rarity: 'epic', coinReward: 120, condition: (p) => p.trophies.length >= 20 },
   
   // Combat
-  { id: 'bot_slayer', name: 'Bot Slayer', icon: '🤖', description: 'Beat the bot 3 times', category: 'combat', rarity: 'uncommon', coinReward: 30, condition: (p) => p.gamesWonVsBot >= 3 },
-  { id: 'bot_crusher', name: 'Bot Crusher', icon: '💪', description: 'Beat the bot 10 times', category: 'combat', rarity: 'rare', coinReward: 75, condition: (p) => p.gamesWonVsBot >= 10 },
-  { id: 'hard_master', name: 'Hard Master', icon: '🔴', description: 'Score 200+ on Hard', category: 'combat', rarity: 'rare', coinReward: 60, condition: (p) => p.highScores.hard >= 200 },
-  { id: 'insane_god', name: 'Insane God', icon: '💀', description: 'Score 100+ on Insane', category: 'combat', rarity: 'epic', coinReward: 150, condition: (p) => p.highScores.insane >= 100 },
-  { id: 'speed_demon', name: 'Speed Demon', icon: '⚡', description: 'Score 50+ in timed mode', category: 'combat', rarity: 'uncommon', coinReward: 35, condition: (p) => Math.max(...Object.values(p.timedHighScores)) >= 50 },
+  { id: 'bot_slayer', name: 'Bot Slayer', icon: '🤖', description: 'Beat the bot 3 times', category: 'combat', rarity: 'uncommon', coinReward: 30, condition: (p) => (p.gamesWonVsBot || 0) >= 3 },
+  { id: 'bot_crusher', name: 'Bot Crusher', icon: '💪', description: 'Beat the bot 10 times', category: 'combat', rarity: 'rare', coinReward: 75, condition: (p) => (p.gamesWonVsBot || 0) >= 10 },
+  { id: 'hard_master', name: 'Hard Master', icon: '🔴', description: 'Score 200+ on Hard', category: 'combat', rarity: 'rare', coinReward: 60, condition: (p) => p.highScores?.hard >= 200 },
+  { id: 'insane_god', name: 'Insane God', icon: '💀', description: 'Score 100+ on Insane', category: 'combat', rarity: 'epic', coinReward: 150, condition: (p) => p.highScores?.insane >= 100 },
+  { id: 'speed_demon', name: 'Speed Demon', icon: '⚡', description: 'Score 50+ in timed mode', category: 'combat', rarity: 'uncommon', coinReward: 35, condition: (p) => p.timedHighScores && Math.max(...Object.values(p.timedHighScores)) >= 50 },
   
   // Special
   { id: 'dedicated', name: 'Dedicated', icon: '📅', description: '7 day login streak', category: 'special', rarity: 'uncommon', coinReward: 30, condition: (p) => p.dailyStreak >= 7 },
   { id: 'unstoppable', name: 'Unstoppable', icon: '🔥', description: '30 day login streak', category: 'special', rarity: 'epic', coinReward: 120, condition: (p) => p.dailyStreak >= 30 },
-  { id: 'zen_master', name: 'Zen Master', icon: '🧘', description: 'Play 10 zen games', category: 'special', rarity: 'uncommon', coinReward: 25, condition: (p) => p.zenGamesPlayed >= 10 },
+  { id: 'zen_master', name: 'Zen Master', icon: '🧘', description: 'Play 10 zen games', category: 'special', rarity: 'uncommon', coinReward: 25, condition: (p) => (p.zenGamesPlayed || 0) >= 10 },
   { id: 'level_5', name: 'Rising Star', icon: '⭐', description: 'Reach level 5', category: 'special', rarity: 'common', coinReward: 15, condition: (p) => p.level >= 5 },
   { id: 'level_10', name: 'Champion', icon: '🌟', description: 'Reach level 10', category: 'special', rarity: 'rare', coinReward: 60, condition: (p) => p.level >= 10 },
   { id: 'level_25', name: 'Grand Master', icon: '💫', description: 'Reach level 25', category: 'special', rarity: 'epic', coinReward: 150, condition: (p) => p.level >= 25 },

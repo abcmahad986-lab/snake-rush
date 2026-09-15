@@ -95,10 +95,14 @@ export function MainMenu({ player, onSelectMode, onNavigate }: {
             <div className="text-sm font-bold text-white leading-tight">{player.username}</div>
             <div className="flex items-center gap-1">
               <span className="text-[10px] text-green-400">Lvl {player.level}</span>
-              <span className="text-[10px] text-gray-500">•</span>
-              <span className="text-[10px] text-indigo-300">
-                {TITLES.find(t => t.id === player.equippedTitle)?.icon} {TITLES.find(t => t.id === player.equippedTitle)?.name}
-              </span>
+              {player.equippedTitle && (
+                <>
+                  <span className="text-[10px] text-gray-500">•</span>
+                  <span className="text-[10px] text-indigo-300">
+                    {TITLES.find(t => t.id === player.equippedTitle)?.icon} {TITLES.find(t => t.id === player.equippedTitle)?.name}
+                  </span>
+                </>
+              )}
             </div>
           </div>
         </button>
@@ -288,12 +292,12 @@ export function ProfileScreen({ player, setPlayer, onBack, onNavigate }: { playe
           
           <div className="mt-2 flex flex-wrap gap-2 justify-center">
             <span className="px-3 py-1 bg-green-600/20 text-green-400 rounded-full text-sm font-medium">Level {player.level}</span>
-            {onNavigate && (
+            {player.equippedTitle && onNavigate && (
               <button onClick={() => onNavigate('titles')} className="px-3 py-1 bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-300 rounded-full text-sm font-medium flex items-center gap-1 transition-all">
                 {TITLES.find(t => t.id === player.equippedTitle)?.icon} {TITLES.find(t => t.id === player.equippedTitle)?.name} →
               </button>
             )}
-            {!onNavigate && (
+            {player.equippedTitle && !onNavigate && (
               <span className="px-3 py-1 bg-indigo-600/20 text-indigo-300 rounded-full text-sm font-medium flex items-center gap-1">
                 {TITLES.find(t => t.id === player.equippedTitle)?.icon} {TITLES.find(t => t.id === player.equippedTitle)?.name}
               </span>
@@ -685,7 +689,7 @@ export function LeaderboardScreen({ player, onBack }: { player: Player; onBack: 
         <div className="space-y-1">
           {fullBoard.map((entry, i) => {
             const isPlayer = entry.username === player.username;
-            const playerTitle = isPlayer ? TITLES.find(t => t.id === player.equippedTitle) : null;
+            const playerTitle = isPlayer && player.equippedTitle ? TITLES.find(t => t.id === player.equippedTitle) : null;
             return (
               <div key={i} className={`flex items-center gap-2 px-3 py-2 rounded-lg ${isPlayer ? 'bg-green-900/30 border border-green-500/30' : 'bg-gray-800/40'}`}>
                 <span className="text-xs text-gray-400 w-5 text-right font-mono">#{i + 1}</span>
@@ -903,7 +907,7 @@ export function TitlesScreen({ player, setPlayer, onBack }: { player: Player; se
         {/* Title List */}
         <div className="space-y-2">
           {filtered.map(title => {
-            const isUnlocked = player.titles.includes(title.id);
+            const isUnlocked = player.titles?.includes(title.id) || false;
             const isEquipped = player.equippedTitle === title.id;
             return (
               <div key={title.id} className={`flex items-center gap-3 p-3 rounded-xl border transition-all ${isUnlocked ? `bg-gradient-to-r ${rarityColors[title.rarity]}` : 'bg-gray-800/40 border-gray-700/30 opacity-60'} ${isEquipped ? 'ring-2 ring-white/30' : ''}`}>
