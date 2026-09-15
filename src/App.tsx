@@ -4,11 +4,16 @@ import { loadPlayer, savePlayer, createNewPlayer, addXp } from './store';
 import Game from './components/Game';
 import { LoginScreen, MainMenu, ProfileScreen, TrophiesScreen, ShopScreen, EventsScreen, LeaderboardScreen, RewardsScreen, SettingsScreen } from './components/Screens';
 
+type MultiplayerType = 'bot' | 'player';
+
 function App() {
   const [player, setPlayer] = useState<Player | null>(null);
   const [screen, setScreen] = useState<Screen>('login');
   const [gameMode, setGameMode] = useState<GameMode>('classic');
   const [gameDifficulty, setGameDifficulty] = useState<Difficulty>('medium');
+  const [multiplayerType, setMultiplayerType] = useState<MultiplayerType>('player');
+  const [showMultiplayerChoice, setShowMultiplayerChoice] = useState(false);
+  const [pendingDifficulty, setPendingDifficulty] = useState<Difficulty>('medium');
   const [loading, setLoading] = useState(true);
 
   // Load player on mount
@@ -53,7 +58,6 @@ function App() {
 
     const newPlayer = createNewPlayer(username);
     if (existing) {
-      // Keep existing player's data but update username if different
       existing.username = username;
       setPlayer(existing);
       savePlayer(existing);
@@ -65,8 +69,22 @@ function App() {
   };
 
   const handleSelectMode = (mode: GameMode, difficulty: Difficulty) => {
-    setGameMode(mode);
-    setGameDifficulty(difficulty);
+    if (mode === 'multiplayer') {
+      // Show multiplayer choice modal
+      setPendingDifficulty(difficulty);
+      setShowMultiplayerChoice(true);
+    } else {
+      setGameMode(mode);
+      setGameDifficulty(difficulty);
+      setScreen('game');
+    }
+  };
+
+  const handleMultiplayerChoice = (type: MultiplayerType) => {
+    setGameMode('multiplayer');
+    setGameDifficulty(pendingDifficulty);
+    setMultiplayerType(type);
+    setShowMultiplayerChoice(false);
     setScreen('game');
   };
 
@@ -78,19 +96,16 @@ function App() {
 
   const handleUpdatePlayer = (updated: Player) => {
     setPlayer(updated);
-    // Check trophies after game
     setTimeout(() => checkTrophies(updated), 500);
   };
 
-  // Update event progress when player returns from game
+  // Update event progress when player returns to menu
   useEffect(() => {
     if (!player || screen !== 'menu') return;
     
-    // Auto-update play-based event progress
     const updated = { ...player };
     const gamesPlayed = player.gamesPlayed;
     
-    // Track play events
     if (gamesPlayed >= 3) {
       const current = updated.eventProgress['play_3'] || 0;
       if (current < 3) {
@@ -104,17 +119,13 @@ function App() {
       }
     }
 
-    // Track food eaten events
     if (player.totalFoodEaten >= 20) {
       updated.eventProgress = { ...updated.eventProgress, 'eat_20': 20 };
     }
-
-    // Track length events
     if (player.longestSnake >= 15) {
       updated.eventProgress = { ...updated.eventProgress, 'length_15': 15 };
     }
 
-    // Track score events
     const bestScore = Math.max(...Object.values(player.highScores));
     if (bestScore >= 100) {
       updated.eventProgress = { ...updated.eventProgress, 'score_100': 100 };
@@ -152,7 +163,62 @@ function App() {
         difficulty={gameDifficulty}
         onBack={() => setScreen('menu')}
         isMultiplayer={gameMode === 'multiplayer'}
+        multiplayerType={multiplayerType}
       />
+    );
+  }
+
+  // Multiplayer choice modal
+  if (showMultiplayerChoice) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-slate-900 to-gray-800 flex items-center justify-center p-4">
+        <div className="w-full max-w-sm animate-fade-in">
+          <div className="text-center mb-6">
+            <div className="text-5xl mb-3">👥</div>
+            <h2 className="text-2xl font-bold text-white">Multiplayer Mode</h2>
+            <p className="text-sm text-gray-400 mt-1">Choose your opponent</p>
+          </div>
+
+          <div className="space-y-3">
+            {/* vs Bot */}
+            <button
+              onClick={() => handleMultiplayerChoice('bot')}
+              className="w-full bg-gradient-to-r from-blue-900/40 to-purple-900/40 hover:from-blue-900/60 hover:to-purple-900/60 border border-blue-500/30 hover:border-blue-400/50 rounded-2xl p-5 transition-all transform hover:scale-[1.02] active:scale-95 text-left"
+            >
+              <div className="flex items-center gap-4">
+                <div className="text-4xl">🤖</div>
+                <div>
+                  <h3 className="text-lg font-bold text-white">vs Bot</h3>
+                  <p className="text-xs text-gray-400">Challenge an AI opponent</p>
+                  <p className="text-[10px] text-blue-400 mt-1">Single player • Use arrow keys</p>
+                </div>
+              </div>
+            </button>
+
+            {/* vs Player */}
+            <button
+              onClick={() => handleMultiplayerChoice('player')}
+              className="w-full bg-gradient-to-r from-green-900/40 to-teal-900/40 hover:from-green-900/60 hover:to-teal-900/60 border border-green-500/30 hover:border-green-400/50 rounded-2xl p-5 transition-all transform hover:scale-[1.02] active:scale-95 text-left"
+            >
+              <div className="flex items-center gap-4">
+                <div className="text-4xl">👥</div>
+                <div>
+                  <h3 className="text-lg font-bold text-white">vs Player</h3>
+                  <p className="text-xs text-gray-400">Local 2-player battle</p>
+                  <p className="text-[10px] text-green-400 mt-1">P1: WASD • P2: IJKL</p>
+                </div>
+              </div>
+            </button>
+          </div>
+
+          <button
+            onClick={() => setShowMultiplayerChoice(false)}
+            className="w-full mt-4 py-2.5 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-xl border border-gray-700/50 transition-all text-sm"
+          >
+            ← Back to Menu
+          </button>
+        </div>
+      </div>
     );
   }
 

@@ -2,6 +2,8 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { Position, Direction, GameState, Difficulty, GameMode, GRID_SIZE, DIFFICULTY_SPEEDS, TIMED_DURATIONS, Player, PowerUp } from '../types';
 import { savePlayer, addXp } from '../store';
 
+type MultiplayerType = 'bot' | 'player';
+
 interface GameProps {
   player: Player;
   setPlayer: (p: Player) => void;
@@ -9,6 +11,7 @@ interface GameProps {
   difficulty: Difficulty;
   onBack: () => void;
   isMultiplayer?: boolean;
+  multiplayerType?: MultiplayerType;
 }
 
 function getRandomFood(snake: Position[]): Position {
@@ -32,12 +35,70 @@ function getRandomPowerUp(): PowerUp | null {
   };
 }
 
-export default function Game({ player, setPlayer, mode, difficulty, onBack, isMultiplayer }: GameProps) {
+// Bot AI - moves toward food intelligently
+function getBotDirection(snake: Position[], food: Position, currentDir: Direction, otherSnake?: Position[]): Direction {
+  const head = snake[0];
+  const possibleDirs: Direction[] = ['UP', 'DOWN', 'LEFT', 'RIGHT'];
+  const opposites: Record<Direction, Direction> = { UP: 'DOWN', DOWN: 'UP', LEFT: 'RIGHT', RIGHT: 'LEFT' };
+  
+  // Filter out opposite direction
+  const validDirs = possibleDirs.filter(d => d !== opposites[currentDir]);
+  
+  // Score each direction
+  const scores: { dir: Direction; score: number }[] = [];
+  
+  for (const dir of validDirs) {
+    let newHead = { ...head };
+    if (dir === 'UP') newHead.y--;
+    else if (dir === 'DOWN') newHead.y++;
+    else if (dir === 'LEFT') newHead.x--;
+    else newHead.x++;
+    
+    let score = 0;
+    
+    // Distance to food (closer is better)
+    const dist = Math.abs(newHead.x - food.x) + Math.abs(newHead.y - food.y);
+    score -= dist * 2;
+    
+    // Check if out of bounds (bad)
+    if (newHead.x < 0 || newHead.x >= GRID_SIZE || newHead.y < 0 || newHead.y >= GRID_SIZE) {
+      score -= 1000;
+    } else {
+      // Check self collision (very bad)
+      if (snake.slice(0, -1).some(s => s.x === newHead.x && s.y === newHead.y)) {
+        score -= 1000;
+      }
+      
+      // Check other snake collision (bad)
+      if (otherSnake && otherSnake.some(s => s.x === newHead.x && s.y === newHead.y)) {
+        score -= 500;
+      }
+      
+      // Bonus for being adjacent to food
+      if (newHead.x === food.x && newHead.y === food.y) {
+        score += 100;
+      }
+      
+      // Small randomness to avoid predictable behavior
+      score += Math.random() * 5;
+    }
+    
+    scores.push({ dir, score });
+  }
+  
+  // Sort by score descending
+  scores.sort((a, b) => b.score - a.score);
+  
+  // Return best direction
+  return scores[0]?.dir || currentDir;
+}
+
+export default function Game({ player, setPlayer, mode, difficulty, onBack, isMultiplayer, multiplayerType = 'player' }: GameProps) {
   const [snake, setSnake] = useState<Position[]>([{ x: 10, y: 10 }, { x: 9, y: 10 }, { x: 8, y: 10 }]);
   const [snake2, setSnake2] = useState<Position[]>([{ x: 10, y: 15 }, { x: 9, y: 15 }, { x: 8, y: 15 }]);
   const [food, setFood] = useState<Position>(() => getRandomFood([{ x: 10, y: 10 }]));
   const [direction, setDirection] = useState<Direction>('RIGHT');
-  const [direction2, setDirection2] = useState<Direction>('RIGHT');
+  const [direction2, setDirection2] = useState<Direction>('LEFT');
   const [gameState, setGameState] = useState<GameState>('IDLE');
   const [score, setScore] = useState(0);
   const [score2, setScore2] = useState(0);
@@ -52,14 +113,20 @@ export default function Game({ player, setPlayer, mode, difficulty, onBack, isMu
   const [coinsEarned, setCoinsEarned] = useState(0);
 
   const dirRef = useRef<Direction>('RIGHT');
-  const dir2Ref = useRef<Direction>('RIGHT');
+  const dir2Ref = useRef<Direction>('LEFT');
   const stateRef = useRef<GameState>('IDLE');
   const touchRef = useRef<{ x: number; y: number } | null>(null);
   const particleId = useRef(0);
+  const snakeRef = useRef<Position[]>([{ x: 10, y: 10 }, { x: 9, y: 10 }, { x: 8, y: 10 }]);
+  const snake2Ref = useRef<Position[]>([{ x: 10, y: 15 }, { x: 9, y: 15 }, { x: 8, y: 15 }]);
+  const foodRef = useRef<Position>(food);
 
   useEffect(() => { stateRef.current = gameState; }, [gameState]);
   useEffect(() => { dirRef.current = direction; }, [direction]);
   useEffect(() => { dir2Ref.current = direction2; }, [direction2]);
+  useEffect(() => { snakeRef.current = snake; }, [snake]);
+  useEffect(() => { snake2Ref.current = snake2; }, [snake2]);
+  useEffect(() => { foodRef.current = food; }, [food]);
 
   // Timer for timed mode
   useEffect(() => {
@@ -97,6 +164,7 @@ export default function Game({ player, setPlayer, mode, difficulty, onBack, isMu
   const startGame = useCallback(() => {
     const initSnake = [{ x: 10, y: 10 }, { x: 9, y: 10 }, { x: 8, y: 10 }];
     setSnake(initSnake);
+    snakeRef.current = initSnake;
     setFood(getRandomFood(initSnake));
     setDirection('RIGHT');
     dirRef.current = 'RIGHT';
@@ -109,6 +177,7 @@ export default function Game({ player, setPlayer, mode, difficulty, onBack, isMu
     if (isMultiplayer) {
       const initSnake2 = [{ x: 10, y: 15 }, { x: 9, y: 15 }, { x: 8, y: 15 }];
       setSnake2(initSnake2);
+      snake2Ref.current = initSnake2;
       setDirection2('LEFT');
       dir2Ref.current = 'LEFT';
       setScore2(0);
@@ -152,11 +221,11 @@ export default function Game({ player, setPlayer, mode, difficulty, onBack, isMu
       const p2Keys: Record<string, Direction> = { i: 'UP', k: 'DOWN', j: 'LEFT', l: 'RIGHT', I: 'UP', K: 'DOWN', J: 'LEFT', L: 'RIGHT' };
 
       if (p1Keys[e.key]) { e.preventDefault(); changeDir(p1Keys[e.key], 1); }
-      if (isMultiplayer && p2Keys[e.key]) { e.preventDefault(); changeDir(p2Keys[e.key], 2); }
+      if (isMultiplayer && multiplayerType === 'player' && p2Keys[e.key]) { e.preventDefault(); changeDir(p2Keys[e.key], 2); }
     };
     window.addEventListener('keydown', handleKey);
     return () => window.removeEventListener('keydown', handleKey);
-  }, [startGame, changeDir, isMultiplayer]);
+  }, [startGame, changeDir, isMultiplayer, multiplayerType]);
 
   // Touch
   useEffect(() => {
@@ -185,26 +254,45 @@ export default function Game({ player, setPlayer, mode, difficulty, onBack, isMu
     const interval = setInterval(() => {
       if (stateRef.current !== 'PLAYING') return;
 
+      // Bot AI movement (if multiplayer with bot)
+      if (isMultiplayer && multiplayerType === 'bot') {
+        const botDir = getBotDirection(snake2Ref.current, foodRef.current, dir2Ref.current, snakeRef.current);
+        dir2Ref.current = botDir;
+        setDirection2(botDir);
+      }
+
       // Player 1 movement
       setSnake(prev => {
         const head = prev[0];
         const dir = dirRef.current;
-        const newHead = { ...head };
+        let newHead = { ...head };
+        
         if (dir === 'UP') newHead.y--;
         else if (dir === 'DOWN') newHead.y++;
         else if (dir === 'LEFT') newHead.x--;
         else newHead.x++;
 
-        if (newHead.x < 0 || newHead.x >= GRID_SIZE || newHead.y < 0 || newHead.y >= GRID_SIZE) {
-          setGameState('GAME_OVER');
-          return prev;
+        // Zen mode: wrap around walls
+        if (mode === 'zen') {
+          if (newHead.x < 0) newHead.x = GRID_SIZE - 1;
+          else if (newHead.x >= GRID_SIZE) newHead.x = 0;
+          if (newHead.y < 0) newHead.y = GRID_SIZE - 1;
+          else if (newHead.y >= GRID_SIZE) newHead.y = 0;
+        } else {
+          // Wall collision
+          if (newHead.x < 0 || newHead.x >= GRID_SIZE || newHead.y < 0 || newHead.y >= GRID_SIZE) {
+            setGameState('GAME_OVER');
+            return prev;
+          }
         }
 
+        // Self collision
         if (prev.slice(0, -1).some(s => s.x === newHead.x && s.y === newHead.y)) {
           setGameState('GAME_OVER');
           return prev;
         }
 
+        // Multiplayer collision
         if (isMultiplayer) {
           setSnake2(s2 => {
             if (s2.some(s => s.x === newHead.x && s.y === newHead.y)) {
@@ -224,7 +312,10 @@ export default function Game({ player, setPlayer, mode, difficulty, onBack, isMu
           const points = (10 + comboBonus * 5) * multiplier;
           setScore(s => s + points);
           setCombo(c => c + 1);
-          setFood(getRandomFood(newSnake));
+          
+          // Get all snakes to avoid food spawning on them
+          const allSnakes = isMultiplayer ? [...newSnake, ...snake2Ref.current] : newSnake;
+          setFood(getRandomFood(allSnakes));
           addParticle(newHead.x, newHead.y, `+${points}`);
         } else {
           newSnake.pop();
@@ -249,29 +340,36 @@ export default function Game({ player, setPlayer, mode, difficulty, onBack, isMu
           return remaining;
         });
 
-        if (!ate) {
-          // Keep snake same length if ate
-        }
-
         return newSnake;
       });
 
-      // Player 2 movement (multiplayer)
+      // Player 2 / Bot movement (multiplayer)
       if (isMultiplayer) {
         setSnake2(prev => {
           const head = prev[0];
           const dir = dir2Ref.current;
-          const newHead = { ...head };
+          let newHead = { ...head };
+          
           if (dir === 'UP') newHead.y--;
           else if (dir === 'DOWN') newHead.y++;
           else if (dir === 'LEFT') newHead.x--;
           else newHead.x++;
 
-          if (newHead.x < 0 || newHead.x >= GRID_SIZE || newHead.y < 0 || newHead.y >= GRID_SIZE) {
-            setGameState('GAME_OVER');
-            return prev;
+          // Zen mode: wrap around walls
+          if (mode === 'zen') {
+            if (newHead.x < 0) newHead.x = GRID_SIZE - 1;
+            else if (newHead.x >= GRID_SIZE) newHead.x = 0;
+            if (newHead.y < 0) newHead.y = GRID_SIZE - 1;
+            else if (newHead.y >= GRID_SIZE) newHead.y = 0;
+          } else {
+            // Wall collision
+            if (newHead.x < 0 || newHead.x >= GRID_SIZE || newHead.y < 0 || newHead.y >= GRID_SIZE) {
+              setGameState('GAME_OVER');
+              return prev;
+            }
           }
 
+          // Self collision
           if (prev.slice(0, -1).some(s => s.x === newHead.x && s.y === newHead.y)) {
             setGameState('GAME_OVER');
             return prev;
@@ -280,7 +378,8 @@ export default function Game({ player, setPlayer, mode, difficulty, onBack, isMu
           const newSnake = [newHead, ...prev];
           if (newHead.x === food.x && newHead.y === food.y) {
             setScore2(s => s + 10);
-            setFood(getRandomFood([...newSnake, ...snake]));
+            const allSnakes = [...newSnake, ...snakeRef.current];
+            setFood(getRandomFood(allSnakes));
           } else {
             newSnake.pop();
           }
@@ -290,7 +389,7 @@ export default function Game({ player, setPlayer, mode, difficulty, onBack, isMu
     }, speed);
 
     return () => clearInterval(interval);
-  }, [gameState, difficulty, food, activeEffects, combo, isMultiplayer, snake]);
+  }, [gameState, difficulty, food, activeEffects, combo, isMultiplayer, multiplayerType, mode]);
 
   // Handle game over - save stats
   useEffect(() => {
@@ -367,6 +466,15 @@ export default function Game({ player, setPlayer, mode, difficulty, onBack, isMu
 
   const formatTime = (s: number) => `${Math.floor(s / 60)}:${(s % 60).toString().padStart(2, '0')}`;
 
+  const getModeLabel = () => {
+    if (isMultiplayer) {
+      return multiplayerType === 'bot' ? '🤖 vs Bot' : '👥 vs Player';
+    }
+    if (mode === 'timed') return '⏱️ Timed';
+    if (mode === 'zen') return '🧘 Zen';
+    return '🐍 Classic';
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-slate-900 to-gray-800 flex flex-col items-center p-2 md:p-4 select-none">
       {/* Top Bar */}
@@ -375,7 +483,7 @@ export default function Game({ player, setPlayer, mode, difficulty, onBack, isMu
           ← Back
         </button>
         <div className="flex items-center gap-2">
-          <span className="text-xs text-gray-400 uppercase">{mode === 'timed' ? '⏱️ Timed' : isMultiplayer ? '👥 VS' : '🐍 Classic'}</span>
+          <span className="text-xs text-gray-400 uppercase">{getModeLabel()}</span>
           <span className={`text-xs px-2 py-0.5 rounded-full ${
             difficulty === 'easy' ? 'bg-green-900/50 text-green-400' :
             difficulty === 'medium' ? 'bg-yellow-900/50 text-yellow-400' :
@@ -405,7 +513,7 @@ export default function Game({ player, setPlayer, mode, difficulty, onBack, isMu
         )}
         {isMultiplayer && (
           <div className="text-center">
-            <div className="text-[10px] text-gray-400">P2</div>
+            <div className="text-[10px] text-gray-400">{multiplayerType === 'bot' ? 'Bot' : 'P2'}</div>
             <div className="text-lg font-bold text-blue-400">{score2}</div>
           </div>
         )}
@@ -428,13 +536,20 @@ export default function Game({ player, setPlayer, mode, difficulty, onBack, isMu
 
       {/* Game Board */}
       <div className="relative w-full max-w-lg aspect-square">
-        <div className="absolute inset-0 bg-gray-900/90 rounded-2xl border-2 border-gray-700/60 overflow-hidden shadow-2xl">
+        <div className={`absolute inset-0 bg-gray-900/90 rounded-2xl border-2 overflow-hidden shadow-2xl ${mode === 'zen' ? 'border-purple-500/40 shadow-purple-500/20' : 'border-gray-700/60'}`}>
           {/* Grid */}
           <div className="absolute inset-0 grid grid-cols-20 grid-rows-20">
             {Array.from({ length: GRID_SIZE * GRID_SIZE }).map((_, i) => (
               <div key={i} className={`${(i % GRID_SIZE + Math.floor(i / GRID_SIZE)) % 2 === 0 ? 'bg-gray-800/40' : 'bg-gray-800/20'}`} />
             ))}
           </div>
+
+          {/* Zen mode indicator */}
+          {mode === 'zen' && (
+            <div className="absolute top-2 left-1/2 -translate-x-1/2 z-10 px-3 py-1 bg-purple-900/60 rounded-full text-[10px] text-purple-300 border border-purple-500/30">
+              🌀 Walls disabled - pass through!
+            </div>
+          )}
 
           {/* Food */}
           <div className="absolute flex items-center justify-center" style={{ left: `${(food.x / GRID_SIZE) * 100}%`, top: `${(food.y / GRID_SIZE) * 100}%`, width: `${100 / GRID_SIZE}%`, height: `${100 / GRID_SIZE}%` }}>
@@ -469,7 +584,7 @@ export default function Game({ player, setPlayer, mode, difficulty, onBack, isMu
             );
           })}
 
-          {/* Player 2 Snake */}
+          {/* Player 2 / Bot Snake */}
           {isMultiplayer && snake2.map((seg, i) => {
             const style = getSkinColor(i, snake2.length, true);
             return (
@@ -498,9 +613,15 @@ export default function Game({ player, setPlayer, mode, difficulty, onBack, isMu
           {/* Overlays */}
           {gameState === 'IDLE' && (
             <div className="absolute inset-0 bg-black/60 backdrop-blur-sm flex flex-col items-center justify-center rounded-2xl z-50 animate-fade-in">
-              <div className="text-4xl mb-3">{isMultiplayer ? '👥' : mode === 'timed' ? '⏱️' : '🐍'}</div>
-              <h2 className="text-lg font-bold text-white mb-1">{isMultiplayer ? '2 Player Battle!' : mode === 'timed' ? 'Timed Challenge' : 'Ready?'}</h2>
-              {isMultiplayer && <p className="text-gray-400 text-xs mb-2">P1: WASD/Arrows • P2: IJKL</p>}
+              <div className="text-4xl mb-3">
+                {isMultiplayer ? (multiplayerType === 'bot' ? '🤖' : '👥') : mode === 'timed' ? '⏱️' : mode === 'zen' ? '🧘' : '🐍'}
+              </div>
+              <h2 className="text-lg font-bold text-white mb-1">
+                {isMultiplayer ? (multiplayerType === 'bot' ? 'vs Bot!' : 'vs Player!') : mode === 'timed' ? 'Timed Challenge' : mode === 'zen' ? 'Zen Mode' : 'Ready?'}
+              </h2>
+              {mode === 'zen' && <p className="text-purple-300 text-xs mb-2">Pass through walls freely!</p>}
+              {isMultiplayer && multiplayerType === 'player' && <p className="text-gray-400 text-xs mb-2">P1: WASD/Arrows • P2: IJKL</p>}
+              {isMultiplayer && multiplayerType === 'bot' && <p className="text-gray-400 text-xs mb-2">Use WASD/Arrows to compete!</p>}
               <button onClick={startGame} className="px-5 py-2.5 bg-green-500 hover:bg-green-400 text-white font-bold rounded-xl transition-all transform hover:scale-105 active:scale-95 shadow-lg shadow-green-500/30">
                 ▶ Start
               </button>
@@ -520,19 +641,21 @@ export default function Game({ player, setPlayer, mode, difficulty, onBack, isMu
 
           {gameState === 'GAME_OVER' && showResult && (
             <div className="absolute inset-0 bg-black/70 backdrop-blur-sm flex flex-col items-center justify-center rounded-2xl z-50 animate-fade-in overflow-y-auto p-4">
-              <div className="text-3xl mb-2">{isMultiplayer && score > score2 ? '🏆' : score >= (player.highScores[difficulty] || 0) ? '🎉' : '💀'}</div>
+              <div className="text-3xl mb-2">
+                {isMultiplayer && score > score2 ? '🏆' : score >= (player.highScores[difficulty] || 0) ? '🎉' : '💀'}
+              </div>
               <h2 className="text-xl font-bold text-red-400 mb-1">
-                {isMultiplayer ? (score > score2 ? 'Player 1 Wins!' : score2 > score ? 'Player 2 Wins!' : 'Tie!') : 'Game Over!'}
+                {isMultiplayer ? (score > score2 ? 'You Win!' : score2 > score ? (multiplayerType === 'bot' ? 'Bot Wins!' : 'Player 2 Wins!') : 'Tie!') : 'Game Over!'}
               </h2>
               
               <div className="bg-gray-800/80 rounded-xl p-3 mb-3 w-full max-w-[250px] border border-gray-700/50">
                 <div className="flex justify-between text-sm mb-1">
-                  <span className="text-gray-400">Score</span>
+                  <span className="text-gray-400">Your Score</span>
                   <span className="text-white font-bold">{finalScore}</span>
                 </div>
                 {isMultiplayer && (
                   <div className="flex justify-between text-sm mb-1">
-                    <span className="text-gray-400">P2 Score</span>
+                    <span className="text-gray-400">{multiplayerType === 'bot' ? 'Bot' : 'P2'} Score</span>
                     <span className="text-blue-400 font-bold">{score2}</span>
                   </div>
                 )}
@@ -575,14 +698,14 @@ export default function Game({ player, setPlayer, mode, difficulty, onBack, isMu
           <button onTouchStart={(e) => { e.preventDefault(); changeDir('DOWN'); }} onClick={() => changeDir('DOWN')} className="bg-gray-700/80 active:bg-green-600 rounded-xl flex items-center justify-center text-white text-lg border border-gray-600/50">▼</button>
           <div />
         </div>
-        {isMultiplayer && (
-          <p className="text-center text-gray-500 text-[10px] mt-1">P2: Use swipe or IJKL keys</p>
+        {isMultiplayer && multiplayerType === 'player' && (
+          <p className="text-center text-gray-500 text-[10px] mt-1">P2: Use IJKL keys</p>
         )}
       </div>
 
       {/* Desktop controls hint */}
       <div className="hidden md:block mt-2 text-center text-gray-500 text-xs">
-        {isMultiplayer ? (
+        {isMultiplayer && multiplayerType === 'player' ? (
           <span>P1: <kbd className="px-1 bg-gray-700 rounded text-gray-300">WASD</kbd> • P2: <kbd className="px-1 bg-gray-700 rounded text-gray-300">IJKL</kbd> • <kbd className="px-1 bg-gray-700 rounded text-gray-300">Space</kbd> Pause</span>
         ) : (
           <span><kbd className="px-1 bg-gray-700 rounded text-gray-300">↑↓←→</kbd> or <kbd className="px-1 bg-gray-700 rounded text-gray-300">WASD</kbd> Move • <kbd className="px-1 bg-gray-700 rounded text-gray-300">Space</kbd> Pause</span>

@@ -79,8 +79,8 @@ export function MainMenu({ player, onSelectMode, onNavigate }: {
   const modes: { id: GameMode; icon: string; name: string; desc: string; color: string }[] = [
     { id: 'classic', icon: '🐍', name: 'Classic', desc: 'Endless snake fun', color: 'from-green-600 to-green-800' },
     { id: 'timed', icon: '⏱️', name: 'Timed', desc: 'Score in 60 seconds', color: 'from-orange-600 to-red-800' },
-    { id: 'multiplayer', icon: '👥', name: '2 Players', desc: 'Local multiplayer', color: 'from-blue-600 to-purple-800' },
-    { id: 'zen', icon: '🧘', name: 'Zen', desc: 'No walls, no stress', color: 'from-teal-600 to-cyan-800' },
+    { id: 'multiplayer', icon: '👥', name: 'Multiplayer', desc: 'vs Bot or vs Player', color: 'from-blue-600 to-purple-800' },
+    { id: 'zen', icon: '🧘', name: 'Zen', desc: 'Pass through walls!', color: 'from-teal-600 to-cyan-800' },
   ];
 
   const dailyReward = getLoginReward(player);
