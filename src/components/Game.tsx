@@ -791,33 +791,82 @@ export default function Game({ player, setPlayer, mode, difficulty, onBack, isMu
         </div>
       </div>
 
-      {/* Mobile Controls */}
-      <div className="mt-3 md:hidden">
-        <div className="grid grid-cols-3 grid-rows-3 gap-1.5 w-32 h-32 mx-auto">
-          <div />
-          <button onTouchStart={(e) => { e.preventDefault(); changeDir('UP'); }} onClick={() => changeDir('UP')} className="bg-gray-700/80 active:bg-green-600 rounded-xl flex items-center justify-center text-white text-lg border border-gray-600/50">▲</button>
-          <div />
-          <button onTouchStart={(e) => { e.preventDefault(); changeDir('LEFT'); }} onClick={() => changeDir('LEFT')} className="bg-gray-700/80 active:bg-green-600 rounded-xl flex items-center justify-center text-white text-lg border border-gray-600/50">◀</button>
-          <button onClick={() => { if (gameState === 'PLAYING') setGameState('PAUSED'); else if (gameState === 'PAUSED') setGameState('PLAYING'); }} className="bg-gray-800/60 rounded-xl flex items-center justify-center text-gray-400 text-xs border border-gray-700/50">
-            {gameState === 'PAUSED' ? '▶' : '⏸'}
-          </button>
-          <button onTouchStart={(e) => { e.preventDefault(); changeDir('RIGHT'); }} onClick={() => changeDir('RIGHT')} className="bg-gray-700/80 active:bg-green-600 rounded-xl flex items-center justify-center text-white text-lg border border-gray-600/50">▶</button>
-          <div />
-          <button onTouchStart={(e) => { e.preventDefault(); changeDir('DOWN'); }} onClick={() => changeDir('DOWN')} className="bg-gray-700/80 active:bg-green-600 rounded-xl flex items-center justify-center text-white text-lg border border-gray-600/50">▼</button>
-          <div />
-        </div>
-        {isMultiplayer && multiplayerType === 'player' && (
-          <p className="text-center text-gray-500 text-[10px] mt-1">P2: Use IJKL keys</p>
-        )}
-      </div>
+      {/* Touch Controls - Responsive D-Pad */}
+      <div className="mt-4 w-full max-w-lg">
+        {/* D-Pad Container */}
+        <div className={`${theme === 'dark' ? 'bg-gray-800/60 border-gray-700/50' : 'bg-white/80 border-gray-200'} rounded-2xl p-4 border backdrop-blur-sm shadow-lg`}>
+          {/* D-Pad Grid */}
+          <div className="grid grid-cols-3 grid-rows-3 gap-2 w-48 h-48 mx-auto">
+            {/* Up Button */}
+            <div />
+            <button
+              onTouchStart={(e) => { e.preventDefault(); changeDir('UP'); }}
+              onClick={() => changeDir('UP')}
+              className={`${theme === 'dark' ? 'bg-gradient-to-br from-gray-700 to-gray-800 hover:from-gray-600 hover:to-gray-700 active:from-green-600 active:to-green-700 border-gray-600/50 text-white' : 'bg-gradient-to-br from-gray-100 to-gray-200 hover:from-gray-50 hover:to-gray-100 active:from-green-500 active:to-green-600 border-gray-300 text-gray-700'} rounded-xl flex items-center justify-center text-2xl font-bold border-2 transition-all duration-150 transform active:scale-95 shadow-md`}
+              aria-label="Move Up"
+            >
+              ▲
+            </button>
+            <div />
 
-      {/* Desktop controls hint */}
-      <div className="hidden md:block mt-2 text-center text-gray-500 text-xs">
-        {isMultiplayer && multiplayerType === 'player' ? (
-          <span>P1: <kbd className="px-1 bg-gray-700 rounded text-gray-300">WASD</kbd> • P2: <kbd className="px-1 bg-gray-700 rounded text-gray-300">IJKL</kbd> • <kbd className="px-1 bg-gray-700 rounded text-gray-300">Space</kbd> Pause</span>
-        ) : (
-          <span><kbd className="px-1 bg-gray-700 rounded text-gray-300">↑↓←→</kbd> or <kbd className="px-1 bg-gray-700 rounded text-gray-300">WASD</kbd> Move • <kbd className="px-1 bg-gray-700 rounded text-gray-300">Space</kbd> Pause</span>
-        )}
+            {/* Left Button */}
+            <button
+              onTouchStart={(e) => { e.preventDefault(); changeDir('LEFT'); }}
+              onClick={() => changeDir('LEFT')}
+              className={`${theme === 'dark' ? 'bg-gradient-to-br from-gray-700 to-gray-800 hover:from-gray-600 hover:to-gray-700 active:from-green-600 active:to-green-700 border-gray-600/50 text-white' : 'bg-gradient-to-br from-gray-100 to-gray-200 hover:from-gray-50 hover:to-gray-100 active:from-green-500 active:to-green-600 border-gray-300 text-gray-700'} rounded-xl flex items-center justify-center text-2xl font-bold border-2 transition-all duration-150 transform active:scale-95 shadow-md`}
+              aria-label="Move Left"
+            >
+              ◀
+            </button>
+
+            {/* Center - Pause Button */}
+            <button
+              onClick={() => {
+                if (gameState === 'PLAYING') setGameState('PAUSED');
+                else if (gameState === 'PAUSED') setGameState('PLAYING');
+              }}
+              className={`${theme === 'dark' ? 'bg-gradient-to-br from-purple-700 to-purple-800 hover:from-purple-600 hover:to-purple-700 border-purple-600/50 text-white' : 'bg-gradient-to-br from-purple-100 to-purple-200 hover:from-purple-50 hover:to-purple-100 border-purple-300 text-purple-700'} rounded-xl flex items-center justify-center text-xl font-bold border-2 transition-all duration-150 transform active:scale-95 shadow-md`}
+              aria-label="Pause/Resume"
+            >
+              {gameState === 'PAUSED' ? '▶' : '⏸'}
+            </button>
+
+            {/* Right Button */}
+            <button
+              onTouchStart={(e) => { e.preventDefault(); changeDir('RIGHT'); }}
+              onClick={() => changeDir('RIGHT')}
+              className={`${theme === 'dark' ? 'bg-gradient-to-br from-gray-700 to-gray-800 hover:from-gray-600 hover:to-gray-700 active:from-green-600 active:to-green-700 border-gray-600/50 text-white' : 'bg-gradient-to-br from-gray-100 to-gray-200 hover:from-gray-50 hover:to-gray-100 active:from-green-500 active:to-green-600 border-gray-300 text-gray-700'} rounded-xl flex items-center justify-center text-2xl font-bold border-2 transition-all duration-150 transform active:scale-95 shadow-md`}
+              aria-label="Move Right"
+            >
+              ▶
+            </button>
+
+            {/* Down Button */}
+            <div />
+            <button
+              onTouchStart={(e) => { e.preventDefault(); changeDir('DOWN'); }}
+              onClick={() => changeDir('DOWN')}
+              className={`${theme === 'dark' ? 'bg-gradient-to-br from-gray-700 to-gray-800 hover:from-gray-600 hover:to-gray-700 active:from-green-600 active:to-green-700 border-gray-600/50 text-white' : 'bg-gradient-to-br from-gray-100 to-gray-200 hover:from-gray-50 hover:to-gray-100 active:from-green-500 active:to-green-600 border-gray-300 text-gray-700'} rounded-xl flex items-center justify-center text-2xl font-bold border-2 transition-all duration-150 transform active:scale-95 shadow-md`}
+              aria-label="Move Down"
+            >
+              ▼
+            </button>
+            <div />
+          </div>
+
+          {/* Control Info */}
+          <div className={`mt-3 text-center text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
+            {isMultiplayer && multiplayerType === 'player' ? (
+              <span>
+                <span className="font-semibold">P1:</span> Touch controls or WASD • <span className="font-semibold">P2:</span> IJKL keys
+              </span>
+            ) : (
+              <span>
+                Touch controls or <kbd className={`px-1.5 py-0.5 ${theme === 'dark' ? 'bg-gray-700 text-gray-300' : 'bg-gray-200 text-gray-700'} rounded text-[10px] font-mono`}>↑↓←→</kbd> / <kbd className={`px-1.5 py-0.5 ${theme === 'dark' ? 'bg-gray-700 text-gray-300' : 'bg-gray-200 text-gray-700'} rounded text-[10px] font-mono`}>WASD</kbd> to move
+              </span>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );
