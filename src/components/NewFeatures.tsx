@@ -175,52 +175,53 @@ export function SpinWheelScreen({ player, setPlayer, onBack, theme }: {
   const segmentAngle = 360 / SPIN_WHEEL_SEGMENTS.length;
 
   return (
-    <div className={`min-h-screen ${t(theme, 'bg-gradient-to-br from-gray-900 via-slate-900 to-gray-800', 'bg-gradient-to-br from-gray-50 via-slate-50 to-white')} p-4`}>
+    <div className={`min-h-screen ${t(theme, 'bg-gradient-to-br from-gray-900 via-slate-900 to-gray-800', 'bg-gradient-to-br from-gray-50 via-slate-50 to-white')} p-3 sm:p-4`}>
       <div className="max-w-md mx-auto">
         <button onClick={onBack} className={`mb-3 px-3 py-1.5 ${t(theme, 'bg-gray-800 hover:bg-gray-700 text-gray-300 border-gray-700/50', 'bg-white hover:bg-gray-50 text-gray-700 border-gray-300')} rounded-lg text-sm border`}>
           ← Back
         </button>
         
-        <div className="text-center mb-6">
-          <h2 className={`text-2xl font-bold ${t(theme, 'text-white', 'text-gray-900')}`}>🎰 Daily Spin Wheel</h2>
-          <p className={`text-sm ${t(theme, 'text-gray-400', 'text-gray-600')}`}>Spin once per day for rewards!</p>
+        <div className="text-center mb-4 sm:mb-6">
+          <h2 className={`text-xl sm:text-2xl font-bold ${t(theme, 'text-white', 'text-gray-900')}`}>🎰 Daily Spin Wheel</h2>
+          <p className={`text-xs sm:text-sm ${t(theme, 'text-gray-400', 'text-gray-600')}`}>Spin once per day for rewards!</p>
         </div>
 
-        {/* Wheel */}
-        <div className="relative w-80 h-80 mx-auto mb-6">
-          {/* Pointer */}
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-2 z-10 text-4xl">
+        {/* Wheel - Responsive Container */}
+        <div className="relative w-full max-w-[320px] mx-auto mb-4 sm:mb-6" style={{ aspectRatio: '1 / 1' }}>
+          {/* Pointer - Responsive Size */}
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1 sm:-translate-y-2 z-10 text-2xl sm:text-3xl md:text-4xl">
             ▼
           </div>
           
-          {/* Wheel */}
+          {/* Wheel - Scales with container */}
           <div 
-            className="w-full h-full rounded-full border-4 border-yellow-500 relative overflow-hidden transition-transform duration-4000 ease-out"
+            className="w-full h-full rounded-full border-2 sm:border-3 md:border-4 border-yellow-500 relative overflow-hidden transition-transform ease-out shadow-lg"
             style={{ 
               transform: `rotate(${rotation}deg)`,
               transitionDuration: spinning ? '4s' : '0s'
             }}
           >
-            {SPIN_WHEEL_SEGMENTS.map((segment, i) => {
-              const startAngle = i * segmentAngle;
-              const endAngle = (i + 1) * segmentAngle;
-              const largeRadius = 200;
-              
-              const x1 = 160 + largeRadius * Math.cos((startAngle - 90) * Math.PI / 180);
-              const y1 = 160 + largeRadius * Math.sin((startAngle - 90) * Math.PI / 180);
-              const x2 = 160 + largeRadius * Math.cos((endAngle - 90) * Math.PI / 180);
-              const y2 = 160 + largeRadius * Math.sin((endAngle - 90) * Math.PI / 180);
-              
-              const pathData = `M 160 160 L ${x1} ${y1} A ${largeRadius} ${largeRadius} 0 0 1 ${x2} ${y2} Z`;
-              
-              const midAngle = (startAngle + endAngle) / 2;
-              const textRadius = 100;
-              const textX = 160 + textRadius * Math.cos((midAngle - 90) * Math.PI / 180);
-              const textY = 160 + textRadius * Math.sin((midAngle - 90) * Math.PI / 180);
-              
-              return (
-                <g key={segment.id}>
-                  <svg viewBox="0 0 320 320" className="absolute inset-0 w-full h-full">
+            {/* Single SVG that scales with container */}
+            <svg viewBox="0 0 320 320" className="w-full h-full">
+              {SPIN_WHEEL_SEGMENTS.map((segment, i) => {
+                const startAngle = i * segmentAngle;
+                const endAngle = (i + 1) * segmentAngle;
+                const largeRadius = 160; // Half of viewBox size
+                
+                const x1 = 160 + largeRadius * Math.cos((startAngle - 90) * Math.PI / 180);
+                const y1 = 160 + largeRadius * Math.sin((startAngle - 90) * Math.PI / 180);
+                const x2 = 160 + largeRadius * Math.cos((endAngle - 90) * Math.PI / 180);
+                const y2 = 160 + largeRadius * Math.sin((endAngle - 90) * Math.PI / 180);
+                
+                const pathData = `M 160 160 L ${x1} ${y1} A ${largeRadius} ${largeRadius} 0 0 1 ${x2} ${y2} Z`;
+                
+                const midAngle = (startAngle + endAngle) / 2;
+                const textRadius = 110;
+                const textX = 160 + textRadius * Math.cos((midAngle - 90) * Math.PI / 180);
+                const textY = 160 + textRadius * Math.sin((midAngle - 90) * Math.PI / 180);
+                
+                return (
+                  <g key={segment.id}>
                     <path d={pathData} fill={segment.color} stroke="white" strokeWidth="2" />
                     <text 
                       x={textX} 
@@ -228,23 +229,23 @@ export function SpinWheelScreen({ player, setPlayer, onBack, theme }: {
                       textAnchor="middle" 
                       dominantBaseline="middle" 
                       transform={`rotate(${midAngle}, ${textX}, ${textY})`}
-                      className="text-xs font-bold fill-white"
-                      style={{ fontSize: '12px' }}
+                      className="font-bold fill-white"
+                      style={{ fontSize: '24px' }}
                     >
                       {segment.icon}
                     </text>
-                  </svg>
-                </g>
-              );
-            })}
+                  </g>
+                );
+              })}
+            </svg>
           </div>
         </div>
 
-        {/* Spin Button */}
+        {/* Spin Button - Responsive */}
         <button
           onClick={spin}
           disabled={!canSpin || spinning}
-          className={`w-full py-4 rounded-xl font-bold text-lg transition-all ${
+          className={`w-full py-3 sm:py-4 rounded-xl font-bold text-base sm:text-lg transition-all ${
             canSpin && !spinning
               ? 'bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-400 hover:to-orange-400 text-white transform hover:scale-105 active:scale-95'
               : t(theme, 'bg-gray-700 text-gray-500 cursor-not-allowed', 'bg-gray-300 text-gray-500 cursor-not-allowed')
@@ -253,22 +254,22 @@ export function SpinWheelScreen({ player, setPlayer, onBack, theme }: {
           {spinning ? '🎰 Spinning...' : canSpin ? '🎯 SPIN NOW!' : '✅ Come Back Tomorrow'}
         </button>
 
-        {/* Reward Modal */}
+        {/* Reward Modal - Responsive */}
         {showReward && selectedSegment !== null && (
           <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-            <div className={`${t(theme, 'bg-gray-800 border-gray-700', 'bg-white border-gray-300')} rounded-2xl p-6 max-w-sm w-full border text-center`}>
-              <div className="text-6xl mb-4 animate-bounce">
+            <div className={`${t(theme, 'bg-gray-800 border-gray-700', 'bg-white border-gray-300')} rounded-2xl p-4 sm:p-6 max-w-sm w-full border text-center`}>
+              <div className="text-5xl sm:text-6xl mb-3 sm:mb-4 animate-bounce">
                 {SPIN_WHEEL_SEGMENTS[selectedSegment].icon}
               </div>
-              <h3 className={`text-2xl font-bold ${t(theme, 'text-white', 'text-gray-900')} mb-2`}>
+              <h3 className={`text-xl sm:text-2xl font-bold ${t(theme, 'text-white', 'text-gray-900')} mb-2`}>
                 You Won!
               </h3>
-              <p className={`text-lg ${t(theme, 'text-gray-300', 'text-gray-700')} mb-4`}>
+              <p className={`text-base sm:text-lg ${t(theme, 'text-gray-300', 'text-gray-700')} mb-3 sm:mb-4`}>
                 {SPIN_WHEEL_SEGMENTS[selectedSegment].label}
               </p>
               <button
                 onClick={() => setShowReward(false)}
-                className="px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-400 hover:to-emerald-500 text-white font-bold rounded-lg"
+                className="px-5 sm:px-6 py-2.5 sm:py-3 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-400 hover:to-emerald-500 text-white font-bold rounded-lg text-sm sm:text-base"
               >
                 Awesome!
               </button>
