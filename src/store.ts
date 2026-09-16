@@ -64,6 +64,20 @@ export function createNewPlayer(username: string): Player {
       legendary_chest: 0,
     },
     gamesWon: 0,
+    // Achievements
+    unlockedAchievements: [],
+    achievementProgress: {},
+    // Daily Spin Wheel
+    dailySpin: {
+      lastSpinDate: '',
+      spinsToday: 0,
+      totalSpins: 0,
+    },
+    // Visual Themes
+    activeVisualTheme: 'default',
+    ownedVisualThemes: ['default'],
+    // Leaderboard
+    personalBests: {},
   };
 }
 
@@ -158,6 +172,30 @@ export function loadPlayer(): Player | null {
     }
     if (player.gamesWon === undefined) {
       player.gamesWon = 0;
+    }
+    
+    // Migration: Achievements, Spin Wheel, Visual Themes, Leaderboard
+    if (!player.unlockedAchievements) {
+      player.unlockedAchievements = [];
+    }
+    if (!player.achievementProgress) {
+      player.achievementProgress = {};
+    }
+    if (!player.dailySpin) {
+      player.dailySpin = {
+        lastSpinDate: '',
+        spinsToday: 0,
+        totalSpins: 0,
+      };
+    }
+    if (!player.activeVisualTheme) {
+      player.activeVisualTheme = 'default';
+    }
+    if (!player.ownedVisualThemes) {
+      player.ownedVisualThemes = ['default'];
+    }
+    if (!player.personalBests) {
+      player.personalBests = {};
     }
     
     return player;

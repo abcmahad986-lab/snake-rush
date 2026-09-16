@@ -27,8 +27,8 @@ function getRandomFood(snake: Position[]): Position {
 
 function getRandomPowerUp(): PowerUp | null {
   if (Math.random() > 0.15) return null;
-  const types: PowerUp['type'][] = ['speed', 'slow', 'double', 'shrink', 'shield'];
-  const icons = ['⚡', '🐌', '✖️2', '🔽', '🛡️'];
+  const types: PowerUp['type'][] = ['speed', 'slow', 'double', 'shrink', 'shield', 'time_slow', 'coin_magnet', 'ghost_pass', 'score_boost'];
+  const icons = ['⚡', '🐌', '✖️2', '🔽', '🛡️', '⏱️', '🧲', '👻', '💫'];
   const idx = Math.floor(Math.random() * types.length);
   return {
     position: { x: Math.floor(Math.random() * GRID_SIZE), y: Math.floor(Math.random() * GRID_SIZE) },
@@ -170,6 +170,34 @@ export default function Game({ player, setPlayer, mode, difficulty, onBack, isMu
     return () => clearInterval(interval);
   }, [gameState]);
 
+  // Coin magnet effect - move food closer to snake
+  useEffect(() => {
+    if (gameState !== 'PLAYING' || !activeEffects.includes('coin_magnet')) return;
+    const interval = setInterval(() => {
+      setFood(currentFood => {
+        const snakeHead = snakeRef.current[0];
+        if (!snakeHead) return currentFood;
+        
+        // Move food one step closer to snake head
+        let newX = currentFood.x;
+        let newY = currentFood.y;
+        
+        if (currentFood.x < snakeHead.x) newX++;
+        else if (currentFood.x > snakeHead.x) newX--;
+        
+        if (currentFood.y < snakeHead.y) newY++;
+        else if (currentFood.y > snakeHead.y) newY--;
+        
+        // Ensure new position is valid
+        if (newX >= 0 && newX < GRID_SIZE && newY >= 0 && newY < GRID_SIZE) {
+          return { x: newX, y: newY };
+        }
+        return currentFood;
+      });
+    }, 500); // Move food every 500ms
+    return () => clearInterval(interval);
+  }, [gameState, activeEffects]);
+
   const addParticle = (x: number, y: number, text: string) => {
     const id = particleId.current++;
     setParticles(prev => [...prev, { id, x, y, text }]);
@@ -265,6 +293,7 @@ export default function Game({ player, setPlayer, mode, difficulty, onBack, isMu
     let speed = DIFFICULTY_SPEEDS[difficulty];
     if (activeEffects.includes('speed')) speed *= 0.6;
     if (activeEffects.includes('slow')) speed *= 1.5;
+    if (activeEffects.includes('time_slow')) speed *= 2.0; // Even slower than 'slow'
 
     const interval = setInterval(() => {
       if (stateRef.current !== 'PLAYING') return;
@@ -296,8 +325,17 @@ export default function Game({ player, setPlayer, mode, difficulty, onBack, isMu
         } else {
           // Wall collision
           if (newHead.x < 0 || newHead.x >= GRID_SIZE || newHead.y < 0 || newHead.y >= GRID_SIZE) {
-            setGameState('GAME_OVER');
-            return prev;
+            // Ghost pass allows passing through walls
+            if (activeEffects.includes('ghost_pass')) {
+              // Wrap around the grid
+              if (newHead.x < 0) newHead.x = GRID_SIZE - 1;
+              else if (newHead.x >= GRID_SIZE) newHead.x = 0;
+              if (newHead.y < 0) newHead.y = GRID_SIZE - 1;
+              else if (newHead.y >= GRID_SIZE) newHead.y = 0;
+            } else {
+              setGameState('GAME_OVER');
+              return prev;
+            }
           }
         }
 
@@ -323,7 +361,8 @@ export default function Game({ player, setPlayer, mode, difficulty, onBack, isMu
         if (newHead.x === food.x && newHead.y === food.y) {
           ate = true;
           audioManager.playEatSound();
-          const multiplier = activeEffects.includes('double') ? 2 : 1;
+          let multiplier = activeEffects.includes('double') ? 2 : 1;
+          if (activeEffects.includes('score_boost')) multiplier *= 3; // Triple score
           const comboBonus = Math.floor(combo / 3);
           const points = (10 + comboBonus * 5) * multiplier;
           setScore(s => s + points);
@@ -345,6 +384,10 @@ export default function Game({ player, setPlayer, mode, difficulty, onBack, isMu
               if (pu.type === 'double') setActiveEffects(e => [...e.filter(x => x !== 'double'), 'double']);
               else if (pu.type === 'speed') setActiveEffects(e => [...e.filter(x => x !== 'speed'), 'speed']);
               else if (pu.type === 'slow') setActiveEffects(e => [...e.filter(x => x !== 'slow'), 'slow']);
+              else if (pu.type === 'time_slow') setActiveEffects(e => [...e.filter(x => x !== 'time_slow'), 'time_slow']);
+              else if (pu.type === 'coin_magnet') setActiveEffects(e => [...e.filter(x => x !== 'coin_magnet'), 'coin_magnet']);
+              else if (pu.type === 'ghost_pass') setActiveEffects(e => [...e.filter(x => x !== 'ghost_pass'), 'ghost_pass']);
+              else if (pu.type === 'score_boost') setActiveEffects(e => [...e.filter(x => x !== 'score_boost'), 'score_boost']);
               else if (pu.type === 'shrink' && newSnake.length > 5) {
                 newSnake.splice(Math.floor(newSnake.length / 2));
               }
@@ -380,8 +423,17 @@ export default function Game({ player, setPlayer, mode, difficulty, onBack, isMu
           } else {
             // Wall collision
             if (newHead.x < 0 || newHead.x >= GRID_SIZE || newHead.y < 0 || newHead.y >= GRID_SIZE) {
-              setGameState('GAME_OVER');
-              return prev;
+              // Ghost pass allows passing through walls
+              if (activeEffects.includes('ghost_pass')) {
+                // Wrap around the grid
+                if (newHead.x < 0) newHead.x = GRID_SIZE - 1;
+                else if (newHead.x >= GRID_SIZE) newHead.x = 0;
+                if (newHead.y < 0) newHead.y = GRID_SIZE - 1;
+                else if (newHead.y >= GRID_SIZE) newHead.y = 0;
+              } else {
+                setGameState('GAME_OVER');
+                return prev;
+              }
             }
           }
 

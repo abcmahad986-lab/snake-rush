@@ -245,6 +245,9 @@ export function MainMenu({ player, onSelectMode, onNavigate, theme, toggleTheme 
           { screen: 'events' as Screen, icon: '🎯', label: 'Events' },
           { screen: 'leaderboard' as Screen, icon: '📊', label: 'Ranks' },
           { screen: 'battlepass' as Screen, icon: '🎖️', label: 'Pass' },
+          { screen: 'achievements' as Screen, icon: '🏅', label: 'Achieve' },
+          { screen: 'spinwheel' as Screen, icon: '🎰', label: 'Spin' },
+          { screen: 'visualthemes' as Screen, icon: '🎨', label: 'Themes' },
         ].map(item => (
           <button
             key={item.screen}

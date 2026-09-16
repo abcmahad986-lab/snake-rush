@@ -4,8 +4,9 @@ export type Position = { x: number; y: number };
 export type GameState = 'IDLE' | 'PLAYING' | 'PAUSED' | 'GAME_OVER';
 export type Difficulty = 'easy' | 'medium' | 'hard' | 'insane';
 export type GameMode = 'classic' | 'timed' | 'multiplayer' | 'event' | 'zen' | 'online';
-export type Screen = 'login' | 'menu' | 'game' | 'profile' | 'trophies' | 'titles' | 'shop' | 'events' | 'leaderboard' | 'settings' | 'rewards' | 'subscription' | 'battlepass' | 'online' | 'google' | 'characters' | 'chests';
+export type Screen = 'login' | 'menu' | 'game' | 'profile' | 'trophies' | 'titles' | 'shop' | 'events' | 'leaderboard' | 'settings' | 'rewards' | 'subscription' | 'battlepass' | 'online' | 'google' | 'characters' | 'chests' | 'achievements' | 'spinwheel' | 'visualthemes';
 export type Theme = 'light' | 'dark';
+export type VisualTheme = 'default' | 'cyberpunk' | 'retro' | 'forest' | 'space' | 'sunset' | 'ocean';
 
 export type SubscriptionTier = 'free' | 'basic' | 'premium' | 'ultimate';
 export type SubscriptionStatus = 'active' | 'expired' | 'cancelled' | 'none';
@@ -27,6 +28,65 @@ export interface Friend {
   lastSeen: string;
   isOnline: boolean;
   subscriptionTier: SubscriptionTier;
+}
+
+// ============ ACHIEVEMENTS ============
+export interface Achievement {
+  id: string;
+  name: string;
+  description: string;
+  icon: string;
+  category: 'gameplay' | 'collection' | 'social' | 'special';
+  rarity: 'bronze' | 'silver' | 'gold' | 'platinum';
+  xpReward: number;
+  coinReward: number;
+  condition: (player: Player) => boolean;
+}
+
+// ============ SPIN WHEEL ============
+export interface SpinWheelSegment {
+  id: string;
+  label: string;
+  icon: string;
+  type: 'coins' | 'gems' | 'xp' | 'skin' | 'title';
+  amount: number;
+  itemId?: string;
+  color: string;
+  rarity: 'common' | 'rare' | 'epic' | 'legendary';
+}
+
+export interface DailySpinState {
+  lastSpinDate: string;
+  spinsToday: number;
+  totalSpins: number;
+}
+
+// ============ LEADERBOARD ============
+export interface LeaderboardEntry {
+  id?: string;
+  username: string;
+  avatar: string;
+  score: number;
+  mode: GameMode;
+  difficulty: Difficulty;
+  date: string;
+  isPlayer?: boolean;
+}
+
+// ============ VISUAL THEMES ============
+export interface VisualThemeConfig {
+  id: VisualTheme;
+  name: string;
+  description: string;
+  icon: string;
+  price: number;
+  currency: 'coins' | 'gems';
+  backgroundGradient: string;
+  particleColors: string[];
+  snakeGlow: string;
+  foodColor: string;
+  gridColor: string;
+  unlocked?: boolean;
 }
 
 export interface OnlineGame {
@@ -124,6 +184,16 @@ export interface Player {
   keys: number;
   chests: Record<string, number>;
   gamesWon: number;
+  // Achievements
+  unlockedAchievements: string[];
+  achievementProgress: Record<string, number>;
+  // Daily Spin Wheel
+  dailySpin: DailySpinState;
+  // Visual Themes
+  activeVisualTheme: VisualTheme;
+  ownedVisualThemes: VisualTheme[];
+  // Leaderboard
+  personalBests: Record<string, number>;
 }
 
 export interface Title {
@@ -190,7 +260,7 @@ export interface MultiplayerState {
 
 export interface PowerUp {
   position: Position;
-  type: 'speed' | 'slow' | 'double' | 'shrink' | 'shield';
+  type: 'speed' | 'slow' | 'double' | 'shrink' | 'shield' | 'time_slow' | 'coin_magnet' | 'ghost_pass' | 'score_boost';
   icon: string;
   expiresAt: number;
 }
@@ -355,6 +425,368 @@ export const DAILY_REWARDS = [
   { day: 5, coins: 60, gems: 2, xp: 30, icon: '🎊' },
   { day: 6, coins: 80, gems: 3, xp: 40, icon: '🏅' },
   { day: 7, coins: 150, gems: 5, xp: 100, icon: '👑' },
+];
+
+// ============ ACHIEVEMENTS ============
+export const ACHIEVEMENTS: Achievement[] = [
+  // Gameplay achievements
+  {
+    id: 'first_game',
+    name: 'First Steps',
+    description: 'Play your first game',
+    icon: '🎮',
+    category: 'gameplay',
+    rarity: 'bronze',
+    xpReward: 10,
+    coinReward: 20,
+    condition: (p) => p.gamesPlayed >= 1,
+  },
+  {
+    id: 'ten_games',
+    name: 'Getting Started',
+    description: 'Play 10 games',
+    icon: '🎯',
+    category: 'gameplay',
+    rarity: 'bronze',
+    xpReward: 25,
+    coinReward: 50,
+    condition: (p) => p.gamesPlayed >= 10,
+  },
+  {
+    id: 'fifty_games',
+    name: 'Dedicated Player',
+    description: 'Play 50 games',
+    icon: '⭐',
+    category: 'gameplay',
+    rarity: 'silver',
+    xpReward: 50,
+    coinReward: 100,
+    condition: (p) => p.gamesPlayed >= 50,
+  },
+  {
+    id: 'hundred_games',
+    name: 'Snake Master',
+    description: 'Play 100 games',
+    icon: '🏆',
+    category: 'gameplay',
+    rarity: 'gold',
+    xpReward: 100,
+    coinReward: 200,
+    condition: (p) => p.gamesPlayed >= 100,
+  },
+  {
+    id: 'score_100',
+    name: 'Century Club',
+    description: 'Score 100 points in a single game',
+    icon: '💯',
+    category: 'gameplay',
+    rarity: 'silver',
+    xpReward: 30,
+    coinReward: 75,
+    condition: (p) => Math.max(...Object.values(p.highScores)) >= 100,
+  },
+  {
+    id: 'score_500',
+    name: 'High Scorer',
+    description: 'Score 500 points in a single game',
+    icon: '🔥',
+    category: 'gameplay',
+    rarity: 'gold',
+    xpReward: 75,
+    coinReward: 150,
+    condition: (p) => Math.max(...Object.values(p.highScores)) >= 500,
+  },
+  {
+    id: 'insane_survivor',
+    name: 'Insane Survivor',
+    description: 'Survive for 2 minutes on Insane difficulty',
+    icon: '💀',
+    category: 'gameplay',
+    rarity: 'platinum',
+    xpReward: 150,
+    coinReward: 300,
+    condition: (p) => p.highScores.insane >= 200,
+  },
+  // Collection achievements
+  {
+    id: 'food_100',
+    name: 'Hungry Snake',
+    description: 'Eat 100 food items total',
+    icon: '🍎',
+    category: 'collection',
+    rarity: 'bronze',
+    xpReward: 20,
+    coinReward: 40,
+    condition: (p) => p.totalFoodEaten >= 100,
+  },
+  {
+    id: 'food_500',
+    name: 'Foodie',
+    description: 'Eat 500 food items total',
+    icon: '🍕',
+    category: 'collection',
+    rarity: 'silver',
+    xpReward: 40,
+    coinReward: 80,
+    condition: (p) => p.totalFoodEaten >= 500,
+  },
+  {
+    id: 'food_1000',
+    name: 'Glutton',
+    description: 'Eat 1000 food items total',
+    icon: '🍔',
+    category: 'collection',
+    rarity: 'gold',
+    xpReward: 80,
+    coinReward: 160,
+    condition: (p) => p.totalFoodEaten >= 1000,
+  },
+  {
+    id: 'long_snake',
+    name: 'Long Boi',
+    description: 'Reach a snake length of 50',
+    icon: '📏',
+    category: 'collection',
+    rarity: 'silver',
+    xpReward: 35,
+    coinReward: 70,
+    condition: (p) => p.longestSnake >= 50,
+  },
+  {
+    id: 'mega_snake',
+    name: 'Mega Snake',
+    description: 'Reach a snake length of 100',
+    icon: '🐍',
+    category: 'collection',
+    rarity: 'gold',
+    xpReward: 70,
+    coinReward: 140,
+    condition: (p) => p.longestSnake >= 100,
+  },
+  {
+    id: 'titles_10',
+    name: 'Title Collector',
+    description: 'Unlock 10 titles',
+    icon: '👑',
+    category: 'collection',
+    rarity: 'silver',
+    xpReward: 45,
+    coinReward: 90,
+    condition: (p) => p.titles.length >= 10,
+  },
+  {
+    id: 'skins_5',
+    name: 'Fashion Snake',
+    description: 'Own 5 different skins',
+    icon: '🎨',
+    category: 'collection',
+    rarity: 'bronze',
+    xpReward: 25,
+    coinReward: 50,
+    condition: (p) => p.ownedSkins.length >= 5,
+  },
+  // Social achievements
+  {
+    id: 'bot_wins_5',
+    name: 'Bot Slayer',
+    description: 'Win 5 games against the bot',
+    icon: '🤖',
+    category: 'social',
+    rarity: 'bronze',
+    xpReward: 30,
+    coinReward: 60,
+    condition: (p) => p.gamesWonVsBot >= 5,
+  },
+  {
+    id: 'bot_wins_20',
+    name: 'Bot Destroyer',
+    description: 'Win 20 games against the bot',
+    icon: '⚔️',
+    category: 'social',
+    rarity: 'silver',
+    xpReward: 60,
+    coinReward: 120,
+    condition: (p) => p.gamesWonVsBot >= 20,
+  },
+  {
+    id: 'zen_master',
+    name: 'Zen Master',
+    description: 'Play 10 zen mode games',
+    icon: '🧘',
+    category: 'social',
+    rarity: 'bronze',
+    xpReward: 25,
+    coinReward: 50,
+    condition: (p) => p.zenGamesPlayed >= 10,
+  },
+  // Special achievements
+  {
+    id: 'daily_streak_7',
+    name: 'Week Warrior',
+    description: 'Maintain a 7-day login streak',
+    icon: '📅',
+    category: 'special',
+    rarity: 'silver',
+    xpReward: 50,
+    coinReward: 100,
+    condition: (p) => p.dailyStreak >= 7,
+  },
+  {
+    id: 'daily_streak_30',
+    name: 'Monthly Master',
+    description: 'Maintain a 30-day login streak',
+    icon: '🗓️',
+    category: 'special',
+    rarity: 'gold',
+    xpReward: 100,
+    coinReward: 200,
+    condition: (p) => p.dailyStreak >= 30,
+  },
+  {
+    id: 'level_10',
+    name: 'Rising Star',
+    description: 'Reach level 10',
+    icon: '⭐',
+    category: 'special',
+    rarity: 'bronze',
+    xpReward: 30,
+    coinReward: 60,
+    condition: (p) => p.level >= 10,
+  },
+  {
+    id: 'level_25',
+    name: 'Veteran',
+    description: 'Reach level 25',
+    icon: '🌟',
+    category: 'special',
+    rarity: 'silver',
+    xpReward: 60,
+    coinReward: 120,
+    condition: (p) => p.level >= 25,
+  },
+  {
+    id: 'level_50',
+    name: 'Legend',
+    description: 'Reach level 50',
+    icon: '💫',
+    category: 'special',
+    rarity: 'gold',
+    xpReward: 120,
+    coinReward: 240,
+    condition: (p) => p.level >= 50,
+  },
+];
+
+// ============ SPIN WHEEL SEGMENTS ============
+export const SPIN_WHEEL_SEGMENTS: SpinWheelSegment[] = [
+  { id: 'coins_50', label: '50 Coins', icon: '🪙', type: 'coins', amount: 50, color: '#FFD700', rarity: 'common' },
+  { id: 'coins_100', label: '100 Coins', icon: '💰', type: 'coins', amount: 100, color: '#FFA500', rarity: 'common' },
+  { id: 'gems_5', label: '5 Gems', icon: '💎', type: 'gems', amount: 5, color: '#00BFFF', rarity: 'rare' },
+  { id: 'xp_50', label: '50 XP', icon: '✨', type: 'xp', amount: 50, color: '#9370DB', rarity: 'common' },
+  { id: 'coins_200', label: '200 Coins', icon: '💵', type: 'coins', amount: 200, color: '#32CD32', rarity: 'rare' },
+  { id: 'gems_10', label: '10 Gems', icon: '💠', type: 'gems', amount: 10, color: '#FF1493', rarity: 'epic' },
+  { id: 'xp_100', label: '100 XP', icon: '🌟', type: 'xp', amount: 100, color: '#FFD700', rarity: 'rare' },
+  { id: 'coins_500', label: '500 Coins', icon: '🏆', type: 'coins', amount: 500, color: '#FF4500', rarity: 'epic' },
+  { id: 'gems_25', label: '25 Gems', icon: '🔷', type: 'gems', amount: 25, color: '#4169E1', rarity: 'legendary' },
+  { id: 'skin_rare', label: 'Rare Skin', icon: '🎨', type: 'skin', amount: 1, itemId: 'rare_skin', color: '#9400D3', rarity: 'epic' },
+  { id: 'xp_200', label: '200 XP', icon: '⭐', type: 'xp', amount: 200, color: '#FF69B4', rarity: 'epic' },
+  { id: 'title_exclusive', label: 'Title', icon: '👑', type: 'title', amount: 1, itemId: 'spin_champion', color: '#FFD700', rarity: 'legendary' },
+];
+
+// ============ VISUAL THEMES ============
+export const VISUAL_THEMES: VisualThemeConfig[] = [
+  {
+    id: 'default',
+    name: 'Classic',
+    description: 'The original Snake Rush experience',
+    icon: '🎮',
+    price: 0,
+    currency: 'coins',
+    backgroundGradient: 'from-gray-900 via-slate-900 to-gray-800',
+    particleColors: ['#4ade80', '#22c55e', '#16a34a'],
+    snakeGlow: 'rgba(74, 222, 128, 0.6)',
+    foodColor: '#ef4444',
+    gridColor: 'rgba(255, 255, 255, 0.05)',
+    unlocked: true,
+  },
+  {
+    id: 'cyberpunk',
+    name: 'Cyberpunk Neon',
+    description: 'Futuristic neon-lit cityscape',
+    icon: '🌆',
+    price: 500,
+    currency: 'coins',
+    backgroundGradient: 'from-purple-900 via-pink-900 to-blue-900',
+    particleColors: ['#ff00ff', '#00ffff', '#ffff00'],
+    snakeGlow: 'rgba(255, 0, 255, 0.8)',
+    foodColor: '#00ffff',
+    gridColor: 'rgba(255, 0, 255, 0.1)',
+  },
+  {
+    id: 'retro',
+    name: 'Retro Arcade',
+    description: 'Classic 8-bit arcade aesthetic',
+    icon: '👾',
+    price: 300,
+    currency: 'coins',
+    backgroundGradient: 'from-black via-gray-900 to-black',
+    particleColors: ['#00ff00', '#ffff00', '#ff0000'],
+    snakeGlow: 'rgba(0, 255, 0, 0.7)',
+    foodColor: '#ffff00',
+    gridColor: 'rgba(0, 255, 0, 0.15)',
+  },
+  {
+    id: 'forest',
+    name: 'Midnight Forest',
+    description: 'Mystical enchanted forest',
+    icon: '🌲',
+    price: 400,
+    currency: 'coins',
+    backgroundGradient: 'from-green-950 via-emerald-950 to-teal-950',
+    particleColors: ['#10b981', '#059669', '#047857'],
+    snakeGlow: 'rgba(16, 185, 129, 0.6)',
+    foodColor: '#f59e0b',
+    gridColor: 'rgba(16, 185, 129, 0.08)',
+  },
+  {
+    id: 'space',
+    name: 'Space Galaxy',
+    description: 'Journey through the cosmos',
+    icon: '🌌',
+    price: 15,
+    currency: 'gems',
+    backgroundGradient: 'from-indigo-950 via-purple-950 to-blue-950',
+    particleColors: ['#818cf8', '#a78bfa', '#c084fc'],
+    snakeGlow: 'rgba(129, 140, 248, 0.7)',
+    foodColor: '#fbbf24',
+    gridColor: 'rgba(129, 140, 248, 0.1)',
+  },
+  {
+    id: 'sunset',
+    name: 'Sunset Paradise',
+    description: 'Beautiful tropical sunset',
+    icon: '🌅',
+    price: 600,
+    currency: 'coins',
+    backgroundGradient: 'from-orange-900 via-red-900 to-pink-900',
+    particleColors: ['#fb923c', '#f97316', '#ea580c'],
+    snakeGlow: 'rgba(251, 146, 60, 0.7)',
+    foodColor: '#fbbf24',
+    gridColor: 'rgba(251, 146, 60, 0.1)',
+  },
+  {
+    id: 'ocean',
+    name: 'Deep Ocean',
+    description: 'Underwater aquatic adventure',
+    icon: '🌊',
+    price: 20,
+    currency: 'gems',
+    backgroundGradient: 'from-blue-950 via-cyan-950 to-teal-950',
+    particleColors: ['#06b6d4', '#0891b2', '#0e7490'],
+    snakeGlow: 'rgba(6, 182, 212, 0.7)',
+    foodColor: '#f43f5e',
+    gridColor: 'rgba(6, 182, 212, 0.1)',
+  },
 ];
 
 // ============ CHARACTERS ============

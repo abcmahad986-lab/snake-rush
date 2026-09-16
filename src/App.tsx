@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
-import { Player, Screen, GameMode, Difficulty, TROPHIES, TITLES, Theme } from './types';
+import { Player, Screen, GameMode, Difficulty, TROPHIES, TITLES, ACHIEVEMENTS, Theme } from './types';
 import { loadPlayer, savePlayer, createNewPlayer, addXp } from './store';
 import Game from './components/Game';
 import { LoginScreen, MainMenu, ProfileScreen, TrophiesScreen, ShopScreen, EventsScreen, LeaderboardScreen, RewardsScreen, SettingsScreen, TitlesScreen } from './components/Screens';
 import { SubscriptionScreen, BattlePassScreen, OnlineMultiplayerScreen, GoogleLoginScreen } from './components/PremiumScreens';
 import { CharactersScreen, ChestsScreen } from './components/CharacterScreens';
+import { AchievementsScreen, SpinWheelScreen, VisualThemesScreen } from './components/NewFeatures';
 
 type MultiplayerType = 'bot' | 'player' | 'zen';
 
@@ -65,6 +66,16 @@ function App() {
       if (!updated.titles?.includes(title.id) && title.condition(updated)) {
         updated.titles = [...(updated.titles || []), title.id];
         updated.coins += title.coinReward;
+        changed = true;
+      }
+    }
+
+    // Check achievements
+    for (const achievement of ACHIEVEMENTS) {
+      if (!updated.unlockedAchievements?.includes(achievement.id) && achievement.condition(updated)) {
+        updated.unlockedAchievements = [...(updated.unlockedAchievements || []), achievement.id];
+        updated.coins += achievement.coinReward;
+        updated = addXp(updated, achievement.xpReward);
         changed = true;
       }
     }
@@ -301,6 +312,12 @@ function App() {
       return <CharactersScreen player={player} setPlayer={handleUpdatePlayer} onBack={() => setScreen('menu')} theme={theme} />;
     case 'chests':
       return <ChestsScreen player={player} setPlayer={handleUpdatePlayer} onBack={() => setScreen('menu')} theme={theme} />;
+    case 'achievements':
+      return <AchievementsScreen player={player} setPlayer={handleUpdatePlayer} onBack={() => setScreen('menu')} theme={theme} />;
+    case 'spinwheel':
+      return <SpinWheelScreen player={player} setPlayer={handleUpdatePlayer} onBack={() => setScreen('menu')} theme={theme} />;
+    case 'visualthemes':
+      return <VisualThemesScreen player={player} setPlayer={handleUpdatePlayer} onBack={() => setScreen('menu')} theme={theme} />;
     default:
       return <MainMenu player={player} onSelectMode={handleSelectMode} onNavigate={setScreen} theme={theme} toggleTheme={toggleTheme} />;
   }
