@@ -7,6 +7,7 @@ import { SubscriptionScreen, BattlePassScreen, OnlineMultiplayerScreen, GoogleLo
 import { CharactersScreen, ChestsScreen } from './components/CharacterScreens';
 import { AchievementsScreen, SpinWheelScreen, VisualThemesScreen } from './components/NewFeatures';
 import { RealMoneyShopScreen, MapsScreen } from './components/ShopAndMaps';
+import { RealFriendsScreen } from './components/RealFriends';
 
 type MultiplayerType = 'bot' | 'player' | 'zen';
 
@@ -302,7 +303,7 @@ function App() {
     case 'battlepass':
       return <BattlePassScreen player={player} setPlayer={handleUpdatePlayer} onBack={() => setScreen('menu')} theme={theme} />;
     case 'online':
-      return <OnlineMultiplayerScreen player={player} onBack={() => setScreen('menu')} theme={theme} onSelectMode={(mode, difficulty) => {
+      return <RealFriendsScreen player={player} setPlayer={setPlayer} onBack={() => setScreen('menu')} theme={theme} onSelectMode={(mode, difficulty) => {
         setGameMode(mode);
         setGameDifficulty(difficulty);
         setScreen('game');
