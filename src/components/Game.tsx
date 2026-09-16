@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { Position, Direction, GameState, Difficulty, GameMode, GRID_SIZE, DIFFICULTY_SPEEDS, TIMED_DURATIONS, Player, PowerUp, TITLES, Theme } from '../types';
+import { Position, Direction, GameState, Difficulty, GameMode, GRID_SIZE, DIFFICULTY_SPEEDS, TIMED_DURATIONS, Player, PowerUp, TITLES, Theme, GAME_MAPS } from '../types';
 import { savePlayer, addXp } from '../store';
 import { audioManager } from '../audio';
 
@@ -345,6 +345,21 @@ export default function Game({ player, setPlayer, mode, difficulty, onBack, isMu
           return prev;
         }
 
+        // Map obstacle collision
+        const currentMap = GAME_MAPS.find(m => m.id === player.activeMap);
+        if (currentMap?.obstacles && currentMap.obstacles.some(obs => obs.x === newHead.x && obs.y === newHead.y)) {
+          setGameState('GAME_OVER');
+          return prev;
+        }
+
+        // Portal teleportation
+        if (currentMap?.portals) {
+          const portal = currentMap.portals.find(p => p.from.x === newHead.x && p.from.y === newHead.y);
+          if (portal) {
+            newHead = { ...portal.to };
+          }
+        }
+
         // Multiplayer collision
         if (isMultiplayer) {
           setSnake2(s2 => {
@@ -688,6 +703,50 @@ export default function Game({ player, setPlayer, mode, difficulty, onBack, isMu
               <div key={i} className={`${(i % GRID_SIZE + Math.floor(i / GRID_SIZE)) % 2 === 0 ? 'bg-gray-800/40' : 'bg-gray-800/20'}`} />
             ))}
           </div>
+
+          {/* Map Obstacles */}
+          {(() => {
+            const currentMap = GAME_MAPS.find(m => m.id === player.activeMap);
+            if (!currentMap || !currentMap.obstacles) return null;
+            
+            return currentMap.obstacles.map((obs, i) => (
+              <div
+                key={`obs-${i}`}
+                className="absolute flex items-center justify-center"
+                style={{
+                  left: `${(obs.x / GRID_SIZE) * 100}%`,
+                  top: `${(obs.y / GRID_SIZE) * 100}%`,
+                  width: `${100 / GRID_SIZE}%`,
+                  height: `${100 / GRID_SIZE}%`,
+                }}
+              >
+                <div className="w-[90%] h-[90%] rounded-sm" style={{ backgroundColor: currentMap.wallColor, opacity: 0.8 }} />
+              </div>
+            ));
+          })()}
+
+          {/* Map Portals */}
+          {(() => {
+            const currentMap = GAME_MAPS.find(m => m.id === player.activeMap);
+            if (!currentMap || !currentMap.portals) return null;
+            
+            return currentMap.portals.map((portal, i) => (
+              <div
+                key={`portal-${i}`}
+                className="absolute flex items-center justify-center animate-pulse"
+                style={{
+                  left: `${(portal.from.x / GRID_SIZE) * 100}%`,
+                  top: `${(portal.from.y / GRID_SIZE) * 100}%`,
+                  width: `${100 / GRID_SIZE}%`,
+                  height: `${100 / GRID_SIZE}%`,
+                }}
+              >
+                <div className="w-[80%] h-[80%] bg-cyan-500/60 rounded-full flex items-center justify-center text-xs shadow-lg shadow-cyan-500/40">
+                  🌀
+                </div>
+              </div>
+            ));
+          })()}
 
           {/* Zen mode indicator */}
           {(mode === 'zen' || multiplayerType === 'zen') && (

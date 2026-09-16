@@ -6,6 +6,7 @@ import { LoginScreen, MainMenu, ProfileScreen, TrophiesScreen, ShopScreen, Event
 import { SubscriptionScreen, BattlePassScreen, OnlineMultiplayerScreen, GoogleLoginScreen } from './components/PremiumScreens';
 import { CharactersScreen, ChestsScreen } from './components/CharacterScreens';
 import { AchievementsScreen, SpinWheelScreen, VisualThemesScreen } from './components/NewFeatures';
+import { RealMoneyShopScreen, MapsScreen } from './components/ShopAndMaps';
 
 type MultiplayerType = 'bot' | 'player' | 'zen';
 
@@ -318,6 +319,10 @@ function App() {
       return <SpinWheelScreen player={player} setPlayer={handleUpdatePlayer} onBack={() => setScreen('menu')} theme={theme} />;
     case 'visualthemes':
       return <VisualThemesScreen player={player} setPlayer={handleUpdatePlayer} onBack={() => setScreen('menu')} theme={theme} />;
+    case 'realmoney':
+      return <RealMoneyShopScreen player={player} setPlayer={handleUpdatePlayer} onBack={() => setScreen('menu')} theme={theme} />;
+    case 'maps':
+      return <MapsScreen player={player} setPlayer={handleUpdatePlayer} onBack={() => setScreen('menu')} theme={theme} />;
     default:
       return <MainMenu player={player} onSelectMode={handleSelectMode} onNavigate={setScreen} theme={theme} toggleTheme={toggleTheme} />;
   }

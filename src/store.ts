@@ -78,6 +78,12 @@ export function createNewPlayer(username: string): Player {
     ownedVisualThemes: ['default'],
     // Leaderboard
     personalBests: {},
+    // Real Money Shop
+    ownedRealMoneySkins: [],
+    purchasedPackages: [],
+    // Maps
+    activeMap: 'classic',
+    ownedMaps: ['classic'],
   };
 }
 
@@ -196,6 +202,20 @@ export function loadPlayer(): Player | null {
     }
     if (!player.personalBests) {
       player.personalBests = {};
+    }
+    
+    // Migration: Real Money Shop & Maps
+    if (!player.ownedRealMoneySkins) {
+      player.ownedRealMoneySkins = [];
+    }
+    if (!player.purchasedPackages) {
+      player.purchasedPackages = [];
+    }
+    if (!player.activeMap) {
+      player.activeMap = 'classic';
+    }
+    if (!player.ownedMaps) {
+      player.ownedMaps = ['classic'];
     }
     
     return player;

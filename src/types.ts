@@ -4,7 +4,8 @@ export type Position = { x: number; y: number };
 export type GameState = 'IDLE' | 'PLAYING' | 'PAUSED' | 'GAME_OVER';
 export type Difficulty = 'easy' | 'medium' | 'hard' | 'insane';
 export type GameMode = 'classic' | 'timed' | 'multiplayer' | 'event' | 'zen' | 'online';
-export type Screen = 'login' | 'menu' | 'game' | 'profile' | 'trophies' | 'titles' | 'shop' | 'events' | 'leaderboard' | 'settings' | 'rewards' | 'subscription' | 'battlepass' | 'online' | 'google' | 'characters' | 'chests' | 'achievements' | 'spinwheel' | 'visualthemes';
+export type Screen = 'login' | 'menu' | 'game' | 'profile' | 'trophies' | 'titles' | 'shop' | 'events' | 'leaderboard' | 'settings' | 'rewards' | 'subscription' | 'battlepass' | 'online' | 'google' | 'characters' | 'chests' | 'achievements' | 'spinwheel' | 'visualthemes' | 'realmoney' | 'maps';
+export type MapType = 'classic' | 'maze' | 'portal' | 'obstacles' | 'arena' | 'labyrinth' | 'space' | 'underwater';
 export type Theme = 'light' | 'dark';
 export type VisualTheme = 'default' | 'cyberpunk' | 'retro' | 'forest' | 'space' | 'sunset' | 'ocean';
 
@@ -135,6 +136,55 @@ export interface ChestReward {
   chance: number;
 }
 
+// ============ REAL MONEY SHOP ============
+export interface ShopPackage {
+  id: string;
+  name: string;
+  description: string;
+  icon: string;
+  price: number; // in USD
+  currency: 'USD';
+  coins: number;
+  gems: number;
+  bonusCoins?: number;
+  bonusGems?: number;
+  bonusItems?: string[];
+  popular?: boolean;
+  bestValue?: boolean;
+  free?: boolean;
+}
+
+export interface RealMoneySkin {
+  id: string;
+  name: string;
+  description: string;
+  icon: string;
+  price: number; // in USD
+  currency: 'USD';
+  rarity: 'rare' | 'epic' | 'legendary' | 'exclusive';
+  colors: { head: string; body: string; glow: string };
+  free?: boolean;
+}
+
+// ============ MAPS ============
+export interface GameMap {
+  id: string;
+  name: string;
+  description: string;
+  icon: string;
+  type: MapType;
+  price: number; // 0 for free
+  currency: 'coins' | 'gems' | 'USD';
+  difficulty: 'easy' | 'medium' | 'hard';
+  features: string[];
+  backgroundGradient: string;
+  wallColor: string;
+  gridColor: string;
+  obstacles?: Position[];
+  portals?: { from: Position; to: Position }[];
+  free?: boolean;
+}
+
 export interface Player {
   id: string;
   username: string;
@@ -194,6 +244,12 @@ export interface Player {
   ownedVisualThemes: VisualTheme[];
   // Leaderboard
   personalBests: Record<string, number>;
+  // Real Money Shop
+  ownedRealMoneySkins: string[];
+  purchasedPackages: string[];
+  // Maps
+  activeMap: string;
+  ownedMaps: string[];
 }
 
 export interface Title {
@@ -1087,4 +1143,301 @@ export const TITLES: Title[] = [
   { id: 'snake_god', name: 'Snake God', icon: '👁️', description: 'Score 10000 total', category: 'legendary', rarity: 'legendary', coinReward: 500, condition: (p) => p.totalScore >= 10000 },
   { id: 'eternal', name: 'Eternal', icon: '♾️', description: 'Reach length 100', category: 'legendary', rarity: 'legendary', coinReward: 500, condition: (p) => p.longestSnake >= 100 },
   { id: 'completionist', name: 'Completionist', icon: '✨', description: 'Collect all trophies', category: 'legendary', rarity: 'legendary', coinReward: 1000, condition: (p) => p.trophies.length >= TROPHIES.length },
+];
+
+// ============ REAL MONEY SHOP PACKAGES ============
+export const SHOP_PACKAGES: ShopPackage[] = [
+  {
+    id: 'starter_pack',
+    name: 'Starter Pack',
+    description: 'Perfect for beginners',
+    icon: '🎁',
+    price: 0,
+    currency: 'USD',
+    coins: 100,
+    gems: 5,
+    free: true,
+  },
+  {
+    id: 'coin_pile',
+    name: 'Coin Pile',
+    description: 'A heap of shiny coins',
+    icon: '🪙',
+    price: 0.99,
+    currency: 'USD',
+    coins: 500,
+    gems: 0,
+  },
+  {
+    id: 'gem_pouch',
+    name: 'Gem Pouch',
+    description: 'Precious gems collection',
+    icon: '💎',
+    price: 1.99,
+    currency: 'USD',
+    coins: 0,
+    gems: 50,
+  },
+  {
+    id: 'value_bundle',
+    name: 'Value Bundle',
+    description: 'Best value for coins and gems',
+    icon: '💰',
+    price: 4.99,
+    currency: 'USD',
+    coins: 2000,
+    gems: 100,
+    bonusCoins: 500,
+    bonusGems: 25,
+    popular: true,
+  },
+  {
+    id: 'mega_pack',
+    name: 'Mega Pack',
+    description: 'Massive amount of currency',
+    icon: '🏆',
+    price: 9.99,
+    currency: 'USD',
+    coins: 5000,
+    gems: 250,
+    bonusCoins: 1500,
+    bonusGems: 75,
+    bestValue: true,
+  },
+  {
+    id: 'ultimate_pack',
+    name: 'Ultimate Pack',
+    description: 'The ultimate currency package',
+    icon: '👑',
+    price: 19.99,
+    currency: 'USD',
+    coins: 12000,
+    gems: 600,
+    bonusCoins: 4000,
+    bonusGems: 200,
+    bonusItems: ['exclusive_skin_1'],
+  },
+];
+
+// ============ REAL MONEY SKINS ============
+export const REAL_MONEY_SKINS: RealMoneySkin[] = [
+  {
+    id: 'neon_starter',
+    name: 'Neon Starter',
+    description: 'Glowing neon green skin',
+    icon: '💚',
+    price: 0,
+    currency: 'USD',
+    rarity: 'rare',
+    colors: { head: '#00ff00', body: '#00cc00', glow: 'rgba(0, 255, 0, 0.8)' },
+    free: true,
+  },
+  {
+    id: 'fire_starter',
+    name: 'Fire Starter',
+    description: 'Blazing fire skin',
+    icon: '🔥',
+    price: 0.99,
+    currency: 'USD',
+    rarity: 'rare',
+    colors: { head: '#ff4500', body: '#ff6347', glow: 'rgba(255, 69, 0, 0.8)' },
+  },
+  {
+    id: 'ice_crystal',
+    name: 'Ice Crystal',
+    description: 'Frozen ice crystal skin',
+    icon: '❄️',
+    price: 1.99,
+    currency: 'USD',
+    rarity: 'epic',
+    colors: { head: '#00bfff', body: '#1e90ff', glow: 'rgba(0, 191, 255, 0.8)' },
+  },
+  {
+    id: 'golden_dragon',
+    name: 'Golden Dragon',
+    description: 'Majestic golden dragon skin',
+    icon: '🐉',
+    price: 2.99,
+    currency: 'USD',
+    rarity: 'epic',
+    colors: { head: '#ffd700', body: '#daa520', glow: 'rgba(255, 215, 0, 0.8)' },
+  },
+  {
+    id: 'rainbow_pride',
+    name: 'Rainbow Pride',
+    description: 'Colorful rainbow skin',
+    icon: '🌈',
+    price: 3.99,
+    currency: 'USD',
+    rarity: 'legendary',
+    colors: { head: '#ff0000', body: '#00ff00', glow: 'rgba(255, 0, 255, 0.8)' },
+  },
+  {
+    id: 'galaxy_explorer',
+    name: 'Galaxy Explorer',
+    description: 'Cosmic galaxy skin',
+    icon: '🌌',
+    price: 4.99,
+    currency: 'USD',
+    rarity: 'legendary',
+    colors: { head: '#9370db', body: '#4b0082', glow: 'rgba(147, 112, 219, 0.8)' },
+  },
+  {
+    id: 'exclusive_diamond',
+    name: 'Exclusive Diamond',
+    description: 'Only available in Ultimate Pack',
+    icon: '💎',
+    price: 9.99,
+    currency: 'USD',
+    rarity: 'exclusive',
+    colors: { head: '#b9f2ff', body: '#00ced1', glow: 'rgba(185, 242, 255, 0.9)' },
+  },
+];
+
+// ============ GAME MAPS ============
+export const GAME_MAPS: GameMap[] = [
+  {
+    id: 'classic',
+    name: 'Classic',
+    description: 'The original Snake Rush experience',
+    icon: '🎮',
+    type: 'classic',
+    price: 0,
+    currency: 'coins',
+    difficulty: 'easy',
+    features: ['Standard gameplay', 'No obstacles'],
+    backgroundGradient: 'from-gray-900 via-slate-900 to-gray-800',
+    wallColor: '#4b5563',
+    gridColor: 'rgba(255, 255, 255, 0.05)',
+    free: true,
+  },
+  {
+    id: 'maze',
+    name: 'Maze Runner',
+    description: 'Navigate through tricky maze walls',
+    icon: '🏰',
+    type: 'maze',
+    price: 200,
+    currency: 'coins',
+    difficulty: 'medium',
+    features: ['Maze walls', 'Strategic navigation'],
+    backgroundGradient: 'from-purple-900 via-indigo-900 to-blue-900',
+    wallColor: '#7c3aed',
+    gridColor: 'rgba(124, 58, 237, 0.1)',
+    obstacles: [
+      { x: 5, y: 5 }, { x: 5, y: 6 }, { x: 5, y: 7 }, { x: 5, y: 8 }, { x: 5, y: 9 },
+      { x: 10, y: 3 }, { x: 10, y: 4 }, { x: 10, y: 5 }, { x: 10, y: 6 },
+      { x: 15, y: 10 }, { x: 15, y: 11 }, { x: 15, y: 12 }, { x: 15, y: 13 }, { x: 15, y: 14 },
+      { x: 7, y: 15 }, { x: 8, y: 15 }, { x: 9, y: 15 }, { x: 10, y: 15 },
+    ],
+  },
+  {
+    id: 'portal',
+    name: 'Portal Jump',
+    description: 'Use portals to teleport across the map',
+    icon: '🌀',
+    type: 'portal',
+    price: 300,
+    currency: 'coins',
+    difficulty: 'medium',
+    features: ['Teleportation portals', 'Quick traversal'],
+    backgroundGradient: 'from-cyan-900 via-teal-900 to-green-900',
+    wallColor: '#06b6d4',
+    gridColor: 'rgba(6, 182, 212, 0.1)',
+    portals: [
+      { from: { x: 2, y: 2 }, to: { x: 17, y: 17 } },
+      { from: { x: 17, y: 2 }, to: { x: 2, y: 17 } },
+      { from: { x: 10, y: 10 }, to: { x: 5, y: 15 } },
+    ],
+  },
+  {
+    id: 'obstacles',
+    name: 'Obstacle Course',
+    description: 'Dodge static obstacles scattered around',
+    icon: '🚧',
+    type: 'obstacles',
+    price: 15,
+    currency: 'gems',
+    difficulty: 'hard',
+    features: ['Static obstacles', 'Precision required'],
+    backgroundGradient: 'from-red-900 via-orange-900 to-yellow-900',
+    wallColor: '#dc2626',
+    gridColor: 'rgba(220, 38, 38, 0.1)',
+    obstacles: [
+      { x: 3, y: 3 }, { x: 7, y: 7 }, { x: 12, y: 5 }, { x: 16, y: 9 },
+      { x: 5, y: 14 }, { x: 9, y: 11 }, { x: 14, y: 14 }, { x: 18, y: 3 },
+      { x: 4, y: 8 }, { x: 11, y: 16 }, { x: 15, y: 7 }, { x: 8, y: 4 },
+    ],
+  },
+  {
+    id: 'arena',
+    name: 'Battle Arena',
+    description: 'Compact arena for intense gameplay',
+    icon: '⚔️',
+    type: 'arena',
+    price: 25,
+    currency: 'gems',
+    difficulty: 'hard',
+    features: ['Smaller play area', 'Fast-paced action'],
+    backgroundGradient: 'from-rose-900 via-pink-900 to-fuchsia-900',
+    wallColor: '#e11d48',
+    gridColor: 'rgba(225, 29, 72, 0.1)',
+  },
+  {
+    id: 'labyrinth',
+    name: 'Labyrinth',
+    description: 'Complex labyrinth with multiple paths',
+    icon: '🏛️',
+    type: 'labyrinth',
+    price: 2.99,
+    currency: 'USD',
+    difficulty: 'hard',
+    features: ['Complex paths', 'Multiple routes'],
+    backgroundGradient: 'from-amber-900 via-yellow-900 to-orange-900',
+    wallColor: '#d97706',
+    gridColor: 'rgba(217, 119, 6, 0.1)',
+    obstacles: [
+      { x: 4, y: 4 }, { x: 4, y: 5 }, { x: 4, y: 6 }, { x: 6, y: 4 }, { x: 6, y: 5 },
+      { x: 8, y: 8 }, { x: 8, y: 9 }, { x: 8, y: 10 }, { x: 10, y: 8 }, { x: 10, y: 9 },
+      { x: 12, y: 12 }, { x: 12, y: 13 }, { x: 12, y: 14 }, { x: 14, y: 12 }, { x: 14, y: 13 },
+      { x: 16, y: 4 }, { x: 16, y: 5 }, { x: 16, y: 6 }, { x: 18, y: 4 }, { x: 18, y: 5 },
+    ],
+  },
+  {
+    id: 'space',
+    name: 'Space Station',
+    description: 'Zero gravity space environment',
+    icon: '🚀',
+    type: 'space',
+    price: 3.99,
+    currency: 'USD',
+    difficulty: 'medium',
+    features: ['Space theme', 'Floating obstacles'],
+    backgroundGradient: 'from-slate-900 via-blue-950 to-indigo-950',
+    wallColor: '#3b82f6',
+    gridColor: 'rgba(59, 130, 246, 0.1)',
+    obstacles: [
+      { x: 5, y: 5 }, { x: 15, y: 5 }, { x: 5, y: 15 }, { x: 15, y: 15 },
+      { x: 10, y: 10 }, { x: 3, y: 10 }, { x: 17, y: 10 }, { x: 10, y: 3 }, { x: 10, y: 17 },
+    ],
+  },
+  {
+    id: 'underwater',
+    name: 'Underwater Reef',
+    description: 'Dive into the deep ocean',
+    icon: '🐠',
+    type: 'underwater',
+    price: 4.99,
+    currency: 'USD',
+    difficulty: 'medium',
+    features: ['Ocean theme', 'Coral obstacles'],
+    backgroundGradient: 'from-blue-900 via-cyan-900 to-teal-900',
+    wallColor: '#0891b2',
+    gridColor: 'rgba(8, 145, 178, 0.1)',
+    obstacles: [
+      { x: 4, y: 6 }, { x: 5, y: 6 }, { x: 6, y: 6 }, { x: 14, y: 6 }, { x: 15, y: 6 }, { x: 16, y: 6 },
+      { x: 4, y: 14 }, { x: 5, y: 14 }, { x: 6, y: 14 }, { x: 14, y: 14 }, { x: 15, y: 14 }, { x: 16, y: 14 },
+      { x: 10, y: 4 }, { x: 10, y: 16 },
+    ],
+  },
 ];

@@ -248,6 +248,8 @@ export function MainMenu({ player, onSelectMode, onNavigate, theme, toggleTheme 
           { screen: 'achievements' as Screen, icon: '🏅', label: 'Achieve' },
           { screen: 'spinwheel' as Screen, icon: '🎰', label: 'Spin' },
           { screen: 'visualthemes' as Screen, icon: '🎨', label: 'Themes' },
+          { screen: 'realmoney' as Screen, icon: '💎', label: 'Premium' },
+          { screen: 'maps' as Screen, icon: '🗺️', label: 'Maps' },
         ].map(item => (
           <button
             key={item.screen}
