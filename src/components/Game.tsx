@@ -3,7 +3,7 @@ import { Position, Direction, GameState, Difficulty, GameMode, GRID_SIZE, DIFFIC
 import { savePlayer, addXp } from '../store';
 import { audioManager } from '../audio';
 
-type MultiplayerType = 'bot' | 'player';
+type MultiplayerType = 'bot' | 'player' | 'zen';
 
 interface GameProps {
   player: Player;
@@ -287,8 +287,8 @@ export default function Game({ player, setPlayer, mode, difficulty, onBack, isMu
         else if (dir === 'LEFT') newHead.x--;
         else newHead.x++;
 
-        // Zen mode: wrap around walls
-        if (mode === 'zen') {
+        // Zen mode or Zen Multiplayer: wrap around walls
+        if (mode === 'zen' || multiplayerType === 'zen') {
           if (newHead.x < 0) newHead.x = GRID_SIZE - 1;
           else if (newHead.x >= GRID_SIZE) newHead.x = 0;
           if (newHead.y < 0) newHead.y = GRID_SIZE - 1;
@@ -371,8 +371,8 @@ export default function Game({ player, setPlayer, mode, difficulty, onBack, isMu
           else if (dir === 'LEFT') newHead.x--;
           else newHead.x++;
 
-          // Zen mode: wrap around walls
-          if (mode === 'zen') {
+          // Zen mode or Zen Multiplayer: wrap around walls
+          if (mode === 'zen' || multiplayerType === 'zen') {
             if (newHead.x < 0) newHead.x = GRID_SIZE - 1;
             else if (newHead.x >= GRID_SIZE) newHead.x = 0;
             if (newHead.y < 0) newHead.y = GRID_SIZE - 1;
@@ -540,6 +540,7 @@ export default function Game({ player, setPlayer, mode, difficulty, onBack, isMu
 
   const getModeLabel = () => {
     if (isMultiplayer) {
+      if (multiplayerType === 'zen') return '🌀 Zen Multiplayer';
       return multiplayerType === 'bot' ? '🤖 vs Bot' : '👥 vs Player';
     }
     if (mode === 'timed') return '⏱️ Timed';
@@ -637,7 +638,7 @@ export default function Game({ player, setPlayer, mode, difficulty, onBack, isMu
           </div>
 
           {/* Zen mode indicator */}
-          {mode === 'zen' && (
+          {(mode === 'zen' || multiplayerType === 'zen') && (
             <div className="absolute top-2 left-1/2 -translate-x-1/2 z-10 px-3 py-1 bg-purple-900/60 rounded-full text-[10px] text-purple-300 border border-purple-500/30">
               🌀 Walls disabled - pass through!
             </div>
@@ -720,14 +721,19 @@ export default function Game({ player, setPlayer, mode, difficulty, onBack, isMu
           {gameState === 'IDLE' && (
             <div className="absolute inset-0 bg-black/60 backdrop-blur-sm flex flex-col items-center justify-center rounded-2xl z-50 animate-fade-in">
               <div className="text-4xl mb-3">
-                {isMultiplayer ? (multiplayerType === 'bot' ? '🤖' : '👥') : mode === 'timed' ? '⏱️' : mode === 'zen' ? '🧘' : '🐍'}
+                {isMultiplayer 
+                  ? (multiplayerType === 'zen' ? '🌀' : multiplayerType === 'bot' ? '🤖' : '👥') 
+                  : mode === 'timed' ? '⏱️' : mode === 'zen' ? '🧘' : '🐍'}
               </div>
               <h2 className="text-lg font-bold text-white mb-1">
-                {isMultiplayer ? (multiplayerType === 'bot' ? 'vs Bot!' : 'vs Player!') : mode === 'timed' ? 'Timed Challenge' : mode === 'zen' ? 'Zen Mode' : 'Ready?'}
+                {isMultiplayer 
+                  ? (multiplayerType === 'zen' ? 'Zen Multiplayer!' : multiplayerType === 'bot' ? 'vs Bot!' : 'vs Player!') 
+                  : mode === 'timed' ? 'Timed Challenge' : mode === 'zen' ? 'Zen Mode' : 'Ready?'}
               </h2>
-              {mode === 'zen' && <p className="text-purple-300 text-xs mb-2">Pass through walls freely!</p>}
+              {(mode === 'zen' || multiplayerType === 'zen') && <p className="text-purple-300 text-xs mb-2">Pass through walls freely!</p>}
               {isMultiplayer && multiplayerType === 'player' && <p className="text-gray-400 text-xs mb-2">P1: WASD/Arrows • P2: IJKL</p>}
               {isMultiplayer && multiplayerType === 'bot' && <p className="text-gray-400 text-xs mb-2">Use WASD/Arrows to compete!</p>}
+              {isMultiplayer && multiplayerType === 'zen' && <p className="text-gray-400 text-xs mb-2">vs Bot • No walls!</p>}
               <button onClick={() => { audioManager.playClickSound(); startGame(); }} className="px-5 py-2.5 bg-green-500 hover:bg-green-400 text-white font-bold rounded-xl transition-all transform hover:scale-105 active:scale-95 shadow-lg shadow-green-500/30">
                 ▶ Start
               </button>

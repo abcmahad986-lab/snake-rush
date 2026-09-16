@@ -6,7 +6,7 @@ import { LoginScreen, MainMenu, ProfileScreen, TrophiesScreen, ShopScreen, Event
 import { SubscriptionScreen, BattlePassScreen, OnlineMultiplayerScreen, GoogleLoginScreen } from './components/PremiumScreens';
 import { CharactersScreen, ChestsScreen } from './components/CharacterScreens';
 
-type MultiplayerType = 'bot' | 'player';
+type MultiplayerType = 'bot' | 'player' | 'zen';
 
 function App() {
   const [player, setPlayer] = useState<Player | null>(null);
@@ -235,6 +235,21 @@ function App() {
                   <h3 className={`text-lg font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>vs Player</h3>
                   <p className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Local 2-player battle</p>
                   <p className={`text-[10px] ${theme === 'dark' ? 'text-green-400' : 'text-green-600'} mt-1`}>P1: WASD • P2: IJKL</p>
+                </div>
+              </div>
+            </button>
+
+            {/* Zen Multiplayer */}
+            <button
+              onClick={() => handleMultiplayerChoice('zen')}
+              className={`w-full ${theme === 'dark' ? 'bg-gradient-to-r from-purple-900/40 to-pink-900/40 hover:from-purple-900/60 hover:to-pink-900/60 border-purple-500/30 hover:border-purple-400/50' : 'bg-gradient-to-r from-purple-100 to-pink-100 hover:from-purple-200 hover:to-pink-200 border-purple-300 hover:border-purple-400'} rounded-2xl p-5 transition-all transform hover:scale-[1.02] active:scale-95 text-left border`}
+            >
+              <div className="flex items-center gap-4">
+                <div className="text-4xl">🌀</div>
+                <div>
+                  <h3 className={`text-lg font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>Zen Multiplayer</h3>
+                  <p className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Pass through walls!</p>
+                  <p className={`text-[10px] ${theme === 'dark' ? 'text-purple-400' : 'text-purple-600'} mt-1`}>vs Bot • No wall collision</p>
                 </div>
               </div>
             </button>
