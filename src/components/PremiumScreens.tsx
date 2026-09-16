@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Player, Screen, Theme, SubscriptionTier, SUBSCRIPTION_PLANS, PREMIUM_SKINS, BATTLE_PASS_REWARDS, MOCK_FRIENDS, Friend } from '../types';
+import { Player, Theme, SUBSCRIPTION_PLANS, BATTLE_PASS_REWARDS, MOCK_FRIENDS } from '../types';
 import { savePlayer } from '../store';
 
 const t = (theme: Theme, dark: string, light: string) => theme === 'dark' ? dark : light;
@@ -11,11 +11,11 @@ export function SubscriptionScreen({ player, setPlayer, onBack, theme }: {
   onBack: () => void; 
   theme: Theme;
 }) {
-  const [selectedPlan, setSelectedPlan] = useState<SubscriptionTier | null>(null);
+  const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
   const [showPayment, setShowPayment] = useState(false);
 
-  const handleSubscribe = (tier: SubscriptionTier) => {
-    setSelectedPlan(tier);
+  const handleSubscribe = (planId: string) => {
+    setSelectedPlan(planId);
     setShowPayment(true);
   };
 
@@ -32,16 +32,16 @@ export function SubscriptionScreen({ player, setPlayer, onBack, theme }: {
     const updated = {
       ...player,
       subscription: {
-        tier: selectedPlan,
+        tier: plan.id as any,
         status: 'active' as const,
         startDate: now.toISOString(),
         endDate: endDate.toISOString(),
         autoRenew: true,
         paymentMethod: 'Credit Card',
       },
-      isPremium: selectedPlan !== 'free',
-      premiumSkinsUnlocked: selectedPlan === 'premium' || selectedPlan === 'ultimate' 
-        ? PREMIUM_SKINS.map(s => s.id) 
+      isPremium: plan.id !== 'free',
+      premiumSkinsUnlocked: plan.id === 'premium' || plan.id === 'ultimate' 
+        ? ['diamond', 'neon_glow', 'galaxy', 'fire_dragon', 'ice_crystal', 'rainbow_pride', 'shadow_ninja', 'golden_king']
         : player.premiumSkinsUnlocked,
     };
 
@@ -202,15 +202,30 @@ export function BattlePassScreen({ player, setPlayer, onBack, theme }: {
   onBack: () => void;
   theme: Theme;
 }) {
-  const claimReward = (level: number) => {
-    const reward = BATTLE_PASS_REWARDS.find(r => r.level === level);
-    if (!reward || player.battlePassRewards.includes(`level_${level}`)) return;
-    if (reward.premium && !player.isPremium) return;
+  const [tab, setTab] = useState<'rewards' | 'missions'>('rewards');
+  
+  // Mock missions
+  const missions = [
+    { id: 'm1', name: 'Score 100 points', description: 'Reach 100 points in any game', progress: 75, target: 100, xpReward: 50, icon: '🎯' },
+    { id: 'm2', name: 'Eat 50 food items', description: 'Collect 50 food items total', progress: 32, target: 50, xpReward: 40, icon: '🍎' },
+    { id: 'm3', name: 'Play 5 games', description: 'Complete 5 games', progress: 3, target: 5, xpReward: 60, icon: '🎮' },
+    { id: 'm4', name: 'Win vs Bot', description: 'Defeat the bot 3 times', progress: 2, target: 3, xpReward: 80, icon: '🤖' },
+    { id: 'm5', name: 'Reach length 20', description: 'Grow your snake to length 20', progress: 15, target: 20, xpReward: 70, icon: '📏' },
+    { id: 'm6', name: 'Play Zen mode', description: 'Play 3 games in Zen mode', progress: 1, target: 3, xpReward: 45, icon: '🧘' },
+  ];
+
+  const claimReward = (level: number, isPremium: boolean) => {
+    const reward = BATTLE_PASS_REWARDS.find(r => r.level === level && r.premium === isPremium);
+    if (!reward) return;
+    
+    const rewardKey = `${isPremium ? 'premium' : 'free'}_level_${level}`;
+    if (player.battlePassRewards.includes(rewardKey)) return;
+    if (isPremium && !player.isPremium) return;
     if (player.battlePassLevel < level) return;
 
     const updated = {
       ...player,
-      battlePassRewards: [...player.battlePassRewards, `level_${level}`],
+      battlePassRewards: [...player.battlePassRewards, rewardKey],
       coins: reward.type === 'coins' ? player.coins + reward.amount : player.coins,
       gems: reward.type === 'gems' ? player.gems + reward.amount : player.gems,
     };
@@ -219,87 +234,259 @@ export function BattlePassScreen({ player, setPlayer, onBack, theme }: {
     savePlayer(updated);
   };
 
+  const getRewardIcon = (type: string) => {
+    switch(type) {
+      case 'coins': return '🪙';
+      case 'gems': return '💎';
+      case 'skin': return '🎨';
+      case 'title': return '🏆';
+      default: return '🎁';
+    }
+  };
+
   return (
     <div className={`min-h-screen ${t(theme, 'bg-gradient-to-br from-gray-900 via-slate-900 to-gray-800', 'bg-gradient-to-br from-gray-50 via-slate-50 to-white')} p-4`}>
-      <div className="max-w-2xl mx-auto">
+      <div className="max-w-4xl mx-auto">
         <button onClick={onBack} className={`mb-3 px-3 py-1.5 ${t(theme, 'bg-gray-800 hover:bg-gray-700 text-gray-300 border-gray-700/50', 'bg-white hover:bg-gray-50 text-gray-700 border-gray-300')} rounded-lg text-sm border`}>
           ← Back
         </button>
 
+        {/* Header */}
         <div className="text-center mb-6">
           <div className="text-5xl mb-3">🎖️</div>
-          <h2 className={`text-3xl font-bold ${t(theme, 'text-white', 'text-gray-900')} mb-2`}>Battle Pass</h2>
-          <p className={`${t(theme, 'text-gray-400', 'text-gray-600')}`}>Level up and unlock rewards</p>
+          <h2 className={`text-3xl font-bold ${t(theme, 'text-white', 'text-gray-900')} mb-2`}>Season 1: Snake Legends</h2>
+          <p className={`${t(theme, 'text-gray-400', 'text-gray-600')}`}>Complete missions and unlock rewards</p>
         </div>
 
-        {/* Progress */}
+        {/* Progress Bar */}
         <div className={`${t(theme, 'bg-gray-800/60 border-gray-700/50', 'bg-white border-gray-200 shadow-sm')} rounded-xl p-4 mb-6 border`}>
-          <div className="flex justify-between items-center mb-2">
+          <div className="flex justify-between items-center mb-3">
             <div>
-              <div className={`text-sm ${t(theme, 'text-gray-400', 'text-gray-600')}`}>Level</div>
-              <div className={`text-2xl font-bold ${t(theme, 'text-white', 'text-gray-900')}`}>{player.battlePassLevel}</div>
+              <div className={`text-sm ${t(theme, 'text-gray-400', 'text-gray-600')}`}>Battle Pass Level</div>
+              <div className={`text-3xl font-bold ${t(theme, 'text-white', 'text-gray-900')}`}>{player.battlePassLevel}</div>
             </div>
             <div className="text-right">
-              <div className={`text-sm ${t(theme, 'text-gray-400', 'text-gray-600')}`}>XP</div>
-              <div className={`text-lg font-bold ${t(theme, 'text-white', 'text-gray-900')}`}>{player.battlePassXp} / 1000</div>
+              <div className={`text-sm ${t(theme, 'text-gray-400', 'text-gray-600')}`}>Season XP</div>
+              <div className={`text-xl font-bold ${t(theme, 'text-white', 'text-gray-900')}`}>{player.battlePassXp} / 1000</div>
             </div>
           </div>
-          <div className={`h-3 ${t(theme, 'bg-gray-900', 'bg-gray-200')} rounded-full overflow-hidden`}>
+          <div className={`h-4 ${t(theme, 'bg-gray-900', 'bg-gray-200')} rounded-full overflow-hidden`}>
             <div
-              className="h-full bg-gradient-to-r from-purple-500 to-pink-500 rounded-full transition-all"
+              className="h-full bg-gradient-to-r from-purple-500 via-pink-500 to-red-500 rounded-full transition-all relative"
               style={{ width: `${(player.battlePassXp / 1000) * 100}%` }}
-            />
+            >
+              <div className="absolute inset-0 bg-white/20 animate-pulse"></div>
+            </div>
+          </div>
+          <div className={`text-xs ${t(theme, 'text-gray-500', 'text-gray-400')} mt-2 text-center`}>
+            {1000 - player.battlePassXp} XP to next level
           </div>
         </div>
 
-        {/* Rewards Grid */}
-        <div className="space-y-2">
-          {BATTLE_PASS_REWARDS.map(reward => {
-            const isClaimed = player.battlePassRewards.includes(`level_${reward.level}`);
-            const isUnlocked = player.battlePassLevel >= reward.level;
-            const canClaim = isUnlocked && !isClaimed && (!reward.premium || player.isPremium);
+        {/* Tabs */}
+        <div className="flex gap-2 mb-6">
+          <button
+            onClick={() => setTab('rewards')}
+            className={`flex-1 py-3 rounded-lg font-bold ${
+              tab === 'rewards'
+                ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg'
+                : t(theme, 'bg-gray-800 text-gray-400', 'bg-gray-200 text-gray-600')
+            } transition-all`}
+          >
+            🎁 Rewards
+          </button>
+          <button
+            onClick={() => setTab('missions')}
+            className={`flex-1 py-3 rounded-lg font-bold ${
+              tab === 'missions'
+                ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg'
+                : t(theme, 'bg-gray-800 text-gray-400', 'bg-gray-200 text-gray-600')
+            } transition-all`}
+          >
+            🎯 Missions
+          </button>
+        </div>
 
-            return (
-              <div
-                key={reward.level}
-                className={`${t(theme, 'bg-gray-800/60 border-gray-700/50', 'bg-white border-gray-200 shadow-sm')} rounded-xl p-4 border flex items-center gap-4 ${
-                  !isUnlocked ? 'opacity-50' : ''
-                }`}
-              >
-                <div className={`w-12 h-12 rounded-lg ${
-                  reward.premium 
-                    ? 'bg-gradient-to-br from-yellow-500 to-orange-600' 
-                    : t(theme, 'bg-gradient-to-br from-purple-600 to-blue-600', 'bg-gradient-to-br from-purple-500 to-blue-500')
-                } flex items-center justify-center text-white font-bold`}>
-                  {reward.level}
-                </div>
-
-                <div className="flex-1">
-                  <div className={`font-bold ${t(theme, 'text-white', 'text-gray-900')}`}>{reward.reward}</div>
-                  <div className={`text-xs ${t(theme, 'text-gray-400', 'text-gray-600')}`}>
-                    {reward.premium && <span className="text-yellow-400">⭐ Premium </span>}
-                    Level {reward.level} required
+        {/* Missions Tab */}
+        {tab === 'missions' && (
+          <div className="space-y-3">
+            {missions.map(mission => {
+              const progress = (mission.progress / mission.target) * 100;
+              const isComplete = mission.progress >= mission.target;
+              
+              return (
+                <div
+                  key={mission.id}
+                  className={`${t(theme, 'bg-gray-800/60 border-gray-700/50', 'bg-white border-gray-200 shadow-sm')} rounded-xl p-4 border`}
+                >
+                  <div className="flex items-start gap-4">
+                    <div className="text-4xl">{mission.icon}</div>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <div className={`font-bold ${t(theme, 'text-white', 'text-gray-900')}`}>{mission.name}</div>
+                        {isComplete && <span className="text-green-400 text-sm">✓ Complete</span>}
+                      </div>
+                      <div className={`text-sm ${t(theme, 'text-gray-400', 'text-gray-600')} mb-2`}>
+                        {mission.description}
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <div className={`flex-1 h-2 ${t(theme, 'bg-gray-900', 'bg-gray-200')} rounded-full overflow-hidden`}>
+                          <div
+                            className={`h-full rounded-full transition-all ${
+                              isComplete 
+                                ? 'bg-gradient-to-r from-green-500 to-emerald-500' 
+                                : 'bg-gradient-to-r from-purple-500 to-pink-500'
+                            }`}
+                            style={{ width: `${Math.min(progress, 100)}%` }}
+                          />
+                        </div>
+                        <div className={`text-sm font-bold ${t(theme, 'text-white', 'text-gray-900')}`}>
+                          {mission.progress}/{mission.target}
+                        </div>
+                      </div>
+                      <div className="text-xs text-yellow-400 mt-2">+{mission.xpReward} XP</div>
+                    </div>
                   </div>
                 </div>
+              );
+            })}
+          </div>
+        )}
 
-                {isClaimed ? (
-                  <div className="text-green-400 text-2xl">✓</div>
-                ) : canClaim ? (
-                  <button
-                    onClick={() => claimReward(reward.level)}
-                    className="px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-400 hover:to-emerald-500 text-white font-bold rounded-lg"
-                  >
-                    Claim
-                  </button>
-                ) : !isUnlocked ? (
-                  <div className={`text-sm ${t(theme, 'text-gray-500', 'text-gray-400')}`}>🔒</div>
-                ) : reward.premium && !player.isPremium ? (
-                  <div className="text-xs text-yellow-400">Premium</div>
-                ) : null}
+        {/* Rewards Tab - Dual Track */}
+        {tab === 'rewards' && (
+          <div className="space-y-3">
+            {/* Track Headers */}
+            <div className="grid grid-cols-2 gap-3 mb-4">
+              <div className={`${t(theme, 'bg-gradient-to-br from-blue-900/40 to-cyan-900/40 border-blue-500/30', 'bg-gradient-to-br from-blue-100 to-cyan-100 border-blue-300')} rounded-xl p-3 border text-center`}>
+                <div className="text-2xl mb-1">🆓</div>
+                <div className={`font-bold ${t(theme, 'text-white', 'text-gray-900')}`}>Free Track</div>
+                <div className={`text-xs ${t(theme, 'text-gray-300', 'text-gray-600')}`}>Available to all</div>
               </div>
-            );
-          })}
-        </div>
+              <div className={`${t(theme, 'bg-gradient-to-br from-yellow-900/40 to-orange-900/40 border-yellow-500/30', 'bg-gradient-to-br from-yellow-100 to-orange-100 border-yellow-300')} rounded-xl p-3 border text-center relative`}>
+                {!player.isPremium && (
+                  <div className="absolute -top-2 -right-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full font-bold">
+                    🔒 Premium
+                  </div>
+                )}
+                <div className="text-2xl mb-1">⭐</div>
+                <div className={`font-bold ${t(theme, 'text-white', 'text-gray-900')}`}>Premium Track</div>
+                <div className={`text-xs ${t(theme, 'text-gray-300', 'text-gray-600')}`}>Snake Pass only</div>
+              </div>
+            </div>
+
+            {/* Rewards by Level */}
+            {Array.from({ length: 15 }, (_, i) => i + 1).map(level => {
+              const freeReward = BATTLE_PASS_REWARDS.find(r => r.level === level && !r.premium);
+              const premiumReward = BATTLE_PASS_REWARDS.find(r => r.level === level && r.premium);
+              const isUnlocked = player.battlePassLevel >= level;
+              const freeRewardKey = `free_level_${level}`;
+              const premiumRewardKey = `premium_level_${level}`;
+              const freeClaimed = player.battlePassRewards.includes(freeRewardKey);
+              const premiumClaimed = player.battlePassRewards.includes(premiumRewardKey);
+
+              return (
+                <div
+                  key={level}
+                  className={`${t(theme, 'bg-gray-800/60 border-gray-700/50', 'bg-white border-gray-200 shadow-sm')} rounded-xl p-4 border ${
+                    !isUnlocked ? 'opacity-50' : ''
+                  }`}
+                >
+                  {/* Level Header */}
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-2">
+                      <div className={`w-10 h-10 rounded-lg ${
+                        isUnlocked 
+                          ? 'bg-gradient-to-br from-purple-500 to-pink-500' 
+                          : t(theme, 'bg-gray-700', 'bg-gray-300')
+                      } flex items-center justify-center text-white font-bold`}>
+                        {level}
+                      </div>
+                      <div>
+                        <div className={`font-bold ${t(theme, 'text-white', 'text-gray-900')}`}>Level {level}</div>
+                        <div className={`text-xs ${t(theme, 'text-gray-400', 'text-gray-600')}`}>
+                          {isUnlocked ? '✓ Unlocked' : `🔒 Reach level ${level}`}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Dual Rewards */}
+                  <div className="grid grid-cols-2 gap-3">
+                    {/* Free Reward */}
+                    {freeReward && (
+                      <div className={`${t(theme, 'bg-blue-900/20 border-blue-500/30', 'bg-blue-50 border-blue-200')} rounded-lg p-3 border`}>
+                        <div className="flex items-center gap-2 mb-2">
+                          <div className="text-2xl">{getRewardIcon(freeReward.type)}</div>
+                          <div className="flex-1">
+                            <div className={`text-sm font-bold ${t(theme, 'text-white', 'text-gray-900')}`}>
+                              {freeReward.reward}
+                            </div>
+                            <div className={`text-xs ${t(theme, 'text-gray-400', 'text-gray-600')}`}>Free</div>
+                          </div>
+                        </div>
+                        {freeClaimed ? (
+                          <div className="text-center text-green-400 font-bold text-sm">✓ Claimed</div>
+                        ) : isUnlocked ? (
+                          <button
+                            onClick={() => claimReward(level, false)}
+                            className="w-full py-2 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-400 hover:to-cyan-400 text-white font-bold rounded-lg text-sm"
+                          >
+                            Claim
+                          </button>
+                        ) : (
+                          <div className={`text-center ${t(theme, 'text-gray-500', 'text-gray-400')} text-sm`}>🔒 Locked</div>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Premium Reward */}
+                    {premiumReward && (
+                      <div className={`${
+                        player.isPremium 
+                          ? t(theme, 'bg-yellow-900/20 border-yellow-500/30', 'bg-yellow-50 border-yellow-200')
+                          : t(theme, 'bg-gray-900/40 border-gray-700/30', 'bg-gray-100 border-gray-300')
+                      } rounded-lg p-3 border relative`}>
+                        {!player.isPremium && (
+                          <div className="absolute -top-2 -right-2 bg-red-500 text-white text-xs px-2 py-0.5 rounded-full font-bold">
+                            ⭐
+                          </div>
+                        )}
+                        <div className="flex items-center gap-2 mb-2">
+                          <div className="text-2xl">{getRewardIcon(premiumReward.type)}</div>
+                          <div className="flex-1">
+                            <div className={`text-sm font-bold ${t(theme, 'text-white', 'text-gray-900')}`}>
+                              {premiumReward.reward}
+                            </div>
+                            <div className={`text-xs ${player.isPremium ? 'text-yellow-400' : t(theme, 'text-gray-400', 'text-gray-600')}`}>
+                              Premium
+                            </div>
+                          </div>
+                        </div>
+                        {premiumClaimed ? (
+                          <div className="text-center text-green-400 font-bold text-sm">✓ Claimed</div>
+                        ) : isUnlocked && player.isPremium ? (
+                          <button
+                            onClick={() => claimReward(level, true)}
+                            className="w-full py-2 bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-400 hover:to-orange-400 text-white font-bold rounded-lg text-sm"
+                          >
+                            Claim
+                          </button>
+                        ) : !player.isPremium ? (
+                          <div className={`text-center ${t(theme, 'text-gray-500', 'text-gray-400')} text-sm`}>
+                            🔒 Premium
+                          </div>
+                        ) : (
+                          <div className={`text-center ${t(theme, 'text-gray-500', 'text-gray-400')} text-sm`}>🔒 Locked</div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
     </div>
   );
@@ -327,18 +514,6 @@ export function OnlineMultiplayerScreen({ player, onBack, theme, onSelectMode }:
           <h2 className={`text-3xl font-bold ${t(theme, 'text-white', 'text-gray-900')} mb-2`}>Online Multiplayer</h2>
           <p className={`${t(theme, 'text-gray-400', 'text-gray-600')}`}>Play with friends online</p>
         </div>
-
-        {!player.isPremium && (
-          <div className={`${t(theme, 'bg-gradient-to-r from-purple-900/40 to-blue-900/40 border-purple-500/30', 'bg-gradient-to-r from-purple-100 to-blue-100 border-purple-300')} rounded-xl p-4 mb-6 border`}>
-            <div className="flex items-center gap-3">
-              <div className="text-3xl">⭐</div>
-              <div className="flex-1">
-                <div className={`font-bold ${t(theme, 'text-white', 'text-gray-900')}`}>Premium Feature</div>
-                <div className={`text-sm ${t(theme, 'text-gray-300', 'text-gray-700')}`}>Upgrade to Snake Pass Premium to play online with friends</div>
-              </div>
-            </div>
-          </div>
-        )}
 
         {/* Tabs */}
         <div className="flex gap-2 mb-4">
@@ -392,7 +567,7 @@ export function OnlineMultiplayerScreen({ player, onBack, theme, onSelectMode }:
                   </div>
                 </div>
 
-                {friend.isOnline && player.isPremium && (
+                {friend.isOnline && (
                   <button
                     onClick={() => onSelectMode('online', 'medium')}
                     className="px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-400 hover:to-emerald-500 text-white font-bold rounded-lg text-sm"
@@ -408,11 +583,8 @@ export function OnlineMultiplayerScreen({ player, onBack, theme, onSelectMode }:
         {tab === 'games' && (
           <div className="space-y-3">
             <button
-              onClick={() => player.isPremium && onSelectMode('online', 'medium')}
-              disabled={!player.isPremium}
-              className={`w-full ${t(theme, 'bg-gray-800/60 border-gray-700/50', 'bg-white border-gray-200 shadow-sm')} rounded-xl p-6 border text-left ${
-                player.isPremium ? 'hover:scale-105' : 'opacity-50 cursor-not-allowed'
-              } transition-all`}
+              onClick={() => onSelectMode('online', 'medium')}
+              className={`w-full ${t(theme, 'bg-gray-800/60 border-gray-700/50 hover:scale-105', 'bg-white border-gray-200 shadow-sm hover:scale-105')} rounded-xl p-6 border text-left transition-all`}
             >
               <div className="flex items-center gap-4">
                 <div className="text-4xl">⚡</div>
@@ -420,16 +592,13 @@ export function OnlineMultiplayerScreen({ player, onBack, theme, onSelectMode }:
                   <div className={`text-lg font-bold ${t(theme, 'text-white', 'text-gray-900')}`}>Quick Match</div>
                   <div className={`text-sm ${t(theme, 'text-gray-400', 'text-gray-600')}`}>Find an opponent instantly</div>
                 </div>
-                {player.isPremium && <div className="text-2xl">→</div>}
+                <div className="text-2xl">→</div>
               </div>
             </button>
 
             <button
-              onClick={() => player.isPremium && onSelectMode('online', 'hard')}
-              disabled={!player.isPremium}
-              className={`w-full ${t(theme, 'bg-gray-800/60 border-gray-700/50', 'bg-white border-gray-200 shadow-sm')} rounded-xl p-6 border text-left ${
-                player.isPremium ? 'hover:scale-105' : 'opacity-50 cursor-not-allowed'
-              } transition-all`}
+              onClick={() => onSelectMode('online', 'hard')}
+              className={`w-full ${t(theme, 'bg-gray-800/60 border-gray-700/50 hover:scale-105', 'bg-white border-gray-200 shadow-sm hover:scale-105')} rounded-xl p-6 border text-left transition-all`}
             >
               <div className="flex items-center gap-4">
                 <div className="text-4xl">🏆</div>
@@ -437,7 +606,7 @@ export function OnlineMultiplayerScreen({ player, onBack, theme, onSelectMode }:
                   <div className={`text-lg font-bold ${t(theme, 'text-white', 'text-gray-900')}`}>Ranked Match</div>
                   <div className={`text-sm ${t(theme, 'text-gray-400', 'text-gray-600')}`}>Compete for leaderboard position</div>
                 </div>
-                {player.isPremium && <div className="text-2xl">→</div>}
+                <div className="text-2xl">→</div>
               </div>
             </button>
           </div>
