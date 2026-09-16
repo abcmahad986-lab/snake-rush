@@ -223,9 +223,9 @@ export function MainMenu({ player, onSelectMode, onNavigate, theme, toggleTheme 
         {[
           { screen: 'trophies' as Screen, icon: '🏆', label: 'Trophies' },
           { screen: 'titles' as Screen, icon: '🎖️', label: 'Titles' },
+          { screen: 'characters' as Screen, icon: '🎭', label: 'Heroes' },
+          { screen: 'chests' as Screen, icon: '🎁', label: 'Chests' },
           { screen: 'shop' as Screen, icon: '🛒', label: 'Shop' },
-          { screen: 'events' as Screen, icon: '🎯', label: 'Events' },
-          { screen: 'leaderboard' as Screen, icon: '📊', label: 'Ranks' },
         ].map(item => (
           <button
             key={item.screen}
@@ -233,6 +233,24 @@ export function MainMenu({ player, onSelectMode, onNavigate, theme, toggleTheme 
             className={`flex flex-col items-center gap-1 py-2.5 ${t(theme, 'bg-gray-800/60 hover:bg-gray-700/60 border-gray-700/50', 'bg-white hover:bg-gray-50 border-gray-200 shadow-sm')} rounded-xl border transition-all`}
           >
             <span className="text-xl">{item.icon}</span>
+            <span className={`text-[10px] ${t(theme, 'text-gray-400', 'text-gray-600')}`}>{item.label}</span>
+          </button>
+        ))}
+      </div>
+      
+      {/* Secondary Navigation */}
+      <div className="w-full max-w-md grid grid-cols-3 gap-2 mt-2">
+        {[
+          { screen: 'events' as Screen, icon: '🎯', label: 'Events' },
+          { screen: 'leaderboard' as Screen, icon: '📊', label: 'Ranks' },
+          { screen: 'battlepass' as Screen, icon: '🎖️', label: 'Pass' },
+        ].map(item => (
+          <button
+            key={item.screen}
+            onClick={() => onNavigate(item.screen)}
+            className={`flex flex-col items-center gap-1 py-2 ${t(theme, 'bg-gray-800/60 hover:bg-gray-700/60 border-gray-700/50', 'bg-white hover:bg-gray-50 border-gray-200 shadow-sm')} rounded-xl border transition-all`}
+          >
+            <span className="text-lg">{item.icon}</span>
             <span className={`text-[10px] ${t(theme, 'text-gray-400', 'text-gray-600')}`}>{item.label}</span>
           </button>
         ))}

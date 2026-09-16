@@ -4,6 +4,7 @@ import { loadPlayer, savePlayer, createNewPlayer, addXp } from './store';
 import Game from './components/Game';
 import { LoginScreen, MainMenu, ProfileScreen, TrophiesScreen, ShopScreen, EventsScreen, LeaderboardScreen, RewardsScreen, SettingsScreen, TitlesScreen } from './components/Screens';
 import { SubscriptionScreen, BattlePassScreen, OnlineMultiplayerScreen, GoogleLoginScreen } from './components/PremiumScreens';
+import { CharactersScreen, ChestsScreen } from './components/CharacterScreens';
 
 type MultiplayerType = 'bot' | 'player';
 
@@ -281,6 +282,10 @@ function App() {
       }} />;
     case 'google':
       return <GoogleLoginScreen player={player} setPlayer={handleUpdatePlayer} onBack={() => setScreen('menu')} theme={theme} />;
+    case 'characters':
+      return <CharactersScreen player={player} setPlayer={handleUpdatePlayer} onBack={() => setScreen('menu')} theme={theme} />;
+    case 'chests':
+      return <ChestsScreen player={player} setPlayer={handleUpdatePlayer} onBack={() => setScreen('menu')} theme={theme} />;
     default:
       return <MainMenu player={player} onSelectMode={handleSelectMode} onNavigate={setScreen} theme={theme} toggleTheme={toggleTheme} />;
   }

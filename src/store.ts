@@ -51,6 +51,19 @@ export function createNewPlayer(username: string): Player {
     battlePassLevel: 1,
     battlePassXp: 0,
     battlePassRewards: [],
+    // Characters & Chests
+    equippedCharacter: 'snake_classic',
+    ownedCharacters: ['snake_classic'],
+    ownedCharacterSkins: ['classic_green'],
+    equippedCharacterSkin: 'classic_green',
+    keys: 0,
+    chests: {
+      wooden_chest: 0,
+      silver_chest: 0,
+      golden_chest: 0,
+      legendary_chest: 0,
+    },
+    gamesWon: 0,
   };
 }
 
@@ -117,6 +130,34 @@ export function loadPlayer(): Player | null {
     }
     if (!player.battlePassRewards) {
       player.battlePassRewards = [];
+    }
+    
+    // Migration: Characters & Chests
+    if (!player.equippedCharacter) {
+      player.equippedCharacter = 'snake_classic';
+    }
+    if (!player.ownedCharacters) {
+      player.ownedCharacters = ['snake_classic'];
+    }
+    if (!player.ownedCharacterSkins) {
+      player.ownedCharacterSkins = ['classic_green'];
+    }
+    if (!player.equippedCharacterSkin) {
+      player.equippedCharacterSkin = 'classic_green';
+    }
+    if (player.keys === undefined) {
+      player.keys = 0;
+    }
+    if (!player.chests) {
+      player.chests = {
+        wooden_chest: 0,
+        silver_chest: 0,
+        golden_chest: 0,
+        legendary_chest: 0,
+      };
+    }
+    if (player.gamesWon === undefined) {
+      player.gamesWon = 0;
     }
     
     return player;

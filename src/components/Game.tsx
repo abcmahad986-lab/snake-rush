@@ -419,9 +419,42 @@ export default function Game({ player, setPlayer, mode, difficulty, onBack, isMu
         updated.zenGamesPlayed += 1;
       }
       
-      // Track bot wins
+      // Track bot wins and award keys/chests
       if (isMultiplayer && multiplayerType === 'bot' && score > score2) {
         updated.gamesWonVsBot += 1;
+        updated.gamesWon += 1;
+        
+        // Award keys based on difficulty
+        const keysEarned = difficulty === 'easy' ? 1 : difficulty === 'medium' ? 2 : difficulty === 'hard' ? 3 : 5;
+        updated.keys += keysEarned;
+        
+        // Award chests based on score
+        if (finalS >= 200) {
+          updated.chests.legendary_chest = (updated.chests.legendary_chest || 0) + 1;
+        } else if (finalS >= 100) {
+          updated.chests.golden_chest = (updated.chests.golden_chest || 0) + 1;
+        } else if (finalS >= 50) {
+          updated.chests.silver_chest = (updated.chests.silver_chest || 0) + 1;
+        } else {
+          updated.chests.wooden_chest = (updated.chests.wooden_chest || 0) + 1;
+        }
+      }
+      
+      // Also award for single player wins (score >= 50)
+      if (!isMultiplayer && finalS >= 50) {
+        updated.gamesWon += 1;
+        const keysEarned = difficulty === 'easy' ? 1 : difficulty === 'medium' ? 2 : difficulty === 'hard' ? 3 : 5;
+        updated.keys += keysEarned;
+        
+        if (finalS >= 200) {
+          updated.chests.legendary_chest = (updated.chests.legendary_chest || 0) + 1;
+        } else if (finalS >= 100) {
+          updated.chests.golden_chest = (updated.chests.golden_chest || 0) + 1;
+        } else if (finalS >= 50) {
+          updated.chests.silver_chest = (updated.chests.silver_chest || 0) + 1;
+        } else {
+          updated.chests.wooden_chest = (updated.chests.wooden_chest || 0) + 1;
+        }
       }
       
       if (mode === 'timed') {
@@ -602,8 +635,15 @@ export default function Game({ player, setPlayer, mode, difficulty, onBack, isMu
               <div key={`p1-${i}`} className="absolute" style={{ left: `${(seg.x / GRID_SIZE) * 100}%`, top: `${(seg.y / GRID_SIZE) * 100}%`, width: `${100 / GRID_SIZE}%`, height: `${100 / GRID_SIZE}%`, padding: '1px', zIndex: snake.length - i }}>
                 <div className="w-full h-full rounded-sm transition-all duration-75" style={{ backgroundColor: style.bg, boxShadow: style.shadow, borderRadius: i === 0 ? '5px' : '3px', transform: i === 0 ? 'scale(1.05)' : `scale(${1 - (i / snake.length) * 0.15})` }}>
                   {i === 0 && (
-                    <div className="w-full h-full flex items-center justify-center">
-                      <div className="flex gap-[15%]">
+                    <div className="w-full h-full flex items-center justify-center relative">
+                      {/* Direction Arrow */}
+                      <div className="absolute inset-0 flex items-center justify-center text-white font-bold opacity-80" style={{
+                        transform: direction === 'UP' ? 'rotate(-90deg)' : direction === 'DOWN' ? 'rotate(90deg)' : direction === 'LEFT' ? 'rotate(180deg)' : 'rotate(0deg)'
+                      }}>
+                        <div className="text-[10px] md:text-xs">▶</div>
+                      </div>
+                      {/* Eyes */}
+                      <div className="flex gap-[15%] z-10">
                         <div className="w-[18%] h-[18%] bg-white rounded-full" />
                         <div className="w-[18%] h-[18%] bg-white rounded-full" />
                       </div>
@@ -621,8 +661,15 @@ export default function Game({ player, setPlayer, mode, difficulty, onBack, isMu
               <div key={`p2-${i}`} className="absolute" style={{ left: `${(seg.x / GRID_SIZE) * 100}%`, top: `${(seg.y / GRID_SIZE) * 100}%`, width: `${100 / GRID_SIZE}%`, height: `${100 / GRID_SIZE}%`, padding: '1px', zIndex: snake2.length - i }}>
                 <div className="w-full h-full rounded-sm" style={{ backgroundColor: style.bg, boxShadow: style.shadow, borderRadius: i === 0 ? '5px' : '3px', transform: i === 0 ? 'scale(1.05)' : `scale(${1 - (i / snake2.length) * 0.15})` }}>
                   {i === 0 && (
-                    <div className="w-full h-full flex items-center justify-center">
-                      <div className="flex gap-[15%]">
+                    <div className="w-full h-full flex items-center justify-center relative">
+                      {/* Direction Arrow */}
+                      <div className="absolute inset-0 flex items-center justify-center text-white font-bold opacity-80" style={{
+                        transform: direction2 === 'UP' ? 'rotate(-90deg)' : direction2 === 'DOWN' ? 'rotate(90deg)' : direction2 === 'LEFT' ? 'rotate(180deg)' : 'rotate(0deg)'
+                      }}>
+                        <div className="text-[10px] md:text-xs">▶</div>
+                      </div>
+                      {/* Eyes */}
+                      <div className="flex gap-[15%] z-10">
                         <div className="w-[18%] h-[18%] bg-white rounded-full" />
                         <div className="w-[18%] h-[18%] bg-white rounded-full" />
                       </div>

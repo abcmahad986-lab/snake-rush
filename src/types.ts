@@ -4,7 +4,7 @@ export type Position = { x: number; y: number };
 export type GameState = 'IDLE' | 'PLAYING' | 'PAUSED' | 'GAME_OVER';
 export type Difficulty = 'easy' | 'medium' | 'hard' | 'insane';
 export type GameMode = 'classic' | 'timed' | 'multiplayer' | 'event' | 'zen' | 'online';
-export type Screen = 'login' | 'menu' | 'game' | 'profile' | 'trophies' | 'titles' | 'shop' | 'events' | 'leaderboard' | 'settings' | 'rewards' | 'subscription' | 'battlepass' | 'online' | 'google';
+export type Screen = 'login' | 'menu' | 'game' | 'profile' | 'trophies' | 'titles' | 'shop' | 'events' | 'leaderboard' | 'settings' | 'rewards' | 'subscription' | 'battlepass' | 'online' | 'google' | 'characters' | 'chests';
 export type Theme = 'light' | 'dark';
 
 export type SubscriptionTier = 'free' | 'basic' | 'premium' | 'ultimate';
@@ -38,6 +38,41 @@ export interface OnlineGame {
   difficulty: Difficulty;
   status: 'waiting' | 'playing' | 'finished';
   createdAt: string;
+}
+
+export interface Character {
+  id: string;
+  name: string;
+  emoji: string;
+  description: string;
+  unlockLevel: number;
+  rarity: 'common' | 'rare' | 'epic' | 'legendary';
+  skins: string[];
+}
+
+export interface CharacterSkin {
+  id: string;
+  characterId: string;
+  name: string;
+  colors: { head: string; body: string; glow: string };
+  unlockMethod: 'level' | 'chest' | 'purchase' | 'achievement';
+  unlockRequirement?: number;
+}
+
+export interface Chest {
+  id: string;
+  name: string;
+  icon: string;
+  rarity: 'common' | 'rare' | 'epic' | 'legendary';
+  keysRequired: number;
+  rewards: ChestReward[];
+}
+
+export interface ChestReward {
+  type: 'coins' | 'gems' | 'skin' | 'character' | 'keys';
+  amount: number;
+  itemId?: string;
+  chance: number;
 }
 
 export interface Player {
@@ -81,6 +116,14 @@ export interface Player {
   battlePassLevel: number;
   battlePassXp: number;
   battlePassRewards: string[];
+  // Characters & Chests
+  equippedCharacter: string;
+  ownedCharacters: string[];
+  ownedCharacterSkins: string[];
+  equippedCharacterSkin: string;
+  keys: number;
+  chests: Record<string, number>;
+  gamesWon: number;
 }
 
 export interface Title {
@@ -312,6 +355,153 @@ export const DAILY_REWARDS = [
   { day: 5, coins: 60, gems: 2, xp: 30, icon: '🎊' },
   { day: 6, coins: 80, gems: 3, xp: 40, icon: '🏅' },
   { day: 7, coins: 150, gems: 5, xp: 100, icon: '👑' },
+];
+
+// ============ CHARACTERS ============
+export const CHARACTERS: Character[] = [
+  {
+    id: 'snake_classic',
+    name: 'Classic Snake',
+    emoji: '🐍',
+    description: 'The original snake hero',
+    unlockLevel: 1,
+    rarity: 'common',
+    skins: ['classic_green', 'classic_red', 'classic_blue']
+  },
+  {
+    id: 'dragon',
+    name: 'Fire Dragon',
+    emoji: '🐉',
+    description: 'A fierce dragon from the mountains',
+    unlockLevel: 5,
+    rarity: 'rare',
+    skins: ['dragon_fire', 'dragon_ice', 'dragon_shadow']
+  },
+  {
+    id: 'phoenix',
+    name: 'Phoenix',
+    emoji: '🦅',
+    description: 'Rises from the ashes',
+    unlockLevel: 10,
+    rarity: 'epic',
+    skins: ['phoenix_gold', 'phoenix_crimson', 'phoenix_silver']
+  },
+  {
+    id: 'unicorn',
+    name: 'Unicorn',
+    emoji: '🦄',
+    description: 'Magical and majestic',
+    unlockLevel: 15,
+    rarity: 'epic',
+    skins: ['unicorn_rainbow', 'unicorn_moonlight', 'unicorn_starlight']
+  },
+  {
+    id: 'kraken',
+    name: 'Kraken',
+    emoji: '🐙',
+    description: 'Terror of the deep seas',
+    unlockLevel: 20,
+    rarity: 'legendary',
+    skins: ['kraken_abyss', 'kraken_storm', 'kraken_void']
+  },
+  {
+    id: 'cosmic',
+    name: 'Cosmic Serpent',
+    emoji: '✨',
+    description: 'Born from the stars themselves',
+    unlockLevel: 25,
+    rarity: 'legendary',
+    skins: ['cosmic_nebula', 'cosmic_galaxy', 'cosmic_supernova']
+  }
+];
+
+// ============ CHARACTER SKINS ============
+export const CHARACTER_SKINS: CharacterSkin[] = [
+  // Classic Snake skins
+  { id: 'classic_green', characterId: 'snake_classic', name: 'Forest Green', colors: { head: '#4ade80', body: '#22c55e', glow: 'rgba(74, 222, 128, 0.7)' }, unlockMethod: 'level', unlockRequirement: 1 },
+  { id: 'classic_red', characterId: 'snake_classic', name: 'Ruby Red', colors: { head: '#f87171', body: '#ef4444', glow: 'rgba(248, 113, 113, 0.7)' }, unlockMethod: 'chest' },
+  { id: 'classic_blue', characterId: 'snake_classic', name: 'Ocean Blue', colors: { head: '#60a5fa', body: '#3b82f6', glow: 'rgba(96, 165, 250, 0.7)' }, unlockMethod: 'purchase', unlockRequirement: 100 },
+  
+  // Dragon skins
+  { id: 'dragon_fire', characterId: 'dragon', name: 'Inferno', colors: { head: '#fb923c', body: '#ea580c', glow: 'rgba(251, 146, 60, 0.7)' }, unlockMethod: 'level', unlockRequirement: 5 },
+  { id: 'dragon_ice', characterId: 'dragon', name: 'Frost', colors: { head: '#93c5fd', body: '#3b82f6', glow: 'rgba(147, 197, 253, 0.7)' }, unlockMethod: 'chest' },
+  { id: 'dragon_shadow', characterId: 'dragon', name: 'Shadow', colors: { head: '#a1a1aa', body: '#52525b', glow: 'rgba(161, 161, 170, 0.7)' }, unlockMethod: 'achievement' },
+  
+  // Phoenix skins
+  { id: 'phoenix_gold', characterId: 'phoenix', name: 'Golden Flame', colors: { head: '#fde047', body: '#eab308', glow: 'rgba(253, 224, 71, 0.7)' }, unlockMethod: 'level', unlockRequirement: 10 },
+  { id: 'phoenix_crimson', characterId: 'phoenix', name: 'Crimson Wing', colors: { head: '#f87171', body: '#dc2626', glow: 'rgba(248, 113, 113, 0.7)' }, unlockMethod: 'chest' },
+  { id: 'phoenix_silver', characterId: 'phoenix', name: 'Silver Ash', colors: { head: '#d1d5db', body: '#9ca3af', glow: 'rgba(209, 213, 219, 0.7)' }, unlockMethod: 'purchase', unlockRequirement: 300 },
+  
+  // Unicorn skins
+  { id: 'unicorn_rainbow', characterId: 'unicorn', name: 'Rainbow', colors: { head: '#f87171', body: '#a855f7', glow: 'rgba(248, 113, 113, 0.7)' }, unlockMethod: 'level', unlockRequirement: 15 },
+  { id: 'unicorn_moonlight', characterId: 'unicorn', name: 'Moonlight', colors: { head: '#c4b5fd', body: '#8b5cf6', glow: 'rgba(196, 181, 253, 0.7)' }, unlockMethod: 'chest' },
+  { id: 'unicorn_starlight', characterId: 'unicorn', name: 'Starlight', colors: { head: '#fde047', body: '#f59e0b', glow: 'rgba(253, 224, 71, 0.7)' }, unlockMethod: 'achievement' },
+  
+  // Kraken skins
+  { id: 'kraken_abyss', characterId: 'kraken', name: 'Abyssal', colors: { head: '#818cf8', body: '#4f46e5', glow: 'rgba(129, 140, 248, 0.7)' }, unlockMethod: 'level', unlockRequirement: 20 },
+  { id: 'kraken_storm', characterId: 'kraken', name: 'Storm', colors: { head: '#67e8f9', body: '#06b6d4', glow: 'rgba(103, 232, 249, 0.7)' }, unlockMethod: 'chest' },
+  { id: 'kraken_void', characterId: 'kraken', name: 'Void', colors: { head: '#a78bfa', body: '#6d28d9', glow: 'rgba(167, 139, 250, 0.7)' }, unlockMethod: 'purchase', unlockRequirement: 500 },
+  
+  // Cosmic Serpent skins
+  { id: 'cosmic_nebula', characterId: 'cosmic', name: 'Nebula', colors: { head: '#818cf8', body: '#4f46e5', glow: 'rgba(129, 140, 248, 0.7)' }, unlockMethod: 'level', unlockRequirement: 25 },
+  { id: 'cosmic_galaxy', characterId: 'cosmic', name: 'Galaxy', colors: { head: '#c084fc', body: '#8b5cf6', glow: 'rgba(192, 132, 252, 0.7)' }, unlockMethod: 'chest' },
+  { id: 'cosmic_supernova', characterId: 'cosmic', name: 'Supernova', colors: { head: '#fb923c', body: '#ea580c', glow: 'rgba(251, 146, 60, 0.7)' }, unlockMethod: 'achievement' }
+];
+
+// ============ CHESTS ============
+export const CHESTS: Chest[] = [
+  {
+    id: 'wooden_chest',
+    name: 'Wooden Chest',
+    icon: '📦',
+    rarity: 'common',
+    keysRequired: 1,
+    rewards: [
+      { type: 'coins', amount: 50, chance: 0.5 },
+      { type: 'coins', amount: 100, chance: 0.3 },
+      { type: 'gems', amount: 5, chance: 0.15 },
+      { type: 'skin', amount: 1, itemId: 'classic_red', chance: 0.05 }
+    ]
+  },
+  {
+    id: 'silver_chest',
+    name: 'Silver Chest',
+    icon: '🎁',
+    rarity: 'rare',
+    keysRequired: 2,
+    rewards: [
+      { type: 'coins', amount: 150, chance: 0.4 },
+      { type: 'gems', amount: 10, chance: 0.3 },
+      { type: 'skin', amount: 1, itemId: 'dragon_ice', chance: 0.2 },
+      { type: 'skin', amount: 1, itemId: 'phoenix_crimson', chance: 0.1 }
+    ]
+  },
+  {
+    id: 'golden_chest',
+    name: 'Golden Chest',
+    icon: '👑',
+    rarity: 'epic',
+    keysRequired: 3,
+    rewards: [
+      { type: 'coins', amount: 300, chance: 0.3 },
+      { type: 'gems', amount: 25, chance: 0.3 },
+      { type: 'skin', amount: 1, itemId: 'unicorn_moonlight', chance: 0.25 },
+      { type: 'skin', amount: 1, itemId: 'kraken_storm', chance: 0.15 }
+    ]
+  },
+  {
+    id: 'legendary_chest',
+    name: 'Legendary Chest',
+    icon: '💎',
+    rarity: 'legendary',
+    keysRequired: 5,
+    rewards: [
+      { type: 'coins', amount: 500, chance: 0.25 },
+      { type: 'gems', amount: 50, chance: 0.3 },
+      { type: 'skin', amount: 1, itemId: 'cosmic_galaxy', chance: 0.3 },
+      { type: 'character', amount: 1, itemId: 'kraken', chance: 0.15 }
+    ]
+  }
 ];
 
 // ============ SUBSCRIPTION PLANS ============
