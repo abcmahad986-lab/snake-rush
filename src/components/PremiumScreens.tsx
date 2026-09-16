@@ -688,6 +688,33 @@ export function GoogleLoginScreen({ player, setPlayer, onBack, theme }: {
     }
   };
 
+  const handleSignOut = async () => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const { error } = await supabase.auth.signOut();
+      
+      if (error) throw error;
+
+      // Clear Google account from player data
+      const updated = {
+        ...player,
+        googleAccount: undefined,
+      };
+      
+      setPlayer(updated);
+      savePlayer(updated);
+      setShowSuccess(false);
+      
+      // Reset loading state
+      setLoading(false);
+    } catch (err: any) {
+      setError(err.message || 'Failed to sign out');
+      setLoading(false);
+    }
+  };
+
   // Check if user is already authenticated
   useEffect(() => {
     const checkUser = async () => {
@@ -729,15 +756,36 @@ export function GoogleLoginScreen({ player, setPlayer, onBack, theme }: {
             <div className="text-5xl mb-3">✅</div>
             <div className={`text-xl font-bold ${t(theme, 'text-white', 'text-gray-900')} mb-2`}>Connected!</div>
             <div className={`${t(theme, 'text-gray-300', 'text-gray-700')} mb-4`}>{player.googleAccount}</div>
-            <div className={`text-sm ${t(theme, 'text-gray-400', 'text-gray-600')}`}>
+            <div className={`text-sm ${t(theme, 'text-gray-400', 'text-gray-600')} mb-4`}>
               Your progress is synced and backed up
             </div>
-            <button
-              onClick={onBack}
-              className="mt-4 px-6 py-2 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-400 hover:to-emerald-500 text-white font-bold rounded-lg"
-            >
-              Continue
-            </button>
+            <div className="flex flex-col gap-2">
+              <button
+                onClick={onBack}
+                className="px-6 py-2 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-400 hover:to-emerald-500 text-white font-bold rounded-lg"
+              >
+                Continue
+              </button>
+              <button
+                onClick={handleSignOut}
+                disabled={loading}
+                className={`px-6 py-2 ${t(theme, 'bg-gray-800 hover:bg-gray-700 text-gray-300', 'bg-gray-200 hover:bg-gray-300 text-gray-700')} font-medium rounded-lg border ${t(theme, 'border-gray-700/50', 'border-gray-300')} disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2`}
+              >
+                {loading ? (
+                  <>
+                    <div className={`w-4 h-4 border-2 ${t(theme, 'border-gray-600 border-t-gray-300', 'border-gray-300 border-t-gray-700')} rounded-full animate-spin`}></div>
+                    Signing out...
+                  </>
+                ) : (
+                  <>
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                    </svg>
+                    Sign Out
+                  </>
+                )}
+              </button>
+            </div>
           </div>
         ) : (
           <div className={`${t(theme, 'bg-gray-800/60 border-gray-700/50', 'bg-white border-gray-200 shadow-lg')} rounded-xl p-6 border`}>
