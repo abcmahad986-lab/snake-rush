@@ -298,18 +298,13 @@ export function MainMenu({ player, onSelectMode, onNavigate, theme, toggleTheme 
 
           <button
             onClick={() => onNavigate('online')}
-            className={`flex items-center gap-3 p-3 ${
-              player.isPremium 
-                ? t(theme, 'bg-gradient-to-r from-green-900/40 to-teal-900/40 hover:from-green-900/60 hover:to-teal-900/60 border-green-500/30', 'bg-gradient-to-r from-green-100 to-teal-100 hover:from-green-200 hover:to-teal-200 border-green-300')
-                : t(theme, 'bg-gray-800/40 border-gray-700/30 opacity-60', 'bg-gray-200 border-gray-300 opacity-60')
-            } border rounded-xl transition-all ${player.isPremium ? 'transform hover:scale-105' : ''}`}
-            disabled={!player.isPremium}
+            className={`flex items-center gap-3 p-3 ${t(theme, 'bg-gradient-to-r from-green-900/40 to-teal-900/40 hover:from-green-900/60 hover:to-teal-900/60 border-green-500/30', 'bg-gradient-to-r from-green-100 to-teal-100 hover:from-green-200 hover:to-teal-200 border-green-300')} border rounded-xl transition-all transform hover:scale-105`}
           >
             <div className="text-2xl">🌐</div>
             <div className="text-left flex-1">
               <div className={`text-sm font-bold ${t(theme, 'text-white', 'text-gray-900')}`}>Online</div>
               <div className={`text-[10px] ${t(theme, 'text-gray-300', 'text-gray-600')}`}>
-                {player.isPremium ? 'Play with friends' : 'Premium only'}
+                Play with friends
               </div>
             </div>
           </button>
