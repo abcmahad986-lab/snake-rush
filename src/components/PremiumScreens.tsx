@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Player, Theme, SUBSCRIPTION_PLANS, BATTLE_PASS_REWARDS, MOCK_FRIENDS } from '../types';
 import { savePlayer } from '../store';
+import { audioManager } from '../audio';
 
 const t = (theme: Theme, dark: string, light: string) => theme === 'dark' ? dark : light;
 
@@ -223,12 +224,49 @@ export function BattlePassScreen({ player, setPlayer, onBack, theme }: {
     if (isPremium && !player.isPremium) return;
     if (player.battlePassLevel < level) return;
 
+    // Play success sound
+    audioManager.playSuccessSound();
+
     const updated = {
       ...player,
       battlePassRewards: [...player.battlePassRewards, rewardKey],
-      coins: reward.type === 'coins' ? player.coins + reward.amount : player.coins,
-      gems: reward.type === 'gems' ? player.gems + reward.amount : player.gems,
     };
+
+    // Handle different reward types
+    switch (reward.type) {
+      case 'coins':
+        updated.coins = player.coins + reward.amount;
+        break;
+      case 'gems':
+        updated.gems = player.gems + reward.amount;
+        break;
+      case 'xp':
+        // Add XP and check for level up
+        let newXp = player.xp + reward.amount;
+        let newLevel = player.level;
+        let xpToNext = player.xpToNext;
+        
+        while (newXp >= xpToNext) {
+          newXp -= xpToNext;
+          newLevel++;
+          xpToNext = Math.floor(xpToNext * 1.5);
+        }
+        
+        updated.xp = newXp;
+        updated.level = newLevel;
+        updated.xpToNext = xpToNext;
+        break;
+      case 'skin':
+        if (reward.itemId && !player.ownedSkins.includes(reward.itemId)) {
+          updated.ownedSkins = [...player.ownedSkins, reward.itemId];
+        }
+        break;
+      case 'title':
+        if (reward.itemId && !player.titles.includes(reward.itemId)) {
+          updated.titles = [...player.titles, reward.itemId];
+        }
+        break;
+    }
 
     setPlayer(updated);
     savePlayer(updated);

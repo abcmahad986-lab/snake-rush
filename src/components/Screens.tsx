@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Player, Screen, Difficulty, GameMode, TROPHIES, TITLES, SNAKE_SKINS, SNAKE_TRAILS, AVATARS, generateDailyEvents, generateBotLeaderboard, DAILY_REWARDS, DIFFICULTY_LABELS, Theme } from '../types';
 import type { ShopItem } from '../types';
 import { savePlayer, claimDailyReward, getLoginReward } from '../store';
+import { audioManager } from '../audio';
 
 // Theme helper
 const t = (theme: Theme, dark: string, light: string) => theme === 'dark' ? dark : light;
@@ -558,6 +559,7 @@ export function ShopScreen({ player, setPlayer, onBack, theme }: { player: Playe
     const isOwned = item.type === 'skin' ? player.ownedSkins.includes(item.id) : player.ownedTrails.includes(item.id);
     if (isOwned) {
       // Equip
+      audioManager.playClickSound();
       const updated = item.type === 'skin' 
         ? { ...player, equippedSkin: item.id }
         : { ...player, equippedTrail: item.id };
@@ -568,6 +570,8 @@ export function ShopScreen({ player, setPlayer, onBack, theme }: { player: Playe
 
     const currency = item.currency === 'coins' ? 'coins' : 'gems';
     if (player[currency] < item.price) return;
+
+    audioManager.playSuccessSound();
 
     const updated = { ...player, [currency]: player[currency] - item.price };
     if (item.type === 'skin') {

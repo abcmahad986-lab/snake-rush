@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { Position, Direction, GameState, Difficulty, GameMode, GRID_SIZE, DIFFICULTY_SPEEDS, TIMED_DURATIONS, Player, PowerUp, TITLES, Theme } from '../types';
 import { savePlayer, addXp } from '../store';
+import { audioManager } from '../audio';
 
 type MultiplayerType = 'bot' | 'player';
 
@@ -114,6 +115,7 @@ export default function Game({ player, setPlayer, mode, difficulty, onBack, isMu
   const [xpEarned, setXpEarned] = useState(0);
   const [coinsEarned, setCoinsEarned] = useState(0);
   const [newTitles, setNewTitles] = useState<string[]>([]);
+  const [isMuted, setIsMuted] = useState(audioManager.getIsMuted());
 
   const dirRef = useRef<Direction>('RIGHT');
   const dir2Ref = useRef<Direction>('LEFT');
@@ -130,6 +132,16 @@ export default function Game({ player, setPlayer, mode, difficulty, onBack, isMu
   useEffect(() => { snakeRef.current = snake; }, [snake]);
   useEffect(() => { snake2Ref.current = snake2; }, [snake2]);
   useEffect(() => { foodRef.current = food; }, [food]);
+
+  // Background music control
+  useEffect(() => {
+    if (gameState === 'PLAYING') {
+      audioManager.resume(); // Resume audio context after user interaction
+      audioManager.startBGM();
+    } else {
+      audioManager.stopBGM();
+    }
+  }, [gameState]);
 
   // Timer for timed mode
   useEffect(() => {
@@ -310,6 +322,7 @@ export default function Game({ player, setPlayer, mode, difficulty, onBack, isMu
 
         if (newHead.x === food.x && newHead.y === food.y) {
           ate = true;
+          audioManager.playEatSound();
           const multiplier = activeEffects.includes('double') ? 2 : 1;
           const comboBonus = Math.floor(combo / 3);
           const points = (10 + comboBonus * 5) * multiplier;
@@ -397,6 +410,7 @@ export default function Game({ player, setPlayer, mode, difficulty, onBack, isMu
   // Handle game over - save stats
   useEffect(() => {
     if (gameState === 'GAME_OVER' && !showResult) {
+      audioManager.playGameOverSound();
       const finalS = isMultiplayer ? Math.max(score, score2) : score;
       setFinalScore(finalS);
       
@@ -553,6 +567,21 @@ export default function Game({ player, setPlayer, mode, difficulty, onBack, isMu
             difficulty === 'hard' ? 'bg-red-900/50 text-red-400' :
             'bg-purple-900/50 text-purple-400'
           }`}>{difficulty}</span>
+          <button
+            onClick={() => {
+              audioManager.playClickSound();
+              const muted = audioManager.toggleMute();
+              setIsMuted(muted);
+            }}
+            className={`p-1.5 rounded-lg transition-all ${
+              theme === 'dark' 
+                ? 'bg-gray-800 hover:bg-gray-700 text-gray-300 border-gray-700/50' 
+                : 'bg-white hover:bg-gray-50 text-gray-700 border-gray-300'
+            } border`}
+            title={isMuted ? 'Unmute' : 'Mute'}
+          >
+            {isMuted ? '🔇' : '🔊'}
+          </button>
         </div>
       </div>
 
@@ -699,7 +728,7 @@ export default function Game({ player, setPlayer, mode, difficulty, onBack, isMu
               {mode === 'zen' && <p className="text-purple-300 text-xs mb-2">Pass through walls freely!</p>}
               {isMultiplayer && multiplayerType === 'player' && <p className="text-gray-400 text-xs mb-2">P1: WASD/Arrows • P2: IJKL</p>}
               {isMultiplayer && multiplayerType === 'bot' && <p className="text-gray-400 text-xs mb-2">Use WASD/Arrows to compete!</p>}
-              <button onClick={startGame} className="px-5 py-2.5 bg-green-500 hover:bg-green-400 text-white font-bold rounded-xl transition-all transform hover:scale-105 active:scale-95 shadow-lg shadow-green-500/30">
+              <button onClick={() => { audioManager.playClickSound(); startGame(); }} className="px-5 py-2.5 bg-green-500 hover:bg-green-400 text-white font-bold rounded-xl transition-all transform hover:scale-105 active:scale-95 shadow-lg shadow-green-500/30">
                 ▶ Start
               </button>
             </div>
@@ -783,8 +812,8 @@ export default function Game({ player, setPlayer, mode, difficulty, onBack, isMu
               )}
 
               <div className="flex gap-2">
-                <button onClick={startGame} className="px-4 py-2 bg-green-500 hover:bg-green-400 text-white font-bold rounded-xl transition-all transform hover:scale-105 active:scale-95">↺ Again</button>
-                <button onClick={onBack} className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-xl transition-all">← Menu</button>
+                <button onClick={() => { audioManager.playClickSound(); startGame(); }} className="px-4 py-2 bg-green-500 hover:bg-green-400 text-white font-bold rounded-xl transition-all transform hover:scale-105 active:scale-95">↺ Again</button>
+                <button onClick={() => { audioManager.playClickSound(); onBack(); }} className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-xl transition-all">← Menu</button>
               </div>
             </div>
           )}

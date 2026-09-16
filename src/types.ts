@@ -580,6 +580,7 @@ export interface BattlePassReward {
   type: 'coins' | 'gems' | 'skin' | 'title' | 'xp';
   amount: number;
   premium: boolean;
+  itemId?: string;
 }
 
 export const BATTLE_PASS_REWARDS: BattlePassReward[] = [
@@ -587,17 +588,17 @@ export const BATTLE_PASS_REWARDS: BattlePassReward[] = [
   { level: 2, reward: '5 Gems', type: 'gems', amount: 5, premium: false },
   { level: 3, reward: '200 Coins', type: 'coins', amount: 200, premium: false },
   { level: 4, reward: '10 Gems', type: 'gems', amount: 10, premium: false },
-  { level: 5, reward: 'Diamond Skin', type: 'skin', amount: 1, premium: true },
+  { level: 5, reward: 'Diamond Skin', type: 'skin', amount: 1, premium: true, itemId: 'diamond' },
   { level: 6, reward: '300 Coins', type: 'coins', amount: 300, premium: false },
   { level: 7, reward: '15 Gems', type: 'gems', amount: 15, premium: false },
   { level: 8, reward: '500 Coins', type: 'coins', amount: 500, premium: false },
-  { level: 9, reward: 'Neon Glow Skin', type: 'skin', amount: 1, premium: true },
+  { level: 9, reward: 'Neon Glow Skin', type: 'skin', amount: 1, premium: true, itemId: 'neon_glow' },
   { level: 10, reward: '20 Gems', type: 'gems', amount: 20, premium: false },
-  { level: 11, reward: 'Galaxy Skin', type: 'skin', amount: 1, premium: true },
+  { level: 11, reward: 'Galaxy Skin', type: 'skin', amount: 1, premium: true, itemId: 'galaxy' },
   { level: 12, reward: '1000 Coins', type: 'coins', amount: 1000, premium: false },
   { level: 13, reward: '30 Gems', type: 'gems', amount: 30, premium: false },
-  { level: 14, reward: 'Fire Dragon Skin', type: 'skin', amount: 1, premium: true },
-  { level: 15, reward: 'VIP Title', type: 'title', amount: 1, premium: true },
+  { level: 14, reward: 'Fire Dragon Skin', type: 'skin', amount: 1, premium: true, itemId: 'fire_dragon' },
+  { level: 15, reward: 'VIP Title', type: 'title', amount: 1, premium: true, itemId: 'vip' },
 ];
 
 // ============ MOCK FRIENDS (for online multiplayer) ============
