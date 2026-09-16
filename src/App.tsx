@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react';
 import { Player, Screen, GameMode, Difficulty, TROPHIES, TITLES, ACHIEVEMENTS, Theme } from './types';
 import { loadPlayer, savePlayer, createNewPlayer, addXp } from './store';
 import Game from './components/Game';
-import { LoginScreen, MainMenu, ProfileScreen, TrophiesScreen, ShopScreen, EventsScreen, LeaderboardScreen, RewardsScreen, SettingsScreen, TitlesScreen } from './components/Screens';
+import { LoginScreen, MainMenu, ProfileScreen, TrophiesScreen, ShopScreen, EventsScreen, RewardsScreen, SettingsScreen, TitlesScreen } from './components/Screens';
+import { RealLeaderboardScreen } from './components/RealLeaderboard';
 import { SubscriptionScreen, BattlePassScreen, OnlineMultiplayerScreen, GoogleLoginScreen } from './components/PremiumScreens';
 import { CharactersScreen, ChestsScreen } from './components/CharacterScreens';
 import { AchievementsScreen, SpinWheelScreen, VisualThemesScreen } from './components/NewFeatures';
@@ -293,7 +294,7 @@ function App() {
     case 'events':
       return <EventsScreen player={player} setPlayer={handleUpdatePlayer} onBack={() => setScreen('menu')} theme={theme} />;
     case 'leaderboard':
-      return <LeaderboardScreen player={player} onBack={() => setScreen('menu')} theme={theme} />;
+      return <RealLeaderboardScreen player={player} onBack={() => setScreen('menu')} theme={theme} />;
     case 'rewards':
       return <RewardsScreen player={player} setPlayer={handleUpdatePlayer} onBack={() => setScreen('menu')} theme={theme} />;
     case 'settings':
