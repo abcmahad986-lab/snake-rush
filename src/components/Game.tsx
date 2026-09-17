@@ -376,15 +376,8 @@ export default function Game({ player, setPlayer, mode, difficulty, onBack, isMu
           }
         }
 
-        // Multiplayer collision
-        if (isMultiplayer) {
-          setSnake2(s2 => {
-            if (s2.some(s => s.x === newHead.x && s.y === newHead.y)) {
-              setGameState('GAME_OVER');
-            }
-            return s2;
-          });
-        }
+        // Multiplayer collision - SNAKES CAN NOW PASS THROUGH EACH OTHER!
+        // Removed collision detection between player snakes
 
         const newSnake = [newHead, ...prev];
         let ate = false;
