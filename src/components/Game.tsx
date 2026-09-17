@@ -472,7 +472,7 @@ export default function Game({ player, setPlayer, mode, difficulty, onBack, isMu
     }, speed);
 
     return () => clearInterval(interval);
-  }, [gameState, difficulty, food, activeEffects, combo, isMultiplayer, multiplayerType, mode]);
+  }, [gameState, difficulty, activeEffects, combo, isMultiplayer, multiplayerType, mode]);
 
   // Handle game over - save stats
   useEffect(() => {
