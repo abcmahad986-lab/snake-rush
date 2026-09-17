@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Player, Screen, GameMode, Difficulty, TROPHIES, TITLES, ACHIEVEMENTS, Theme } from './types';
+import { Player, Screen, GameMode, Difficulty, TROPHIES, TITLES, ACHIEVEMENTS, Theme, MatchType } from './types';
 import { loadPlayer, savePlayer, createNewPlayer, addXp } from './store';
 import Game from './components/Game';
 import { LoginScreen, MainMenu, ProfileScreen, TrophiesScreen, ShopScreen, EventsScreen, RewardsScreen, TitlesScreen } from './components/Screens';
@@ -11,6 +11,7 @@ import { RealMoneyShopScreen, MapsScreen } from './components/ShopAndMaps';
 import { RealFriendsScreen } from './components/RealFriends';
 import { HomeScreen, GamesScreen, PrivacyScreen, TermsScreen, AboutScreen, EnhancedSettingsScreen } from './components/NewScreens';
 import { SnakeLeaderGame, LudoMasterGame, SnakePuzzleGame, SnakeRunnerGame, SnakeBattleGame, SnakeMazeGame } from './components/MiniGames';
+import { CompetitiveScreen, getRankFromElo } from './components/CompetitiveScreen';
 
 type MultiplayerType = 'bot' | 'player' | 'zen';
 
@@ -22,6 +23,7 @@ function App() {
   const [multiplayerType, setMultiplayerType] = useState<MultiplayerType>('player');
   const [showMultiplayerChoice, setShowMultiplayerChoice] = useState(false);
   const [pendingDifficulty, setPendingDifficulty] = useState<Difficulty>('medium');
+  const [matchType, setMatchType] = useState<MatchType>('unranked');
   const [loading, setLoading] = useState(true);
   const [theme, setTheme] = useState<Theme>(() => {
     const saved = localStorage.getItem('snake-theme');
@@ -205,8 +207,9 @@ function App() {
         mode={gameMode}
         difficulty={gameDifficulty}
         onBack={() => setScreen('menu')}
-        isMultiplayer={gameMode === 'multiplayer'}
+        isMultiplayer={gameMode === 'multiplayer' || gameMode === 'competitive'}
         multiplayerType={multiplayerType}
+        matchType={matchType}
         theme={theme}
         toggleTheme={toggleTheme}
       />
@@ -329,6 +332,19 @@ function App() {
       return <RealMoneyShopScreen player={player} setPlayer={handleUpdatePlayer} onBack={() => setScreen('menu')} theme={theme} />;
     case 'maps':
       return <MapsScreen player={player} setPlayer={handleUpdatePlayer} onBack={() => setScreen('menu')} theme={theme} />;
+    case 'competitive':
+      return <CompetitiveScreen 
+        player={player} 
+        setPlayer={handleUpdatePlayer} 
+        onBack={() => setScreen('menu')} 
+        theme={theme}
+        onStartMatch={(type) => {
+          setMatchType(type);
+          setGameMode('competitive');
+          setGameDifficulty('medium');
+          setScreen('game');
+        }}
+      />;
     case 'games':
       return <GamesScreen onBack={() => setScreen('menu')} theme={theme} onSelectGame={(gameId) => setScreen(gameId as Screen)} />;
     case 'snake-classic':

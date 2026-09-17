@@ -3,7 +3,7 @@ import { Player, Screen, Difficulty, GameMode, TROPHIES, TITLES, SNAKE_SKINS, SN
 import type { ShopItem } from '../types';
 import { savePlayer, claimDailyReward, getLoginReward } from '../store';
 import { audioManager } from '../audio';
-import { SimpleClassicIcon, SimpleTimedIcon, SimpleMultiplayerIcon, SimpleZenIcon, SimpleSurvivalIcon, SimpleEasyIcon, SimpleMediumIcon, SimpleHardIcon, SimpleInsaneIcon } from './SimpleIcons';
+import { SimpleClassicIcon, SimpleTimedIcon, SimpleMultiplayerIcon, SimpleZenIcon, SimpleSurvivalIcon, SimpleCompetitiveIcon, SimpleEasyIcon, SimpleMediumIcon, SimpleHardIcon, SimpleInsaneIcon } from './SimpleIcons';
 
 // Theme helper
 const t = (theme: Theme, dark: string, light: string) => theme === 'dark' ? dark : light;
@@ -131,6 +131,12 @@ export function MainMenu({ player, onSelectMode, onNavigate, theme, toggleTheme 
       icon: <SimpleSurvivalIcon className="w-12 h-12" />, 
       name: 'Survival', 
       desc: 'Speed increases, survive!'
+    },
+    { 
+      id: 'competitive', 
+      icon: <SimpleCompetitiveIcon className="w-12 h-12" />, 
+      name: 'Competitive', 
+      desc: 'Ranked & Unranked matches'
     },
   ];
 

@@ -42,6 +42,17 @@ export const SimpleSurvivalIcon = ({ className = "w-12 h-12" }: { className?: st
   </svg>
 );
 
+export const SimpleCompetitiveIcon = ({ className = "w-12 h-12" }: { className?: string }) => (
+  <svg className={className} viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M16 8H32V20C32 24.4183 28.4183 28 24 28C19.5817 28 16 24.4183 16 20V8Z" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M16 12H10C10 12 10 18 16 18" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M32 12H38C38 12 38 18 32 18" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
+    <line x1="24" y1="28" x2="24" y2="36" stroke="currentColor" strokeWidth="3" strokeLinecap="round"/>
+    <line x1="16" y1="36" x2="32" y2="36" stroke="currentColor" strokeWidth="3" strokeLinecap="round"/>
+    <line x1="14" y1="40" x2="34" y2="40" stroke="currentColor" strokeWidth="3" strokeLinecap="round"/>
+  </svg>
+);
+
 // Difficulty Icons - Simple Geometric
 export const SimpleEasyIcon = ({ className = "w-6 h-6" }: { className?: string }) => (
   <svg className={className} viewBox="0 0 24 24" fill="currentColor">

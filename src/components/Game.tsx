@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { Position, Direction, GameState, Difficulty, GameMode, GRID_SIZE, DIFFICULTY_SPEEDS, TIMED_DURATIONS, Player, PowerUp, TITLES, Theme, GAME_MAPS } from '../types';
+import { Position, Direction, GameState, Difficulty, GameMode, GRID_SIZE, DIFFICULTY_SPEEDS, TIMED_DURATIONS, Player, PowerUp, TITLES, Theme, GAME_MAPS, MatchType } from '../types';
 import { savePlayer, addXp } from '../store';
 import { audioManager } from '../audio';
+import { getRankFromElo } from './CompetitiveScreen';
 
 type MultiplayerType = 'bot' | 'player' | 'zen';
 
@@ -13,6 +14,7 @@ interface GameProps {
   onBack: () => void;
   isMultiplayer?: boolean;
   multiplayerType?: MultiplayerType;
+  matchType?: MatchType;
   theme: Theme;
   toggleTheme: () => void;
 }
@@ -112,7 +114,7 @@ function getBotDirection(snake: Position[], food: Position, currentDir: Directio
   return scores[0]?.dir || currentDir;
 }
 
-export default function Game({ player, setPlayer, mode, difficulty, onBack, isMultiplayer, multiplayerType = 'player', theme, toggleTheme }: GameProps) {
+export default function Game({ player, setPlayer, mode, difficulty, onBack, isMultiplayer, multiplayerType = 'player', matchType = 'unranked', theme, toggleTheme }: GameProps) {
   const [snake, setSnake] = useState<Position[]>([{ x: 10, y: 10 }, { x: 9, y: 10 }, { x: 8, y: 10 }]);
   const [snake2, setSnake2] = useState<Position[]>([{ x: 10, y: 15 }, { x: 9, y: 15 }, { x: 8, y: 15 }]);
   const [food, setFood] = useState<Position>(() => getRandomFood([{ x: 10, y: 10 }]));
@@ -134,6 +136,7 @@ export default function Game({ player, setPlayer, mode, difficulty, onBack, isMu
   const [isMuted, setIsMuted] = useState(audioManager.getIsMuted());
   const [survivalTime, setSurvivalTime] = useState(0);
   const [survivalSpeed, setSurvivalSpeed] = useState(1);
+  const [eloChange, setEloChange] = useState(0);
 
   const dirRef = useRef<Direction>('RIGHT');
   const dir2Ref = useRef<Direction>('LEFT');
@@ -593,6 +596,38 @@ export default function Game({ player, setPlayer, mode, difficulty, onBack, isMu
         }
       }
 
+      // Handle competitive mode ELO changes
+      if (mode === 'competitive') {
+        updated.competitiveGamesPlayed += 1;
+        
+        if (matchType === 'ranked') {
+          // Simulate opponent ELO (random between player's ELO - 200 and + 200)
+          const opponentElo = Math.max(100, player.elo + Math.floor(Math.random() * 400) - 200);
+          
+          // Determine if player won (score > score2 for multiplayer, or score > 50 for single player)
+          const playerWon = isMultiplayer ? score > score2 : finalS > 50;
+          
+          // Calculate ELO change using simplified ELO formula
+          const K = 32; // K-factor (determines how much ELO changes)
+          const expectedScore = 1 / (1 + Math.pow(10, (opponentElo - player.elo) / 400));
+          const actualScore = playerWon ? 1 : 0;
+          const eloChangeValue = Math.round(K * (actualScore - expectedScore));
+          
+          setEloChange(eloChangeValue);
+          updated.elo = Math.max(0, player.elo + eloChangeValue);
+          updated.rank = getRankFromElo(updated.elo);
+          
+          if (playerWon) {
+            updated.rankedWins += 1;
+          } else {
+            updated.rankedLosses += 1;
+          }
+        } else {
+          // Unranked match - just track games played
+          updated.unrankedGamesPlayed += 1;
+        }
+      }
+
       updated = addXp(updated, xp);
       
       // Check for new titles
@@ -990,6 +1025,21 @@ export default function Game({ player, setPlayer, mode, difficulty, onBack, isMu
                   <span className="text-yellow-500">+Coins</span>
                   <span className="text-yellow-500 font-bold">{coinsEarned}</span>
                 </div>
+                {mode === 'competitive' && matchType === 'ranked' && (
+                  <>
+                    <div className="border-t border-gray-700 my-2" />
+                    <div className="flex justify-between text-sm mb-1">
+                      <span className="text-gray-400">ELO Change</span>
+                      <span className={`font-bold ${eloChange >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                        {eloChange >= 0 ? '+' : ''}{eloChange}
+                      </span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-400">New Rank</span>
+                      <span className="text-purple-400 font-bold">{getRankFromElo(player.elo).toUpperCase()}</span>
+                    </div>
+                  </>
+                )}
               </div>
 
               {/* New Titles Unlocked */}
