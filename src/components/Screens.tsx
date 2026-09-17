@@ -451,48 +451,48 @@ export function ProfileScreen({ player, setPlayer, onBack, onNavigate, theme, to
   };
 
   return (
-    <div className={`min-h-screen ${t(theme, 'bg-gradient-to-br from-gray-900 via-slate-900 to-gray-800', 'bg-gradient-to-br from-gray-50 via-slate-50 to-white')} p-4`}>
+    <div className={`min-h-screen ${t(theme, 'bg-black', 'bg-white')} p-4`}>
       <div className="max-w-md mx-auto">
         <div className="flex items-center justify-between mb-3">
-          <button onClick={onBack} className={`px-3 py-1.5 ${t(theme, 'bg-gray-800 hover:bg-gray-700 text-gray-300 border-gray-700/50', 'bg-white hover:bg-gray-50 text-gray-700 border-gray-300')} rounded-lg text-sm border`}>← Back</button>
+          <button onClick={onBack} className={`px-3 py-1.5 ${t(theme, 'bg-black hover:bg-gray-900 text-white border-white', 'bg-white hover:bg-gray-100 text-black border-black')} rounded-lg text-sm border-2`}>← Back</button>
           <ThemeToggle theme={theme} toggleTheme={toggleTheme} />
         </div>
         
         {/* Profile Card */}
-        <div className="bg-gray-800/80 rounded-2xl p-5 border border-gray-700/50 mb-4 text-center">
-          <button onClick={() => setShowAvatarPicker(!showAvatarPicker)} className="w-20 h-20 bg-gray-700 rounded-full flex items-center justify-center text-4xl border-3 border-green-500/50 mx-auto mb-3 hover:border-green-400 transition-all">
+        <div className={`${t(theme, 'bg-black border-white', 'bg-white border-black')} rounded-2xl p-5 border-2 mb-4 text-center`}>
+          <button onClick={() => setShowAvatarPicker(!showAvatarPicker)} className={`w-20 h-20 ${t(theme, 'bg-black border-white', 'bg-white border-black')} rounded-full flex items-center justify-center text-4xl border-2 mx-auto mb-3 hover:scale-105 transition-all`}>
             {player.avatar}
           </button>
           
           {showAvatarPicker && (
-            <div className="grid grid-cols-8 gap-1 mb-3 bg-gray-900/50 rounded-xl p-2">
+            <div className={`grid grid-cols-8 gap-1 mb-3 ${t(theme, 'bg-black', 'bg-white')} rounded-xl p-2 border-2 ${t(theme, 'border-white', 'border-black')}`}>
               {AVATARS.map(a => (
-                <button key={a} onClick={() => changeAvatar(a)} className={`text-lg p-0.5 rounded ${player.avatar === a ? 'bg-green-600/30 ring-1 ring-green-500' : 'hover:bg-gray-700'}`}>{a}</button>
+                <button key={a} onClick={() => changeAvatar(a)} className={`text-lg p-0.5 rounded ${player.avatar === a ? t(theme, 'bg-white text-black', 'bg-black text-white') : t(theme, 'hover:bg-gray-900', 'hover:bg-gray-100')}`}>{a}</button>
               ))}
             </div>
           )}
 
           {editing ? (
             <div className="flex gap-2 justify-center">
-              <input value={newUsername} onChange={e => setNewUsername(e.target.value)} className="px-3 py-1 bg-gray-900 border border-gray-600 rounded-lg text-white text-center text-sm" maxLength={16} />
-              <button onClick={handleSave} className="px-3 py-1 bg-green-600 text-white rounded-lg text-sm">✓</button>
+              <input value={newUsername} onChange={e => setNewUsername(e.target.value)} className={`px-3 py-1 ${t(theme, 'bg-black border-white text-white', 'bg-white border-black text-black')} border-2 rounded-lg text-center text-sm`} maxLength={16} />
+              <button onClick={handleSave} className={`px-3 py-1 ${t(theme, 'bg-white text-black', 'bg-black text-white')} rounded-lg text-sm font-bold`}>✓</button>
             </div>
           ) : (
             <div>
-              <h2 className="text-xl font-bold text-white">{player.username}</h2>
-              <button onClick={() => setEditing(true)} className="text-xs text-gray-400 hover:text-white">Edit</button>
+              <h2 className={`text-xl font-bold ${t(theme, 'text-white', 'text-black')}`}>{player.username}</h2>
+              <button onClick={() => setEditing(true)} className={`text-xs ${t(theme, 'text-gray-400 hover:text-white', 'text-gray-600 hover:text-black')}`}>Edit</button>
             </div>
           )}
           
           <div className="mt-2 flex flex-wrap gap-2 justify-center">
-            <span className="px-3 py-1 bg-green-600/20 text-green-400 rounded-full text-sm font-medium">Level {player.level}</span>
+            <span className={`px-3 py-1 ${t(theme, 'bg-white text-black', 'bg-black text-white')} rounded-full text-sm font-bold`}>Level {player.level}</span>
             {player.equippedTitle && onNavigate && (
-              <button onClick={() => onNavigate('titles')} className="px-3 py-1 bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-300 rounded-full text-sm font-medium flex items-center gap-1 transition-all">
+              <button onClick={() => onNavigate('titles')} className={`px-3 py-1 ${t(theme, 'bg-white text-black hover:bg-gray-200', 'bg-black text-white hover:bg-gray-800')} rounded-full text-sm font-bold flex items-center gap-1 transition-all`}>
                 {TITLES.find(t => t.id === player.equippedTitle)?.icon} {TITLES.find(t => t.id === player.equippedTitle)?.name} →
               </button>
             )}
             {player.equippedTitle && !onNavigate && (
-              <span className="px-3 py-1 bg-indigo-600/20 text-indigo-300 rounded-full text-sm font-medium flex items-center gap-1">
+              <span className={`px-3 py-1 ${t(theme, 'bg-white text-black', 'bg-black text-white')} rounded-full text-sm font-bold flex items-center gap-1`}>
                 {TITLES.find(t => t.id === player.equippedTitle)?.icon} {TITLES.find(t => t.id === player.equippedTitle)?.name}
               </span>
             )}
@@ -500,55 +500,55 @@ export function ProfileScreen({ player, setPlayer, onBack, onNavigate, theme, to
         </div>
 
         {/* XP Bar */}
-        <div className="bg-gray-800/60 rounded-xl p-3 mb-4 border border-gray-700/50">
-          <div className="flex justify-between text-xs text-gray-400 mb-1">
+        <div className={`${t(theme, 'bg-black border-white', 'bg-white border-black')} rounded-xl p-3 mb-4 border-2`}>
+          <div className={`flex justify-between text-xs ${t(theme, 'text-white', 'text-black')} mb-1`}>
             <span>Experience</span>
             <span>{player.xp} / {player.xpToNext} XP</span>
           </div>
-          <div className="h-3 bg-gray-900 rounded-full overflow-hidden">
-            <div className="h-full bg-gradient-to-r from-green-500 to-emerald-400 rounded-full transition-all" style={{ width: `${(player.xp / player.xpToNext) * 100}%` }} />
+          <div className={`h-3 ${t(theme, 'bg-gray-900', 'bg-gray-200')} rounded-full overflow-hidden`}>
+            <div className={`h-full ${t(theme, 'bg-white', 'bg-black')} rounded-full transition-all`} style={{ width: `${(player.xp / player.xpToNext) * 100}%` }} />
           </div>
         </div>
 
         {/* Currency */}
         <div className="grid grid-cols-2 gap-3 mb-4">
-          <div className="bg-gray-800/60 rounded-xl p-3 border border-gray-700/50 text-center">
+          <div className={`${t(theme, 'bg-black border-white', 'bg-white border-black')} rounded-xl p-3 border-2 text-center`}>
             <div className="text-2xl mb-1">🪙</div>
-            <div className="text-xl font-bold text-yellow-400">{player.coins}</div>
-            <div className="text-[10px] text-gray-400">Coins</div>
+            <div className={`text-xl font-bold ${t(theme, 'text-white', 'text-black')}`}>{player.coins}</div>
+            <div className={`text-[10px] ${t(theme, 'text-gray-400', 'text-gray-600')}`}>Coins</div>
           </div>
-          <div className="bg-gray-800/60 rounded-xl p-3 border border-gray-700/50 text-center">
+          <div className={`${t(theme, 'bg-black border-white', 'bg-white border-black')} rounded-xl p-3 border-2 text-center`}>
             <div className="text-2xl mb-1">💎</div>
-            <div className="text-xl font-bold text-purple-400">{player.gems}</div>
-            <div className="text-[10px] text-gray-400">Gems</div>
+            <div className={`text-xl font-bold ${t(theme, 'text-white', 'text-black')}`}>{player.gems}</div>
+            <div className={`text-[10px] ${t(theme, 'text-gray-400', 'text-gray-600')}`}>Gems</div>
           </div>
         </div>
 
         {/* Stats */}
-        <div className="bg-gray-800/60 rounded-xl p-4 border border-gray-700/50 mb-4">
-          <h3 className="text-sm font-bold text-white mb-3">📊 Statistics</h3>
+        <div className={`${t(theme, 'bg-black border-white', 'bg-white border-black')} rounded-xl p-4 border-2 mb-4`}>
+          <h3 className={`text-sm font-bold ${t(theme, 'text-white', 'text-black')} mb-3`}>📊 Statistics</h3>
           <div className="grid grid-cols-2 gap-2 text-sm">
-            <div className="flex justify-between"><span className="text-gray-400">Games Played</span><span className="text-white font-medium">{player.gamesPlayed}</span></div>
-            <div className="flex justify-between"><span className="text-gray-400">Total Score</span><span className="text-white font-medium">{player.totalScore}</span></div>
-            <div className="flex justify-between"><span className="text-gray-400">Food Eaten</span><span className="text-white font-medium">{player.totalFoodEaten}</span></div>
-            <div className="flex justify-between"><span className="text-gray-400">Longest Snake</span><span className="text-white font-medium">{player.longestSnake}</span></div>
-            <div className="flex justify-between"><span className="text-gray-400">Daily Streak</span><span className="text-white font-medium">{player.dailyStreak} 🔥</span></div>
-            <div className="flex justify-between"><span className="text-gray-400">Trophies</span><span className="text-white font-medium">{player.trophies.length}/{TROPHIES.length}</span></div>
-            <div className="flex justify-between"><span className="text-gray-400">Titles</span><span className="text-indigo-400 font-medium">{player.titles.length}/{TITLES.length}</span></div>
-            <div className="flex justify-between"><span className="text-gray-400">Bot Wins</span><span className="text-blue-400 font-medium">{player.gamesWonVsBot}</span></div>
+            <div className="flex justify-between"><span className={t(theme, 'text-gray-400', 'text-gray-600')}>Games Played</span><span className={`${t(theme, 'text-white', 'text-black')} font-bold`}>{player.gamesPlayed}</span></div>
+            <div className="flex justify-between"><span className={t(theme, 'text-gray-400', 'text-gray-600')}>Total Score</span><span className={`${t(theme, 'text-white', 'text-black')} font-bold`}>{player.totalScore}</span></div>
+            <div className="flex justify-between"><span className={t(theme, 'text-gray-400', 'text-gray-600')}>Food Eaten</span><span className={`${t(theme, 'text-white', 'text-black')} font-bold`}>{player.totalFoodEaten}</span></div>
+            <div className="flex justify-between"><span className={t(theme, 'text-gray-400', 'text-gray-600')}>Longest Snake</span><span className={`${t(theme, 'text-white', 'text-black')} font-bold`}>{player.longestSnake}</span></div>
+            <div className="flex justify-between"><span className={t(theme, 'text-gray-400', 'text-gray-600')}>Daily Streak</span><span className={`${t(theme, 'text-white', 'text-black')} font-bold`}>{player.dailyStreak} 🔥</span></div>
+            <div className="flex justify-between"><span className={t(theme, 'text-gray-400', 'text-gray-600')}>Trophies</span><span className={`${t(theme, 'text-white', 'text-black')} font-bold`}>{player.trophies.length}/{TROPHIES.length}</span></div>
+            <div className="flex justify-between"><span className={t(theme, 'text-gray-400', 'text-gray-600')}>Titles</span><span className={`${t(theme, 'text-white', 'text-black')} font-bold`}>{player.titles.length}/{TITLES.length}</span></div>
+            <div className="flex justify-between"><span className={t(theme, 'text-gray-400', 'text-gray-600')}>Bot Wins</span><span className={`${t(theme, 'text-white', 'text-black')} font-bold`}>{player.gamesWonVsBot}</span></div>
           </div>
         </div>
 
         {/* High Scores */}
-        <div className="bg-gray-800/60 rounded-xl p-4 border border-gray-700/50">
-          <h3 className="text-sm font-bold text-white mb-3">🏅 High Scores</h3>
+        <div className={`${t(theme, 'bg-black border-white', 'bg-white border-black')} rounded-xl p-4 border-2`}>
+          <h3 className={`text-sm font-bold ${t(theme, 'text-white', 'text-black')} mb-3`}>🏅 High Scores</h3>
           <div className="space-y-2">
             {(['easy', 'medium', 'hard', 'insane'] as Difficulty[]).map(d => (
               <div key={d} className="flex justify-between items-center">
-                <span className="text-xs text-gray-400">{DIFFICULTY_LABELS[d]}</span>
+                <span className={`text-xs ${t(theme, 'text-gray-400', 'text-gray-600')}`}>{DIFFICULTY_LABELS[d]}</span>
                 <div className="flex gap-3">
-                  <span className="text-xs text-green-400">Classic: {player.highScores[d]}</span>
-                  <span className="text-xs text-orange-400">Timed: {player.timedHighScores[d]}</span>
+                  <span className={`text-xs ${t(theme, 'text-white', 'text-black')} font-bold`}>Classic: {player.highScores[d]}</span>
+                  <span className={`text-xs ${t(theme, 'text-white', 'text-black')} font-bold`}>Timed: {player.timedHighScores[d]}</span>
                 </div>
               </div>
             ))}
