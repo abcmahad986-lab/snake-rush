@@ -32,16 +32,16 @@ export function HomeScreen({ onNavigate, theme }: { onNavigate: (screen: Screen)
 }
 
 // ============ GAMES SCREEN ============
-export function GamesScreen({ onBack, theme }: { onBack: () => void; theme: Theme }) {
+export function GamesScreen({ onBack, theme, onSelectGame }: { onBack: () => void; theme: Theme; onSelectGame: (gameId: string) => void }) {
   const games = [
     { id: 'snake-classic', name: 'Classic Snake', icon: '🐍', description: 'The original snake game', status: 'available' },
     { id: 'snake-rush', name: 'Snake Rush', icon: '⚡', description: 'Fast-paced snake action', status: 'available' },
-    { id: 'snake-leader', name: 'Snake Leader', icon: '👑', description: 'Lead your snake army', status: 'coming-soon' },
-    { id: 'ludo', name: 'Ludo Master', icon: '🎲', description: 'Classic board game fun', status: 'coming-soon' },
-    { id: 'puzzle', name: 'Snake Puzzle', icon: '🧩', description: 'Solve snake puzzles', status: 'coming-soon' },
-    { id: 'runner', name: 'Snake Runner', icon: '🏃', description: 'Endless runner mode', status: 'coming-soon' },
-    { id: 'battle', name: 'Snake Battle', icon: '⚔️', description: 'Battle against other snakes', status: 'coming-soon' },
-    { id: 'maze', name: 'Snake Maze', icon: '🌀', description: 'Navigate through mazes', status: 'coming-soon' },
+    { id: 'snake-leader', name: 'Snake Leader', icon: '👑', description: 'Lead your snake army', status: 'available' },
+    { id: 'ludo', name: 'Ludo Master', icon: '🎲', description: 'Classic board game fun', status: 'available' },
+    { id: 'puzzle', name: 'Snake Puzzle', icon: '🧩', description: 'Solve snake puzzles', status: 'available' },
+    { id: 'runner', name: 'Snake Runner', icon: '🏃', description: 'Endless runner mode', status: 'available' },
+    { id: 'battle', name: 'Snake Battle', icon: '⚔️', description: 'Battle against other snakes', status: 'available' },
+    { id: 'maze', name: 'Snake Maze', icon: '🌀', description: 'Navigate through mazes', status: 'available' },
   ];
 
   return (
@@ -59,25 +59,17 @@ export function GamesScreen({ onBack, theme }: { onBack: () => void; theme: Them
           {games.map(game => (
             <div
               key={game.id}
-              className={`${t(theme, 'bg-black border-white', 'bg-white border-black')} border-2 rounded-xl p-4 ${
-                game.status === 'coming-soon' ? 'opacity-60' : 'hover:scale-105'
-              } transition-all duration-200 cursor-pointer`}
+              className={`${t(theme, 'bg-black border-white', 'bg-white border-black')} border-2 rounded-xl p-4 hover:scale-105 transition-all duration-200 cursor-pointer`}
               onClick={() => {
-                if (game.status === 'available') {
-                  audioManager.playClickSound();
-                  // Navigate to game
-                }
+                audioManager.playClickSound();
+                onSelectGame(game.id);
               }}
             >
               <div className="text-5xl mb-3 text-center">{game.icon}</div>
               <h3 className={`text-lg font-bold ${t(theme, 'text-white', 'text-black')} mb-1 text-center`}>{game.name}</h3>
               <p className={`text-xs ${t(theme, 'text-gray-400', 'text-gray-600')} text-center mb-2`}>{game.description}</p>
-              <div className={`text-xs font-bold text-center px-2 py-1 rounded ${
-                game.status === 'available' 
-                  ? t(theme, 'bg-white text-black', 'bg-black text-white')
-                  : t(theme, 'bg-gray-800 text-gray-400', 'bg-gray-200 text-gray-600')
-              }`}>
-                {game.status === 'available' ? '▶ PLAY' : '🔒 COMING SOON'}
+              <div className={`text-xs font-bold text-center px-2 py-1 rounded ${t(theme, 'bg-white text-black', 'bg-black text-white')}`}>
+                ▶ PLAY
               </div>
             </div>
           ))}

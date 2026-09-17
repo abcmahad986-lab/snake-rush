@@ -10,6 +10,7 @@ import { AchievementsScreen, SpinWheelScreen, VisualThemesScreen } from './compo
 import { RealMoneyShopScreen, MapsScreen } from './components/ShopAndMaps';
 import { RealFriendsScreen } from './components/RealFriends';
 import { HomeScreen, GamesScreen, PrivacyScreen, TermsScreen, AboutScreen, EnhancedSettingsScreen } from './components/NewScreens';
+import { SnakeLeaderGame, LudoMasterGame, SnakePuzzleGame, SnakeRunnerGame, SnakeBattleGame, SnakeMazeGame } from './components/MiniGames';
 
 type MultiplayerType = 'bot' | 'player' | 'zen';
 
@@ -329,7 +330,22 @@ function App() {
     case 'maps':
       return <MapsScreen player={player} setPlayer={handleUpdatePlayer} onBack={() => setScreen('menu')} theme={theme} />;
     case 'games':
-      return <GamesScreen onBack={() => setScreen('menu')} theme={theme} />;
+      return <GamesScreen onBack={() => setScreen('menu')} theme={theme} onSelectGame={(gameId) => setScreen(gameId as Screen)} />;
+    case 'snake-classic':
+    case 'snake-rush':
+      return <Game player={player!} setPlayer={handleUpdatePlayer} mode="classic" difficulty="medium" onBack={() => setScreen('games')} theme={theme} toggleTheme={toggleTheme} />;
+    case 'snake-leader':
+      return <SnakeLeaderGame onBack={() => setScreen('games')} theme={theme} />;
+    case 'ludo':
+      return <LudoMasterGame onBack={() => setScreen('games')} theme={theme} />;
+    case 'puzzle':
+      return <SnakePuzzleGame onBack={() => setScreen('games')} theme={theme} />;
+    case 'runner':
+      return <SnakeRunnerGame onBack={() => setScreen('games')} theme={theme} />;
+    case 'battle':
+      return <SnakeBattleGame onBack={() => setScreen('games')} theme={theme} />;
+    case 'maze':
+      return <SnakeMazeGame onBack={() => setScreen('games')} theme={theme} />;
     case 'privacy':
       return <PrivacyScreen onBack={() => setScreen('settings')} theme={theme} />;
     case 'terms':
