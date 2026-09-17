@@ -630,87 +630,94 @@ export default function Game({ player, setPlayer, mode, difficulty, onBack, isMu
   };
 
   return (
-    <div className={`min-h-screen ${theme === 'dark' ? 'bg-gradient-to-br from-gray-900 via-slate-900 to-gray-800' : 'bg-gradient-to-br from-gray-50 via-slate-50 to-white'} flex flex-col items-center p-2 md:p-4 select-none`}>
-      {/* Top Bar */}
-      <div className="w-full max-w-lg flex items-center justify-between mb-2">
-        <button onClick={onBack} className={`px-3 py-1.5 ${theme === 'dark' ? 'bg-gray-800 hover:bg-gray-700 text-gray-300 border-gray-700/50' : 'bg-white hover:bg-gray-50 text-gray-700 border-gray-300'} rounded-lg text-sm border`}>
-          ← Back
-        </button>
-        <div className="flex items-center gap-2">
-          {player.equippedTitle && (
-            <span className={`text-[10px] ${theme === 'dark' ? 'text-indigo-300' : 'text-indigo-600'} hidden md:inline`}>
-              {TITLES.find(ti => ti.id === player.equippedTitle)?.icon} {TITLES.find(ti => ti.id === player.equippedTitle)?.name}
-            </span>
-          )}
-          <span className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'} uppercase`}>{getModeLabel()}</span>
-          <span className={`text-xs px-2 py-0.5 rounded-full ${
-            difficulty === 'easy' ? 'bg-green-900/50 text-green-400' :
-            difficulty === 'medium' ? 'bg-yellow-900/50 text-yellow-400' :
-            difficulty === 'hard' ? 'bg-red-900/50 text-red-400' :
-            'bg-purple-900/50 text-purple-400'
-          }`}>{difficulty}</span>
-          <button
-            onClick={() => {
-              audioManager.playClickSound();
-              const muted = audioManager.toggleMute();
-              setIsMuted(muted);
-            }}
-            className={`p-1.5 rounded-lg transition-all ${
-              theme === 'dark' 
-                ? 'bg-gray-800 hover:bg-gray-700 text-gray-300 border-gray-700/50' 
-                : 'bg-white hover:bg-gray-50 text-gray-700 border-gray-300'
-            } border`}
-            title={isMuted ? 'Unmute' : 'Mute'}
+    <div className="min-h-screen bg-[#2d1b4e] flex flex-col items-center p-2 sm:p-3 md:p-4 select-none">
+      {/* Top Bar - Wooden Style */}
+      <div className="w-full max-w-lg mb-2">
+        <div className="wood-panel wood-snake-scales p-2 sm:p-3 flex items-center justify-between">
+          <button 
+            onClick={onBack} 
+            className="wood-button px-3 py-1.5 hover:scale-105 transition-transform"
           >
-            {isMuted ? '🔇' : '🔊'}
+            <span className="wood-text-light font-bold text-xs sm:text-sm">← BACK</span>
           </button>
-        </div>
-      </div>
-
-      {/* Score Bar */}
-      <div className={`w-full max-w-lg flex justify-between items-center ${theme === 'dark' ? 'bg-gray-800/80 border-gray-700/50' : 'bg-white border-gray-200 shadow-sm'} rounded-xl px-3 py-2 mb-2 border`}>
-        <div className="text-center">
-          <div className={`text-[10px] ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>{isMultiplayer ? 'P1' : 'Score'}</div>
-          <div className="text-lg font-bold text-green-400">{score}</div>
-        </div>
-        {mode === 'timed' && (
-          <div className="text-center">
-            <div className={`text-[10px] ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Time</div>
-            <div className={`text-lg font-bold ${timeLeft <= 10 ? 'text-red-400 animate-pulse' : theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>{formatTime(timeLeft)}</div>
-          </div>
-        )}
-        {combo > 2 && (
-          <div className="text-center">
-            <div className={`text-[10px] ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Combo</div>
-            <div className="text-lg font-bold text-orange-400">x{combo}</div>
-          </div>
-        )}
-        {isMultiplayer && (
-          <div className="text-center">
-            <div className={`text-[10px] ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>{multiplayerType === 'bot' ? 'Bot' : 'P2'}</div>
-            <div className="text-lg font-bold text-blue-400">{score2}</div>
-          </div>
-        )}
-        {!isMultiplayer && mode !== 'timed' && (
-          <div className="text-center">
-            <div className={`text-[10px] ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Length</div>
-            <div className="text-lg font-bold text-green-400">{snake.length}</div>
-          </div>
-        )}
-        {activeEffects.length > 0 && (
-          <div className="flex gap-1">
-            {activeEffects.map(e => (
-              <span key={e} className="text-xs animate-pulse">
-                {e === 'double' ? '✖️2' : e === 'speed' ? '⚡' : '🐌'}
+          <div className="flex items-center gap-2">
+            {player.equippedTitle && (
+              <span className="text-[10px] sm:text-xs wood-text-light hidden md:inline font-bold">
+                {TITLES.find(ti => ti.id === player.equippedTitle)?.icon} {TITLES.find(ti => ti.id === player.equippedTitle)?.name}
               </span>
-            ))}
+            )}
+            <span className="text-xs wood-text-light font-bold uppercase">{getModeLabel()}</span>
+            <div className="wood-button px-2 py-0.5">
+              <span className={`text-xs font-bold ${
+                difficulty === 'easy' ? 'text-green-300' :
+                difficulty === 'medium' ? 'text-yellow-300' :
+                difficulty === 'hard' ? 'text-red-300' :
+                'text-purple-300'
+              }`}>{difficulty.toUpperCase()}</span>
+            </div>
+            <button
+              onClick={() => {
+                audioManager.playClickSound();
+                const muted = audioManager.toggleMute();
+                setIsMuted(muted);
+              }}
+              className="wood-button p-1.5 hover:scale-110 transition-transform"
+              title={isMuted ? 'Unmute' : 'Mute'}
+            >
+              <span className="wood-text-light text-sm">{isMuted ? '🔇' : '🔊'}</span>
+            </button>
           </div>
-        )}
+        </div>
       </div>
 
-      {/* Game Board */}
-      <div className="relative w-full max-w-lg aspect-square">
-        <div className={`absolute inset-0 bg-gray-900/90 rounded-2xl border-2 overflow-hidden shadow-2xl ${mode === 'zen' ? 'border-purple-500/40 shadow-purple-500/20' : 'border-gray-700/60'}`}>
+      {/* Score Bar - Wooden Style */}
+      <div className="w-full max-w-lg mb-2">
+        <div className="wood-panel wood-snake-scales p-2 sm:p-3 flex justify-between items-center">
+          <div className="text-center">
+            <div className="text-[10px] sm:text-xs wood-text-light font-bold">{isMultiplayer ? 'P1' : 'SCORE'}</div>
+            <div className="text-lg sm:text-xl font-bold wood-text-light font-mono-tech">{score}</div>
+          </div>
+          {mode === 'timed' && (
+            <div className="text-center">
+              <div className="text-[10px] sm:text-xs wood-text-light font-bold">TIME</div>
+              <div className={`text-lg sm:text-xl font-bold font-mono-tech ${timeLeft <= 10 ? 'text-red-400 animate-pulse' : 'wood-text-light'}`}>{formatTime(timeLeft)}</div>
+            </div>
+          )}
+          {combo > 2 && (
+            <div className="text-center">
+              <div className="text-[10px] sm:text-xs wood-text-light font-bold">COMBO</div>
+              <div className="text-lg sm:text-xl font-bold text-orange-300 font-mono-tech">x{combo}</div>
+            </div>
+          )}
+          {isMultiplayer && (
+            <div className="text-center">
+              <div className="text-[10px] sm:text-xs wood-text-light font-bold">{multiplayerType === 'bot' ? 'BOT' : 'P2'}</div>
+              <div className="text-lg sm:text-xl font-bold text-blue-300 font-mono-tech">{score2}</div>
+            </div>
+          )}
+          {!isMultiplayer && mode !== 'timed' && (
+            <div className="text-center">
+              <div className="text-[10px] sm:text-xs wood-text-light font-bold">LENGTH</div>
+              <div className="text-lg sm:text-xl font-bold wood-text-light font-mono-tech">{snake.length}</div>
+            </div>
+          )}
+          {activeEffects.length > 0 && (
+            <div className="flex gap-1">
+              {activeEffects.map(e => (
+                <span key={e} className="text-xs sm:text-sm animate-pulse">
+                  {e === 'double' ? '✖️2' : e === 'speed' ? '⚡' : e === 'slow' ? '🐌' : e === 'time_slow' ? '⏱️' : e === 'coin_magnet' ? '🧲' : e === 'ghost_pass' ? '👻' : '💫'}
+                </span>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Game Board - Wooden Frame */}
+      <div className="w-full max-w-lg mb-3">
+        <div className={`wood-panel wood-snake-scales p-2 sm:p-3 ${mode === 'zen' ? 'border-[#6B4C9A]' : ''}`}>
+          <div className="relative aspect-square">
+            <div className={`absolute inset-0 bg-gray-900/90 rounded-xl border-4 overflow-hidden shadow-2xl ${mode === 'zen' ? 'border-purple-500/60 shadow-purple-500/30' : 'border-[#4A3728]'}`}>
           {/* Grid */}
           <div className="absolute inset-0 grid grid-cols-20 grid-rows-20">
             {Array.from({ length: GRID_SIZE * GRID_SIZE }).map((_, i) => (
@@ -943,29 +950,35 @@ export default function Game({ player, setPlayer, mode, difficulty, onBack, isMu
               )}
 
               <div className="flex gap-2">
-                <button onClick={() => { audioManager.playClickSound(); startGame(); }} className="px-4 py-2 bg-green-500 hover:bg-green-400 text-white font-bold rounded-xl transition-all transform hover:scale-105 active:scale-95">↺ Again</button>
-                <button onClick={() => { audioManager.playClickSound(); onBack(); }} className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-xl transition-all">← Menu</button>
+                <button onClick={() => { audioManager.playClickSound(); startGame(); }} className="wood-button px-4 py-2 hover:scale-105 transition-transform">
+                  <span className="wood-text-light font-bold">↺ AGAIN</span>
+                </button>
+                <button onClick={() => { audioManager.playClickSound(); onBack(); }} className="wood-button px-4 py-2 hover:scale-105 transition-transform">
+                  <span className="wood-text-light font-bold">← MENU</span>
+                </button>
               </div>
             </div>
           )}
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Touch Controls - Responsive D-Pad */}
-      <div className="mt-4 w-full max-w-lg">
+      {/* Touch Controls - Wooden D-Pad */}
+      <div className="w-full max-w-lg">
         {/* D-Pad Container */}
-        <div className={`${theme === 'dark' ? 'bg-gray-800/60 border-gray-700/50' : 'bg-white/80 border-gray-200'} rounded-2xl p-4 border backdrop-blur-sm shadow-lg`}>
+        <div className="wood-panel wood-snake-scales p-3 sm:p-4">
           {/* D-Pad Grid */}
-          <div className="grid grid-cols-3 grid-rows-3 gap-2 w-48 h-48 mx-auto">
+          <div className="grid grid-cols-3 grid-rows-3 gap-2 w-40 h-40 sm:w-48 sm:h-48 mx-auto">
             {/* Up Button */}
             <div />
             <button
               onTouchStart={(e) => { e.preventDefault(); changeDir('UP'); }}
               onClick={() => changeDir('UP')}
-              className={`${theme === 'dark' ? 'bg-gradient-to-br from-gray-700 to-gray-800 hover:from-gray-600 hover:to-gray-700 active:from-green-600 active:to-green-700 border-gray-600/50 text-white' : 'bg-gradient-to-br from-gray-100 to-gray-200 hover:from-gray-50 hover:to-gray-100 active:from-green-500 active:to-green-600 border-gray-300 text-gray-700'} rounded-xl flex items-center justify-center text-2xl font-bold border-2 transition-all duration-150 transform active:scale-95 shadow-md`}
+              className="wood-button rounded-xl flex items-center justify-center text-2xl font-bold hover:scale-105 active:scale-95 transition-transform"
               aria-label="Move Up"
             >
-              ▲
+              <span className="wood-text-light">▲</span>
             </button>
             <div />
 
@@ -973,32 +986,33 @@ export default function Game({ player, setPlayer, mode, difficulty, onBack, isMu
             <button
               onTouchStart={(e) => { e.preventDefault(); changeDir('LEFT'); }}
               onClick={() => changeDir('LEFT')}
-              className={`${theme === 'dark' ? 'bg-gradient-to-br from-gray-700 to-gray-800 hover:from-gray-600 hover:to-gray-700 active:from-green-600 active:to-green-700 border-gray-600/50 text-white' : 'bg-gradient-to-br from-gray-100 to-gray-200 hover:from-gray-50 hover:to-gray-100 active:from-green-500 active:to-green-600 border-gray-300 text-gray-700'} rounded-xl flex items-center justify-center text-2xl font-bold border-2 transition-all duration-150 transform active:scale-95 shadow-md`}
+              className="wood-button rounded-xl flex items-center justify-center text-2xl font-bold hover:scale-105 active:scale-95 transition-transform"
               aria-label="Move Left"
             >
-              ◀
+              <span className="wood-text-light">◀</span>
             </button>
 
             {/* Center - Pause Button */}
             <button
               onClick={() => {
+                audioManager.playClickSound();
                 if (gameState === 'PLAYING') setGameState('PAUSED');
                 else if (gameState === 'PAUSED') setGameState('PLAYING');
               }}
-              className={`${theme === 'dark' ? 'bg-gradient-to-br from-purple-700 to-purple-800 hover:from-purple-600 hover:to-purple-700 border-purple-600/50 text-white' : 'bg-gradient-to-br from-purple-100 to-purple-200 hover:from-purple-50 hover:to-purple-100 border-purple-300 text-purple-700'} rounded-xl flex items-center justify-center text-xl font-bold border-2 transition-all duration-150 transform active:scale-95 shadow-md`}
+              className="wood-button wood-purple rounded-xl flex items-center justify-center text-xl font-bold hover:scale-105 active:scale-95 transition-transform"
               aria-label="Pause/Resume"
             >
-              {gameState === 'PAUSED' ? '▶' : '⏸'}
+              <span className="wood-text-light">{gameState === 'PAUSED' ? '▶' : '⏸'}</span>
             </button>
 
             {/* Right Button */}
             <button
               onTouchStart={(e) => { e.preventDefault(); changeDir('RIGHT'); }}
               onClick={() => changeDir('RIGHT')}
-              className={`${theme === 'dark' ? 'bg-gradient-to-br from-gray-700 to-gray-800 hover:from-gray-600 hover:to-gray-700 active:from-green-600 active:to-green-700 border-gray-600/50 text-white' : 'bg-gradient-to-br from-gray-100 to-gray-200 hover:from-gray-50 hover:to-gray-100 active:from-green-500 active:to-green-600 border-gray-300 text-gray-700'} rounded-xl flex items-center justify-center text-2xl font-bold border-2 transition-all duration-150 transform active:scale-95 shadow-md`}
+              className="wood-button rounded-xl flex items-center justify-center text-2xl font-bold hover:scale-105 active:scale-95 transition-transform"
               aria-label="Move Right"
             >
-              ▶
+              <span className="wood-text-light">▶</span>
             </button>
 
             {/* Down Button */}
@@ -1006,25 +1020,27 @@ export default function Game({ player, setPlayer, mode, difficulty, onBack, isMu
             <button
               onTouchStart={(e) => { e.preventDefault(); changeDir('DOWN'); }}
               onClick={() => changeDir('DOWN')}
-              className={`${theme === 'dark' ? 'bg-gradient-to-br from-gray-700 to-gray-800 hover:from-gray-600 hover:to-gray-700 active:from-green-600 active:to-green-700 border-gray-600/50 text-white' : 'bg-gradient-to-br from-gray-100 to-gray-200 hover:from-gray-50 hover:to-gray-100 active:from-green-500 active:to-green-600 border-gray-300 text-gray-700'} rounded-xl flex items-center justify-center text-2xl font-bold border-2 transition-all duration-150 transform active:scale-95 shadow-md`}
+              className="wood-button rounded-xl flex items-center justify-center text-2xl font-bold hover:scale-105 active:scale-95 transition-transform"
               aria-label="Move Down"
             >
-              ▼
+              <span className="wood-text-light">▼</span>
             </button>
             <div />
           </div>
 
           {/* Control Info */}
-          <div className={`mt-3 text-center text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
-            {isMultiplayer && multiplayerType === 'player' ? (
-              <span>
-                <span className="font-semibold">P1:</span> Touch controls or WASD • <span className="font-semibold">P2:</span> IJKL keys
-              </span>
-            ) : (
-              <span>
-                Touch controls or <kbd className={`px-1.5 py-0.5 ${theme === 'dark' ? 'bg-gray-700 text-gray-300' : 'bg-gray-200 text-gray-700'} rounded text-[10px] font-mono`}>↑↓←→</kbd> / <kbd className={`px-1.5 py-0.5 ${theme === 'dark' ? 'bg-gray-700 text-gray-300' : 'bg-gray-200 text-gray-700'} rounded text-[10px] font-mono`}>WASD</kbd> to move
-              </span>
-            )}
+          <div className="mt-3 text-center">
+            <div className="text-xs wood-text-light opacity-80">
+              {isMultiplayer && multiplayerType === 'player' ? (
+                <span>
+                  <span className="font-bold">P1:</span> Touch or WASD • <span className="font-bold">P2:</span> IJKL
+                </span>
+              ) : (
+                <span>
+                  Touch controls or ↑↓←→ / WASD
+                </span>
+              )}
+            </div>
           </div>
         </div>
       </div>
