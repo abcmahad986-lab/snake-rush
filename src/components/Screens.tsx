@@ -344,60 +344,58 @@ export function MainMenu({ player, onSelectMode, onNavigate, theme, toggleTheme 
 
       {/* Premium Features */}
       <div className="w-full max-w-2xl mb-4 relative z-10">
-        <h3 className={`text-sm ${t(theme, 'text-gray-300', 'text-gray-600')} uppercase tracking-wider mb-3 font-bold text-center`}>Premium</h3>
-        <div className="grid grid-cols-2 gap-3">
+        <h3 className={`text-xs ${t(theme, 'text-gray-300', 'text-gray-600')} uppercase tracking-wider mb-2 font-bold text-center`}>Premium Features</h3>
+        <div className="grid grid-cols-2 gap-2">
           <button
             onClick={() => onNavigate('subscription')}
-            className={`flex items-center gap-3 p-4 ${
+            className={`flex items-center gap-2 p-3 ${
               player.isPremium 
                 ? t(theme, 'bg-gray-800 border-gray-600', 'bg-gray-100 border-gray-400')
                 : t(theme, 'bg-gray-900/60 border-gray-700/50 hover:border-gray-600', 'bg-white border-gray-200 hover:border-gray-400')
-            } border-2 rounded-xl transition-all duration-200 min-h-[100px]`}
+            } border-2 rounded-lg transition-all duration-200 min-h-[70px]`}
           >
-            <div className="text-3xl flex-shrink-0">{player.isPremium ? '⭐' : '🎫'}</div>
+            <div className="text-2xl flex-shrink-0">{player.isPremium ? '⭐' : '🎫'}</div>
             <div className="text-left flex-1 min-w-0">
-              <div className={`text-base font-bold ${t(theme, 'text-white', 'text-gray-900')} truncate`}>
+              <div className={`text-sm font-bold ${t(theme, 'text-white', 'text-gray-900')} truncate`}>
                 {player.isPremium ? 'Premium Active' : 'Snake Pass'}
               </div>
-              <div className={`text-xs ${t(theme, 'text-gray-400', 'text-gray-600')} font-semibold`}>
-                {player.isPremium ? 'Enjoy benefits!' : 'Unlock features'}
+              <div className={`text-[10px] ${t(theme, 'text-gray-400', 'text-gray-600')}`}>
+                {player.isPremium ? 'All features unlocked' : 'Unlock all premium features'}
               </div>
             </div>
           </button>
 
           <button
             onClick={() => onNavigate('battlepass')}
-            className={`flex items-center gap-3 p-4 ${t(theme, 'bg-gray-900/60 border-gray-700/50 hover:border-gray-600', 'bg-white border-gray-200 hover:border-gray-400')} border-2 rounded-xl transition-all duration-200 min-h-[100px]`}
+            className={`flex items-center gap-2 p-3 ${t(theme, 'bg-gray-900/60 border-gray-700/50 hover:border-gray-600', 'bg-white border-gray-200 hover:border-gray-400')} border-2 rounded-lg transition-all duration-200 min-h-[70px]`}
           >
-            <div className="text-3xl flex-shrink-0">🎖️</div>
+            <div className="text-2xl flex-shrink-0">🎖️</div>
             <div className="text-left flex-1 min-w-0">
-              <div className={`text-base font-bold ${t(theme, 'text-white', 'text-gray-900')} truncate`}>Battle Pass</div>
-              <div className={`text-xs ${t(theme, 'text-gray-400', 'text-gray-600')} font-semibold`}>Level {player.battlePassLevel}</div>
+              <div className={`text-sm font-bold ${t(theme, 'text-white', 'text-gray-900')} truncate`}>Battle Pass</div>
+              <div className={`text-[10px] ${t(theme, 'text-gray-400', 'text-gray-600')}`}>Season Level {player.battlePassLevel}</div>
             </div>
           </button>
 
           <button
             onClick={() => onNavigate('online')}
-            className={`flex items-center gap-3 p-4 ${t(theme, 'bg-gray-900/60 border-gray-700/50 hover:border-gray-600', 'bg-white border-gray-200 hover:border-gray-400')} border-2 rounded-xl transition-all duration-200 min-h-[100px]`}
+            className={`flex items-center gap-2 p-3 ${t(theme, 'bg-gray-900/60 border-gray-700/50 hover:border-gray-600', 'bg-white border-gray-200 hover:border-gray-400')} border-2 rounded-lg transition-all duration-200 min-h-[70px]`}
           >
-            <div className="text-3xl flex-shrink-0">🌐</div>
+            <div className="text-2xl flex-shrink-0">🌐</div>
             <div className="text-left flex-1 min-w-0">
-              <div className={`text-base font-bold ${t(theme, 'text-white', 'text-gray-900')} truncate`}>Online</div>
-              <div className={`text-xs ${t(theme, 'text-gray-400', 'text-gray-600')} font-semibold`}>
-                Play with friends
-              </div>
+              <div className={`text-sm font-bold ${t(theme, 'text-white', 'text-gray-900')} truncate`}>Online Play</div>
+              <div className={`text-[10px] ${t(theme, 'text-gray-400', 'text-gray-600')}`}>Compete with friends</div>
             </div>
           </button>
 
           <button
             onClick={() => onNavigate('google')}
-            className={`flex items-center gap-3 p-4 ${t(theme, 'bg-gray-900/60 border-gray-700/50 hover:border-gray-600', 'bg-white border-gray-200 hover:border-gray-400')} border-2 rounded-xl transition-all duration-200 min-h-[100px]`}
+            className={`flex items-center gap-2 p-3 ${t(theme, 'bg-gray-900/60 border-gray-700/50 hover:border-gray-600', 'bg-white border-gray-200 hover:border-gray-400')} border-2 rounded-lg transition-all duration-200 min-h-[70px]`}
           >
-            <div className="text-3xl flex-shrink-0">{player.googleAccount ? '✅' : '🔐'}</div>
+            <div className="text-2xl flex-shrink-0">{player.googleAccount ? '✅' : '🔐'}</div>
             <div className="text-left flex-1 min-w-0">
-              <div className={`text-base font-bold ${t(theme, 'text-white', 'text-gray-900')} truncate`}>Google</div>
-              <div className={`text-xs ${t(theme, 'text-gray-400', 'text-gray-600')} font-semibold`}>
-                {player.googleAccount ? 'Connected' : 'Sync progress'}
+              <div className={`text-sm font-bold ${t(theme, 'text-white', 'text-gray-900')} truncate`}>Cloud Save</div>
+              <div className={`text-[10px] ${t(theme, 'text-gray-400', 'text-gray-600')}`}>
+                {player.googleAccount ? 'Synced to cloud' : 'Connect to save progress'}
               </div>
             </div>
           </button>
