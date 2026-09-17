@@ -3,7 +3,6 @@ import { Player, Screen, Difficulty, GameMode, TROPHIES, TITLES, SNAKE_SKINS, SN
 import type { ShopItem } from '../types';
 import { savePlayer, claimDailyReward, getLoginReward } from '../store';
 import { audioManager } from '../audio';
-import { ClassicIcon, TimedIcon, MultiplayerIcon, ZenIcon, DifficultyPips, PlayArrowIcon } from './Icons';
 
 // Theme helper
 const t = (theme: Theme, dark: string, light: string) => theme === 'dark' ? dark : light;
@@ -101,30 +100,42 @@ export function MainMenu({ player, onSelectMode, onNavigate, theme, toggleTheme 
   const [selectedMode, setSelectedMode] = useState<GameMode>('classic');
   const [selectedDiff, setSelectedDiff] = useState<Difficulty>('medium');
 
-  const modes: { id: GameMode; name: string; desc: string; icon: React.ReactNode }[] = [
+  const modes: { id: GameMode; icon: string; name: string; desc: string; color: string; glowColor: string; borderColor: string }[] = [
     { 
       id: 'classic', 
+      icon: '🐍', 
       name: 'Classic', 
-      desc: 'Endless snake fun',
-      icon: <ClassicIcon className="w-16 h-16" />
+      desc: 'Endless snake fun', 
+      color: 'from-green-500 via-emerald-500 to-green-600',
+      glowColor: 'card-glow-green',
+      borderColor: 'border-green-400'
     },
     { 
       id: 'timed', 
+      icon: '⏱️', 
       name: 'Timed', 
-      desc: 'Score in 60 seconds',
-      icon: <TimedIcon className="w-16 h-16" />
+      desc: 'Score in 60 seconds', 
+      color: 'from-pink-500 via-purple-500 to-pink-600',
+      glowColor: 'card-glow-pink',
+      borderColor: 'border-pink-400'
     },
     { 
       id: 'multiplayer', 
+      icon: '👥', 
       name: 'Multiplayer', 
-      desc: 'vs Bot or vs Player',
-      icon: <MultiplayerIcon className="w-16 h-16" />
+      desc: 'vs Bot or vs Player', 
+      color: 'from-cyan-500 via-blue-500 to-cyan-600',
+      glowColor: 'card-glow-cyan',
+      borderColor: 'border-cyan-400'
     },
     { 
       id: 'zen', 
+      icon: '🧘', 
       name: 'Zen', 
-      desc: 'Pass through walls!',
-      icon: <ZenIcon className="w-16 h-16" />
+      desc: 'Pass through walls!', 
+      color: 'from-orange-500 via-yellow-500 to-orange-600',
+      glowColor: 'card-glow-orange',
+      borderColor: 'border-orange-400'
     },
   ];
 
@@ -147,85 +158,119 @@ export function MainMenu({ player, onSelectMode, onNavigate, theme, toggleTheme 
   };
 
   return (
-    <div className={`min-h-screen ${t(theme, 'bg-[#0a0e1a]', 'bg-gray-50')} flex flex-col items-center p-6 md:p-8`}>
-      {/* Player Profile Card */}
-      <div className={`w-full max-w-2xl ${t(theme, 'bg-[#1a1f2e] border-gray-700', 'bg-white border-gray-300')} rounded-2xl px-6 py-4 mb-6 border`} style={{ borderImage: 'linear-gradient(135deg, #3a3f4e 0%, #2a2f3e 100%) 1' }}>
-        <div className="flex items-center justify-between">
-          <button onClick={() => onNavigate('profile')} className={`flex items-center gap-4 ${t(theme, 'hover:bg-gray-800', 'hover:bg-gray-100')} rounded-xl px-3 py-2 transition-colors`}>
-            <div className="text-4xl">{player.avatar}</div>
-            <div className="text-left">
-              <div className={`text-lg font-semibold ${t(theme, 'text-white', 'text-gray-900')}`}>{player.username}</div>
-              <div className={`text-sm font-mono-tech ${t(theme, 'text-gray-400', 'text-gray-600')}`}>
-                RANK {player.level} | {TITLES.find(ti => ti.id === player.equippedTitle)?.name || 'Newbie'}
-              </div>
-            </div>
-          </button>
-          <div className="flex items-center gap-6">
-            <div className="text-center">
-              <div className={`text-lg font-mono-tech font-semibold ${t(theme, 'text-yellow-400', 'text-yellow-600')}`}>{player.coins}</div>
-              <div className={`text-xs ${t(theme, 'text-gray-500', 'text-gray-600')}`}>COINS</div>
-            </div>
-            <div className="text-center">
-              <div className={`text-lg font-mono-tech font-semibold ${t(theme, 'text-purple-400', 'text-purple-600')}`}>{player.gems}</div>
-              <div className={`text-xs ${t(theme, 'text-gray-500', 'text-gray-600')}`}>GEMS</div>
-            </div>
-            <ThemeToggle theme={theme} toggleTheme={toggleTheme} />
+    <div className={`min-h-screen ${t(theme, 'bg-gradient-to-br from-[#0f0c29] via-[#302b63] to-[#24243e]', 'bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50')} flex flex-col items-center p-4 md:p-6 relative overflow-hidden`}>
+      {/* Animated Background Elements */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-20 left-10 w-32 h-32 bg-purple-500/10 rounded-full blur-3xl animate-float"></div>
+        <div className="absolute bottom-20 right-10 w-40 h-40 bg-pink-500/10 rounded-full blur-3xl animate-float" style={{ animationDelay: '1s' }}></div>
+        <div className="absolute top-1/2 left-1/4 w-24 h-24 bg-cyan-500/10 rounded-full blur-3xl animate-float" style={{ animationDelay: '2s' }}></div>
+      </div>
+
+      {/* Player Bar */}
+      <div className={`w-full max-w-2xl flex items-center justify-between ${t(theme, 'bg-gray-900/80 border-purple-500/30', 'bg-white/90 border-purple-300')} rounded-3xl px-4 py-3 mb-4 border-2 backdrop-blur-xl shadow-2xl relative z-10`}>
+        <button onClick={() => onNavigate('profile')} className={`flex items-center gap-3 ${t(theme, 'hover:bg-purple-500/20', 'hover:bg-purple-100')} rounded-2xl px-3 py-2 transition-all`}>
+          <div className="relative">
+            <span className="text-3xl">{player.avatar}</span>
+            <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-gray-900 animate-pulse"></div>
           </div>
+          <div>
+            <div className={`text-base font-bold ${t(theme, 'text-white', 'text-gray-900')} leading-tight`}>{player.username}</div>
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-bold neon-green">Lvl {player.level}</span>
+              {player.equippedTitle && (
+                <>
+                  <span className={`text-xs ${t(theme, 'text-gray-500', 'text-gray-400')}`}>•</span>
+                  <span className={`text-xs ${t(theme, 'text-purple-300', 'text-purple-600')} font-semibold`}>
+                    {TITLES.find(ti => ti.id === player.equippedTitle)?.icon} {TITLES.find(ti => ti.id === player.equippedTitle)?.name}
+                  </span>
+                </>
+              )}
+            </div>
+          </div>
+        </button>
+        <div className="flex items-center gap-4">
+          <div className="text-center">
+            <div className="text-sm font-bold neon-orange">🪙 {player.coins}</div>
+          </div>
+          <div className="text-center">
+            <div className="text-sm font-bold neon-purple">💎 {player.gems}</div>
+          </div>
+          <ThemeToggle theme={theme} toggleTheme={toggleTheme} />
         </div>
       </div>
 
-      {/* Game Mode Selection - 2x2 Grid */}
-      <div className="w-full max-w-2xl mb-6">
-        <h3 className={`text-sm font-semibold ${t(theme, 'text-gray-400', 'text-gray-600')} uppercase tracking-wider mb-4 text-center`}>Select Game Mode</h3>
-        <div className="grid grid-cols-2 gap-4">
+      {/* XP Bar */}
+      <div className="w-full max-w-2xl mb-4 relative z-10">
+        <div className={`flex justify-between text-xs ${t(theme, 'text-gray-300', 'text-gray-600')} mb-1 font-semibold`}>
+          <span>XP Progress</span>
+          <span>{player.xp}/{player.xpToNext}</span>
+        </div>
+        <div className={`h-3 ${t(theme, 'bg-gray-800/50 border-purple-500/30', 'bg-gray-200 border-purple-300')} rounded-full overflow-hidden border-2 backdrop-blur-sm`}>
+          <div className="h-full bg-gradient-to-r from-green-400 via-emerald-400 to-green-500 rounded-full transition-all duration-500 animate-gradient-shift" style={{ width: `${(player.xp / player.xpToNext) * 100}%` }} />
+        </div>
+      </div>
+
+      {/* Daily Reward Notification */}
+      {dailyReward && (
+        <button onClick={() => onNavigate('rewards')} className={`w-full max-w-2xl mb-4 ${t(theme, 'bg-gradient-to-r from-yellow-500/20 to-orange-500/20 border-yellow-400/50 hover:from-yellow-500/30 hover:to-orange-500/30', 'bg-gradient-to-r from-yellow-100 to-orange-100 border-yellow-400 hover:from-yellow-200 hover:to-orange-200')} border-2 rounded-3xl px-4 py-3 flex items-center justify-between animate-pulse transition-all backdrop-blur-xl shadow-xl relative z-10`}>
+          <div className="flex items-center gap-3">
+            <span className="text-3xl animate-bounce">🎁</span>
+            <div className="text-left">
+              <div className={`text-sm font-bold ${t(theme, 'text-yellow-300', 'text-yellow-700')}`}>Daily Reward Ready!</div>
+              <div className={`text-xs ${t(theme, 'text-yellow-400', 'text-yellow-600')} font-semibold`}>Day {player.dailyStreak + 1} streak</div>
+            </div>
+          </div>
+          <span className={`text-2xl ${t(theme, 'text-yellow-400', 'text-yellow-600')} animate-bounce`}>→</span>
+        </button>
+      )}
+
+      {/* Game Mode Selection */}
+      <div className="w-full max-w-2xl mb-4 relative z-10">
+        <h3 className={`text-sm ${t(theme, 'text-gray-300', 'text-gray-600')} uppercase tracking-wider mb-3 font-bold`}>Choose Your Mode</h3>
+        <div className="grid grid-cols-2 gap-3">
           {modes.map(m => (
             <button
               key={m.id}
               onClick={() => setSelectedMode(m.id)}
-              className={`p-6 rounded-2xl border-2 transition-all duration-200 ${
+              className={`p-5 rounded-3xl border-2 transition-all duration-300 text-left relative overflow-hidden group ${
                 selectedMode === m.id
-                  ? t(theme, 'bg-[#1a1f2e] border-[#00b894]', 'bg-white border-[#00b894] shadow-lg')
-                  : t(theme, 'bg-[#1a1f2e] border-gray-700 hover:border-gray-600', 'bg-white border-gray-300 hover:border-gray-400')
+                  ? `bg-gradient-to-br ${m.color} ${m.borderColor} ${m.glowColor} scale-105 shadow-2xl`
+                  : t(theme, `bg-gray-900/60 border-gray-700/50 hover:${m.borderColor} hover:${m.glowColor}`, `bg-white border-gray-200 hover:${m.borderColor} hover:${m.glowColor} shadow-lg`)
               }`}
             >
-              <div className="flex flex-col items-center text-center">
-                <div className={`mb-3 ${selectedMode === m.id ? t(theme, 'text-[#00b894]', 'text-[#00b894]') : t(theme, 'text-gray-400', 'text-gray-600')}`}>
-                  {m.icon}
-                </div>
-                <div className={`text-lg font-semibold mb-1 ${selectedMode === m.id ? t(theme, 'text-white', 'text-gray-900') : t(theme, 'text-gray-300', 'text-gray-700')}`}>
-                  {m.name}
-                </div>
-                <div className={`text-xs ${t(theme, 'text-gray-500', 'text-gray-600')}`}>
-                  {m.desc}
-                </div>
+              {/* Glow Effect */}
+              {selectedMode === m.id && (
+                <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent opacity-50"></div>
+              )}
+              
+              <div className="relative z-10">
+                <div className="text-4xl mb-2 group-hover:scale-110 transition-transform duration-300">{m.icon}</div>
+                <div className={`text-lg font-bold ${selectedMode === m.id ? 'text-white' : t(theme, 'text-white', 'text-gray-900')} mb-1`}>{m.name}</div>
+                <div className={`text-xs ${selectedMode === m.id ? 'text-white/80' : t(theme, 'text-gray-300', 'text-gray-600')} font-medium`}>{m.desc}</div>
               </div>
             </button>
           ))}
         </div>
       </div>
 
-      {/* Difficulty Selection */}
-      <div className="w-full max-w-2xl mb-6">
-        <h3 className={`text-sm font-semibold ${t(theme, 'text-gray-400', 'text-gray-600')} uppercase tracking-wider mb-4 text-center`}>Difficulty</h3>
-        <div className="flex gap-3">
-          {(['easy', 'medium', 'hard', 'insane'] as Difficulty[]).map((d, idx) => (
+      {/* Difficulty */}
+      <div className="w-full max-w-2xl mb-4 relative z-10">
+        <h3 className={`text-sm ${t(theme, 'text-gray-300', 'text-gray-600')} uppercase tracking-wider mb-3 font-bold`}>Difficulty</h3>
+        <div className="flex gap-2">
+          {(['easy', 'medium', 'hard', 'insane'] as Difficulty[]).map(d => (
             <button
               key={d}
               onClick={() => setSelectedDiff(d)}
-              className={`flex-1 py-3 px-4 rounded-xl border-2 transition-all duration-200 ${
+              className={`flex-1 py-3 rounded-2xl text-sm font-bold transition-all duration-300 ${
                 selectedDiff === d
-                  ? t(theme, 'bg-[#1a1f2e] border-[#00b894]', 'bg-white border-[#00b894]')
-                  : t(theme, 'bg-[#1a1f2e] border-gray-700 hover:border-gray-600', 'bg-white border-gray-300 hover:border-gray-400')
-              }`}
+                  ? d === 'easy' ? 'bg-gradient-to-br from-green-400 to-green-600 text-white shadow-lg shadow-green-500/50 scale-105' :
+                    d === 'medium' ? 'bg-gradient-to-br from-yellow-400 to-yellow-600 text-white shadow-lg shadow-yellow-500/50 scale-105' :
+                    d === 'hard' ? 'bg-gradient-to-br from-red-400 to-red-600 text-white shadow-lg shadow-red-500/50 scale-105' :
+                    'bg-gradient-to-br from-purple-400 to-purple-600 text-white shadow-lg shadow-purple-500/50 scale-105'
+                  : t(theme, 'bg-gray-900/60 text-gray-400 border-gray-700/50 hover:border-gray-500', 'bg-white text-gray-600 border-gray-200 hover:border-gray-400 shadow-md')
+              } border-2`}
             >
-              <div className="flex flex-col items-center gap-2">
-                <div className={selectedDiff === d ? t(theme, 'text-[#00b894]', 'text-[#00b894]') : t(theme, 'text-gray-500', 'text-gray-600')}>
-                  <DifficultyPips level={(idx + 1) as 1 | 2 | 3 | 4} />
-                </div>
-                <div className={`text-xs font-semibold uppercase ${selectedDiff === d ? t(theme, 'text-white', 'text-gray-900') : t(theme, 'text-gray-400', 'text-gray-600')}`}>
-                  {d}
-                </div>
-              </div>
+              {DIFFICULTY_LABELS[d]}
             </button>
           ))}
         </div>
@@ -234,38 +279,151 @@ export function MainMenu({ player, onSelectMode, onNavigate, theme, toggleTheme 
       {/* Play Button */}
       <button
         onClick={() => onSelectMode(selectedMode, selectedDiff)}
-        className="w-full max-w-2xl py-5 bg-[#00b894] hover:bg-[#00a383] text-white font-bold text-lg rounded-xl transition-all duration-200 mb-4 flex items-center justify-center gap-3"
+        className="w-full max-w-2xl py-6 bg-gradient-to-r from-green-400 via-emerald-500 to-green-600 hover:from-green-300 hover:via-emerald-400 hover:to-green-500 text-white font-black text-2xl rounded-3xl transition-all duration-300 transform hover:scale-105 active:scale-95 shadow-2xl shadow-green-500/50 mb-4 animate-gradient-shift border-4 border-green-300/50 relative z-10"
       >
-        <PlayArrowIcon className="w-6 h-6" />
-        <span>PLAY</span>
+        <span className="flex items-center justify-center gap-3">
+          <span className="text-3xl animate-bounce">▶</span>
+          <span>PLAY NOW</span>
+        </span>
       </button>
 
       {/* Go Pro Button */}
       {!player.isPremium && (
         <button
           onClick={handleGoPro}
-          className={`w-full max-w-2xl py-4 ${t(theme, 'bg-[#1a1f2e] border-2 border-gray-600 hover:border-gray-500', 'bg-white border-2 border-gray-300 hover:border-gray-400')} text-${t(theme, 'gray-300', 'gray-700')} font-semibold text-base rounded-xl transition-all duration-200 mb-6`}
+          className="w-full max-w-2xl py-4 bg-gradient-to-r from-purple-500 via-pink-500 to-purple-600 hover:from-purple-400 hover:via-pink-400 hover:to-purple-500 text-white font-bold text-lg rounded-3xl transition-all duration-300 transform hover:scale-105 active:scale-95 shadow-2xl shadow-purple-500/50 mb-4 animate-gradient-shift border-4 border-purple-300/50 relative z-10"
         >
-          GO PRO - UNLOCK ALL
+          <span className="flex items-center justify-center gap-2">
+            <span className="text-2xl">⭐</span>
+            <span>GO PRO - UNLOCK ALL</span>
+          </span>
         </button>
       )}
 
-      {/* Daily Reward Notification */}
-      {dailyReward && (
-        <button 
-          onClick={() => onNavigate('rewards')} 
-          className={`w-full max-w-2xl mb-6 ${t(theme, 'bg-[#1a1f2e] border-gray-700 hover:border-gray-600', 'bg-white border-gray-300 hover:border-gray-400')} border-2 rounded-xl px-5 py-4 flex items-center justify-between transition-colors`}
-        >
-          <div className="flex items-center gap-3">
-            <span className="text-2xl">🎁</span>
-            <div className="text-left">
-              <div className={`text-sm font-semibold ${t(theme, 'text-white', 'text-gray-900')}`}>Daily Reward Available</div>
-              <div className={`text-xs ${t(theme, 'text-gray-400', 'text-gray-600')}`}>Day {player.dailyStreak + 1} streak</div>
+      {/* Navigation */}
+      <div className="w-full max-w-2xl grid grid-cols-5 gap-3 mb-4 relative z-10">
+        {[
+          { screen: 'trophies' as Screen, icon: '🏆', label: 'Trophies', color: 'from-yellow-500/20 to-orange-500/20 border-yellow-400/50 hover:border-yellow-400' },
+          { screen: 'titles' as Screen, icon: '🎖️', label: 'Titles', color: 'from-purple-500/20 to-pink-500/20 border-purple-400/50 hover:border-purple-400' },
+          { screen: 'characters' as Screen, icon: '🎭', label: 'Heroes', color: 'from-cyan-500/20 to-blue-500/20 border-cyan-400/50 hover:border-cyan-400' },
+          { screen: 'chests' as Screen, icon: '🎁', label: 'Chests', color: 'from-red-500/20 to-pink-500/20 border-red-400/50 hover:border-red-400' },
+          { screen: 'shop' as Screen, icon: '🛒', label: 'Shop', color: 'from-green-500/20 to-emerald-500/20 border-green-400/50 hover:border-green-400' },
+        ].map(item => (
+          <button
+            key={item.screen}
+            onClick={() => onNavigate(item.screen)}
+            className={`flex flex-col items-center gap-2 py-4 bg-gradient-to-br ${item.color} border-2 rounded-2xl transition-all duration-300 backdrop-blur-xl hover:scale-105 shadow-lg`}
+          >
+            <span className="text-3xl">{item.icon}</span>
+            <span className={`text-xs font-bold ${t(theme, 'text-white', 'text-gray-900')}`}>{item.label}</span>
+          </button>
+        ))}
+      </div>
+      
+      {/* Secondary Navigation */}
+      <div className="w-full max-w-2xl grid grid-cols-4 gap-3 mb-4 relative z-10">
+        {[
+          { screen: 'events' as Screen, icon: '🎯', label: 'Events' },
+          { screen: 'leaderboard' as Screen, icon: '📊', label: 'Ranks' },
+          { screen: 'battlepass' as Screen, icon: '🎖️', label: 'Pass' },
+          { screen: 'achievements' as Screen, icon: '🏅', label: 'Achieve' },
+          { screen: 'spinwheel' as Screen, icon: '🎰', label: 'Spin' },
+          { screen: 'visualthemes' as Screen, icon: '🎨', label: 'Themes' },
+          { screen: 'realmoney' as Screen, icon: '💎', label: 'Premium' },
+          { screen: 'maps' as Screen, icon: '🗺️', label: 'Maps' },
+        ].map(item => (
+          <button
+            key={item.screen}
+            onClick={() => onNavigate(item.screen)}
+            className={`flex flex-col items-center gap-2 py-3 ${t(theme, 'bg-gray-900/60 hover:bg-gray-800/60 border-gray-700/50 hover:border-purple-500/50', 'bg-white hover:bg-gray-50 border-gray-200 hover:border-purple-400 shadow-md')} border-2 rounded-2xl transition-all duration-300 backdrop-blur-xl hover:scale-105`}
+          >
+            <span className="text-2xl">{item.icon}</span>
+            <span className={`text-xs font-bold ${t(theme, 'text-gray-300', 'text-gray-600')}`}>{item.label}</span>
+          </button>
+        ))}
+      </div>
+
+      {/* Premium Features */}
+      <div className="w-full max-w-2xl mt-4 space-y-3 relative z-10">
+        <h3 className={`text-sm ${t(theme, 'text-gray-300', 'text-gray-600')} uppercase tracking-wider font-bold`}>Premium Features</h3>
+        <div className="grid grid-cols-2 gap-3">
+          <button
+            onClick={() => onNavigate('subscription')}
+            className={`flex items-center gap-3 p-4 ${
+              player.isPremium 
+                ? 'bg-gradient-to-br from-purple-500 to-blue-600 hover:from-purple-400 hover:to-blue-500 shadow-2xl shadow-purple-500/50' 
+                : t(theme, 'bg-gradient-to-br from-purple-900/60 to-blue-900/60 hover:from-purple-800/60 hover:to-blue-800/60 border-purple-500/50', 'bg-gradient-to-br from-purple-100 to-blue-100 hover:from-purple-200 hover:to-blue-200 border-purple-400 shadow-lg')
+            } border-2 rounded-3xl transition-all duration-300 transform hover:scale-105 backdrop-blur-xl`}
+          >
+            <div className="text-3xl">{player.isPremium ? '⭐' : '🎫'}</div>
+            <div className="text-left flex-1">
+              <div className={`text-base font-bold ${player.isPremium ? 'text-white' : t(theme, 'text-white', 'text-gray-900')}`}>
+                {player.isPremium ? 'Premium Active' : 'Snake Pass'}
+              </div>
+              <div className={`text-xs ${player.isPremium ? 'text-white/80' : t(theme, 'text-gray-300', 'text-gray-600')} font-semibold`}>
+                {player.isPremium ? 'Enjoy benefits!' : 'Unlock features'}
+              </div>
             </div>
-          </div>
-          <span className={`text-xl ${t(theme, 'text-gray-400', 'text-gray-600')}`}>→</span>
-        </button>
-      )}
+          </button>
+
+          <button
+            onClick={() => onNavigate('battlepass')}
+            className={`flex items-center gap-3 p-4 ${t(theme, 'bg-gradient-to-br from-yellow-900/60 to-orange-900/60 hover:from-yellow-800/60 hover:to-orange-800/60 border-yellow-500/50', 'bg-gradient-to-br from-yellow-100 to-orange-100 hover:from-yellow-200 hover:to-orange-200 border-yellow-400 shadow-lg')} border-2 rounded-3xl transition-all duration-300 transform hover:scale-105 backdrop-blur-xl`}
+          >
+            <div className="text-3xl">🎖️</div>
+            <div className="text-left flex-1">
+              <div className={`text-base font-bold ${t(theme, 'text-white', 'text-gray-900')}`}>Battle Pass</div>
+              <div className={`text-xs ${t(theme, 'text-gray-300', 'text-gray-600')} font-semibold`}>Level {player.battlePassLevel}</div>
+            </div>
+          </button>
+
+          <button
+            onClick={() => onNavigate('online')}
+            className={`flex items-center gap-3 p-4 ${t(theme, 'bg-gradient-to-br from-green-900/60 to-teal-900/60 hover:from-green-800/60 hover:to-teal-800/60 border-green-500/50', 'bg-gradient-to-br from-green-100 to-teal-100 hover:from-green-200 hover:to-teal-200 border-green-400 shadow-lg')} border-2 rounded-3xl transition-all duration-300 transform hover:scale-105 backdrop-blur-xl`}
+          >
+            <div className="text-3xl">🌐</div>
+            <div className="text-left flex-1">
+              <div className={`text-base font-bold ${t(theme, 'text-white', 'text-gray-900')}`}>Online</div>
+              <div className={`text-xs ${t(theme, 'text-gray-300', 'text-gray-600')} font-semibold`}>
+                Play with friends
+              </div>
+            </div>
+          </button>
+
+          <button
+            onClick={() => onNavigate('google')}
+            className={`flex items-center gap-3 p-4 ${t(theme, 'bg-gradient-to-br from-red-900/60 to-pink-900/60 hover:from-red-800/60 hover:to-pink-800/60 border-red-500/50', 'bg-gradient-to-br from-red-100 to-pink-100 hover:from-red-200 hover:to-pink-200 border-red-400 shadow-lg')} border-2 rounded-3xl transition-all duration-300 transform hover:scale-105 backdrop-blur-xl`}
+          >
+            <div className="text-3xl">{player.googleAccount ? '✅' : '🔐'}</div>
+            <div className="text-left flex-1">
+              <div className={`text-base font-bold ${t(theme, 'text-white', 'text-gray-900')}`}>Google</div>
+              <div className={`text-xs ${t(theme, 'text-gray-300', 'text-gray-600')} font-semibold`}>
+                {player.googleAccount ? 'Connected' : 'Sync progress'}
+              </div>
+            </div>
+          </button>
+        </div>
+      </div>
+
+      {/* Stats Summary */}
+      <div className="w-full max-w-2xl mt-4 grid grid-cols-4 gap-3 relative z-10">
+        <div className={`${t(theme, 'bg-gray-900/60 border-gray-700/50', 'bg-white border-gray-200 shadow-lg')} rounded-2xl p-3 text-center border-2 backdrop-blur-xl`}>
+          <div className={`text-2xl font-black ${t(theme, 'text-white', 'text-gray-900')}`}>{player.gamesPlayed}</div>
+          <div className={`text-xs ${t(theme, 'text-gray-400', 'text-gray-600')} font-bold`}>Games</div>
+        </div>
+        <div className={`${t(theme, 'bg-gray-900/60 border-gray-700/50', 'bg-white border-gray-200 shadow-lg')} rounded-2xl p-3 text-center border-2 backdrop-blur-xl`}>
+          <div className="text-2xl font-black neon-green">{player.totalScore}</div>
+          <div className={`text-xs ${t(theme, 'text-gray-400', 'text-gray-600')} font-bold`}>Score</div>
+        </div>
+        <div className={`${t(theme, 'bg-gray-900/60 border-gray-700/50', 'bg-white border-gray-200 shadow-lg')} rounded-2xl p-3 text-center border-2 backdrop-blur-xl`}>
+          <div className="text-2xl font-black neon-orange">{player.trophies.length}/{TROPHIES.length}</div>
+          <div className={`text-xs ${t(theme, 'text-gray-400', 'text-gray-600')} font-bold`}>Trophies</div>
+        </div>
+        <div className={`${t(theme, 'bg-gray-900/60 border-gray-700/50', 'bg-white border-gray-200 shadow-lg')} rounded-2xl p-3 text-center border-2 backdrop-blur-xl`}>
+          <div className="text-2xl font-black neon-purple">{player.titles.length}/{TITLES.length}</div>
+          <div className={`text-xs ${t(theme, 'text-gray-400', 'text-gray-600')} font-bold`}>Titles</div>
+        </div>
+      </div>
     </div>
   );
 }
