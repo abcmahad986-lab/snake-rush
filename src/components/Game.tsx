@@ -664,6 +664,17 @@ export default function Game({ player, setPlayer, mode, difficulty, onBack, isMu
           >
             {isMuted ? '🔇' : '🔊'}
           </button>
+          <button
+            onClick={toggleTheme}
+            className={`p-1.5 rounded-lg transition-all ${
+              theme === 'dark' 
+                ? 'bg-gray-800 hover:bg-gray-700 text-yellow-400 border-gray-700/50' 
+                : 'bg-white hover:bg-gray-50 text-gray-700 border-gray-300'
+            } border`}
+            title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+          >
+            {theme === 'dark' ? '☀️' : '🌙'}
+          </button>
         </div>
       </div>
 

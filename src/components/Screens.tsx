@@ -3,7 +3,7 @@ import { Player, Screen, Difficulty, GameMode, TROPHIES, TITLES, SNAKE_SKINS, SN
 import type { ShopItem } from '../types';
 import { savePlayer, claimDailyReward, getLoginReward } from '../store';
 import { audioManager } from '../audio';
-import { ClassicIcon, TimedIcon, MultiplayerIcon, ZenIcon, PlayArrowIcon, TrophyIcon, TitleIcon, HeroIcon, ChestIcon, ShopIcon, EventsIcon, RanksIcon, PassIcon, AchieveIcon, SpinIcon, ThemesIcon, PremiumIcon, MapsIcon } from './WoodenIcons';
+import { SimpleClassicIcon, SimpleTimedIcon, SimpleMultiplayerIcon, SimpleZenIcon, SimpleEasyIcon, SimpleMediumIcon, SimpleHardIcon, SimpleInsaneIcon } from './SimpleIcons';
 
 // Theme helper
 const t = (theme: Theme, dark: string, light: string) => theme === 'dark' ? dark : light;
@@ -101,42 +101,30 @@ export function MainMenu({ player, onSelectMode, onNavigate, theme, toggleTheme 
   const [selectedMode, setSelectedMode] = useState<GameMode>('classic');
   const [selectedDiff, setSelectedDiff] = useState<Difficulty>('medium');
 
-  const modes: { id: GameMode; icon: string; name: string; desc: string; color: string; glowColor: string; borderColor: string }[] = [
+  const modes: { id: GameMode; icon: React.ReactNode; name: string; desc: string }[] = [
     { 
       id: 'classic', 
-      icon: '🐍', 
+      icon: <SimpleClassicIcon className="w-12 h-12" />, 
       name: 'Classic', 
-      desc: 'Endless snake fun', 
-      color: 'from-green-500 via-emerald-500 to-green-600',
-      glowColor: 'card-glow-green',
-      borderColor: 'border-green-400'
+      desc: 'Endless snake fun'
     },
     { 
       id: 'timed', 
-      icon: '⏱️', 
+      icon: <SimpleTimedIcon className="w-12 h-12" />, 
       name: 'Timed', 
-      desc: 'Score in 60 seconds', 
-      color: 'from-pink-500 via-purple-500 to-pink-600',
-      glowColor: 'card-glow-pink',
-      borderColor: 'border-pink-400'
+      desc: 'Score in 60 seconds'
     },
     { 
       id: 'multiplayer', 
-      icon: '👥', 
+      icon: <SimpleMultiplayerIcon className="w-12 h-12" />, 
       name: 'Multiplayer', 
-      desc: 'vs Bot or vs Player', 
-      color: 'from-cyan-500 via-blue-500 to-cyan-600',
-      glowColor: 'card-glow-cyan',
-      borderColor: 'border-cyan-400'
+      desc: 'vs Bot or vs Player'
     },
     { 
       id: 'zen', 
-      icon: '🧘', 
+      icon: <SimpleZenIcon className="w-12 h-12" />, 
       name: 'Zen', 
-      desc: 'Pass through walls!', 
-      color: 'from-orange-500 via-yellow-500 to-orange-600',
-      glowColor: 'card-glow-orange',
-      borderColor: 'border-orange-400'
+      desc: 'Pass through walls!'
     },
   ];
 
@@ -168,20 +156,19 @@ export function MainMenu({ player, onSelectMode, onNavigate, theme, toggleTheme 
       </div>
 
       {/* Player Bar */}
-      <div className={`w-full max-w-2xl flex items-center justify-between ${t(theme, 'bg-gray-900/80 border-purple-500/30', 'bg-white/90 border-purple-300')} rounded-3xl px-4 py-3 mb-4 border-2 backdrop-blur-xl shadow-2xl relative z-10`}>
-        <button onClick={() => onNavigate('profile')} className={`flex items-center gap-3 ${t(theme, 'hover:bg-purple-500/20', 'hover:bg-purple-100')} rounded-2xl px-3 py-2 transition-all`}>
+      <div className={`w-full max-w-2xl flex items-center justify-between ${t(theme, 'bg-gray-900/80 border-gray-700', 'bg-white border-gray-300')} rounded-2xl px-4 py-3 mb-4 border-2 relative z-10`}>
+        <button onClick={() => onNavigate('profile')} className={`flex items-center gap-3 ${t(theme, 'hover:bg-gray-800', 'hover:bg-gray-100')} rounded-xl px-3 py-2 transition-all`}>
           <div className="relative">
             <span className="text-3xl">{player.avatar}</span>
-            <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-gray-900 animate-pulse"></div>
           </div>
           <div>
             <div className={`text-base font-bold ${t(theme, 'text-white', 'text-gray-900')} leading-tight`}>{player.username}</div>
             <div className="flex items-center gap-2">
-              <span className="text-xs font-bold neon-green">Lvl {player.level}</span>
+              <span className={`text-xs font-bold ${t(theme, 'text-gray-300', 'text-gray-600')}`}>Lvl {player.level}</span>
               {player.equippedTitle && (
                 <>
                   <span className={`text-xs ${t(theme, 'text-gray-500', 'text-gray-400')}`}>•</span>
-                  <span className={`text-xs ${t(theme, 'text-purple-300', 'text-purple-600')} font-semibold`}>
+                  <span className={`text-xs ${t(theme, 'text-gray-400', 'text-gray-600')} font-semibold`}>
                     {TITLES.find(ti => ti.id === player.equippedTitle)?.icon} {TITLES.find(ti => ti.id === player.equippedTitle)?.name}
                   </span>
                 </>
@@ -191,10 +178,10 @@ export function MainMenu({ player, onSelectMode, onNavigate, theme, toggleTheme 
         </button>
         <div className="flex items-center gap-4">
           <div className="text-center">
-            <div className="text-sm font-bold neon-orange">🪙 {player.coins}</div>
+            <div className={`text-sm font-bold ${t(theme, 'text-white', 'text-gray-900')}`}>🪙 {player.coins}</div>
           </div>
           <div className="text-center">
-            <div className="text-sm font-bold neon-purple">💎 {player.gems}</div>
+            <div className={`text-sm font-bold ${t(theme, 'text-white', 'text-gray-900')}`}>💎 {player.gems}</div>
           </div>
           <ThemeToggle theme={theme} toggleTheme={toggleTheme} />
         </div>
@@ -233,21 +220,20 @@ export function MainMenu({ player, onSelectMode, onNavigate, theme, toggleTheme 
             <button
               key={m.id}
               onClick={() => setSelectedMode(m.id)}
-              className={`p-5 rounded-3xl border-2 transition-all duration-300 text-center relative overflow-hidden group min-h-[140px] flex flex-col items-center justify-center ${
+              className={`p-5 rounded-2xl border-2 transition-all duration-200 text-center min-h-[140px] flex flex-col items-center justify-center ${
                 selectedMode === m.id
-                  ? `bg-gradient-to-br ${m.color} ${m.borderColor} ${m.glowColor} scale-105 shadow-2xl`
-                  : t(theme, `bg-gray-900/60 border-gray-700/50 hover:${m.borderColor} hover:${m.glowColor}`, `bg-white border-gray-200 hover:${m.borderColor} hover:${m.glowColor} shadow-lg`)
+                  ? t(theme, 'bg-gray-800 border-gray-600', 'bg-gray-100 border-gray-400')
+                  : t(theme, 'bg-gray-900/60 border-gray-700/50 hover:border-gray-600', 'bg-white border-gray-200 hover:border-gray-400')
               }`}
             >
-              {/* Glow Effect */}
-              {selectedMode === m.id && (
-                <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent opacity-50"></div>
-              )}
-              
-              <div className="relative z-10 flex flex-col items-center">
-                <div className="text-4xl mb-2 group-hover:scale-110 transition-transform duration-300">{m.icon}</div>
-                <div className={`text-lg font-bold ${selectedMode === m.id ? 'text-white' : t(theme, 'text-white', 'text-gray-900')} mb-1`}>{m.name}</div>
-                <div className={`text-xs ${selectedMode === m.id ? 'text-white/80' : t(theme, 'text-gray-300', 'text-gray-600')} font-medium`}>{m.desc}</div>
+              <div className={`mb-3 ${selectedMode === m.id ? t(theme, 'text-white', 'text-gray-900') : t(theme, 'text-gray-400', 'text-gray-600')}`}>
+                {m.icon}
+              </div>
+              <div className={`text-lg font-bold mb-1 ${selectedMode === m.id ? t(theme, 'text-white', 'text-gray-900') : t(theme, 'text-gray-300', 'text-gray-700')}`}>
+                {m.name}
+              </div>
+              <div className={`text-xs ${t(theme, 'text-gray-400', 'text-gray-600')}`}>
+                {m.desc}
               </div>
             </button>
           ))}
@@ -258,22 +244,28 @@ export function MainMenu({ player, onSelectMode, onNavigate, theme, toggleTheme 
       <div className="w-full max-w-2xl mb-4 relative z-10">
         <h3 className={`text-sm ${t(theme, 'text-gray-300', 'text-gray-600')} uppercase tracking-wider mb-3 font-bold text-center`}>Difficulty</h3>
         <div className="grid grid-cols-4 gap-2">
-          {(['easy', 'medium', 'hard', 'insane'] as Difficulty[]).map(d => (
-            <button
-              key={d}
-              onClick={() => setSelectedDiff(d)}
-              className={`py-3 px-2 rounded-2xl text-sm font-bold transition-all duration-300 min-h-[60px] flex items-center justify-center ${
-                selectedDiff === d
-                  ? d === 'easy' ? 'bg-gradient-to-br from-green-400 to-green-600 text-white shadow-lg shadow-green-500/50 scale-105' :
-                    d === 'medium' ? 'bg-gradient-to-br from-yellow-400 to-yellow-600 text-white shadow-lg shadow-yellow-500/50 scale-105' :
-                    d === 'hard' ? 'bg-gradient-to-br from-red-400 to-red-600 text-white shadow-lg shadow-red-500/50 scale-105' :
-                    'bg-gradient-to-br from-purple-400 to-purple-600 text-white shadow-lg shadow-purple-500/50 scale-105'
-                  : t(theme, 'bg-gray-900/60 text-gray-400 border-gray-700/50 hover:border-gray-500', 'bg-white text-gray-600 border-gray-200 hover:border-gray-400 shadow-md')
-              } border-2`}
-            >
-              {DIFFICULTY_LABELS[d]}
-            </button>
-          ))}
+          {(['easy', 'medium', 'hard', 'insane'] as Difficulty[]).map((d, idx) => {
+            const icons = [
+              <SimpleEasyIcon className="w-5 h-5" />,
+              <SimpleMediumIcon className="w-5 h-5" />,
+              <SimpleHardIcon className="w-5 h-5" />,
+              <SimpleInsaneIcon className="w-5 h-5" />
+            ];
+            return (
+              <button
+                key={d}
+                onClick={() => setSelectedDiff(d)}
+                className={`py-3 px-2 rounded-xl text-sm font-bold transition-all duration-200 min-h-[60px] flex flex-col items-center justify-center gap-1 ${
+                  selectedDiff === d
+                    ? t(theme, 'bg-gray-800 border-gray-600 text-white', 'bg-gray-200 border-gray-400 text-gray-900')
+                    : t(theme, 'bg-gray-900/60 text-gray-400 border-gray-700/50 hover:border-gray-600', 'bg-white text-gray-600 border-gray-200 hover:border-gray-400')
+                } border-2`}
+              >
+                <div>{icons[idx]}</div>
+                <div>{d.charAt(0).toUpperCase() + d.slice(1)}</div>
+              </button>
+            );
+          })}
         </div>
       </div>
 
@@ -358,16 +350,16 @@ export function MainMenu({ player, onSelectMode, onNavigate, theme, toggleTheme 
             onClick={() => onNavigate('subscription')}
             className={`flex items-center gap-3 p-4 ${
               player.isPremium 
-                ? 'bg-gradient-to-br from-purple-500 to-blue-600 hover:from-purple-400 hover:to-blue-500 shadow-2xl shadow-purple-500/50' 
-                : t(theme, 'bg-gradient-to-br from-purple-900/60 to-blue-900/60 hover:from-purple-800/60 hover:to-blue-800/60 border-purple-500/50', 'bg-gradient-to-br from-purple-100 to-blue-100 hover:from-purple-200 hover:to-blue-200 border-purple-400 shadow-lg')
-            } border-2 rounded-3xl transition-all duration-300 transform hover:scale-105 backdrop-blur-xl min-h-[100px]`}
+                ? t(theme, 'bg-gray-800 border-gray-600', 'bg-gray-100 border-gray-400')
+                : t(theme, 'bg-gray-900/60 border-gray-700/50 hover:border-gray-600', 'bg-white border-gray-200 hover:border-gray-400')
+            } border-2 rounded-xl transition-all duration-200 min-h-[100px]`}
           >
             <div className="text-3xl flex-shrink-0">{player.isPremium ? '⭐' : '🎫'}</div>
             <div className="text-left flex-1 min-w-0">
-              <div className={`text-base font-bold ${player.isPremium ? 'text-white' : t(theme, 'text-white', 'text-gray-900')} truncate`}>
+              <div className={`text-base font-bold ${t(theme, 'text-white', 'text-gray-900')} truncate`}>
                 {player.isPremium ? 'Premium Active' : 'Snake Pass'}
               </div>
-              <div className={`text-xs ${player.isPremium ? 'text-white/80' : t(theme, 'text-gray-300', 'text-gray-600')} font-semibold`}>
+              <div className={`text-xs ${t(theme, 'text-gray-400', 'text-gray-600')} font-semibold`}>
                 {player.isPremium ? 'Enjoy benefits!' : 'Unlock features'}
               </div>
             </div>
@@ -375,23 +367,23 @@ export function MainMenu({ player, onSelectMode, onNavigate, theme, toggleTheme 
 
           <button
             onClick={() => onNavigate('battlepass')}
-            className={`flex items-center gap-3 p-4 ${t(theme, 'bg-gradient-to-br from-yellow-900/60 to-orange-900/60 hover:from-yellow-800/60 hover:to-orange-800/60 border-yellow-500/50', 'bg-gradient-to-br from-yellow-100 to-orange-100 hover:from-yellow-200 hover:to-orange-200 border-yellow-400 shadow-lg')} border-2 rounded-3xl transition-all duration-300 transform hover:scale-105 backdrop-blur-xl min-h-[100px]`}
+            className={`flex items-center gap-3 p-4 ${t(theme, 'bg-gray-900/60 border-gray-700/50 hover:border-gray-600', 'bg-white border-gray-200 hover:border-gray-400')} border-2 rounded-xl transition-all duration-200 min-h-[100px]`}
           >
             <div className="text-3xl flex-shrink-0">🎖️</div>
             <div className="text-left flex-1 min-w-0">
               <div className={`text-base font-bold ${t(theme, 'text-white', 'text-gray-900')} truncate`}>Battle Pass</div>
-              <div className={`text-xs ${t(theme, 'text-gray-300', 'text-gray-600')} font-semibold`}>Level {player.battlePassLevel}</div>
+              <div className={`text-xs ${t(theme, 'text-gray-400', 'text-gray-600')} font-semibold`}>Level {player.battlePassLevel}</div>
             </div>
           </button>
 
           <button
             onClick={() => onNavigate('online')}
-            className={`flex items-center gap-3 p-4 ${t(theme, 'bg-gradient-to-br from-green-900/60 to-teal-900/60 hover:from-green-800/60 hover:to-teal-800/60 border-green-500/50', 'bg-gradient-to-br from-green-100 to-teal-100 hover:from-green-200 hover:to-teal-200 border-green-400 shadow-lg')} border-2 rounded-3xl transition-all duration-300 transform hover:scale-105 backdrop-blur-xl min-h-[100px]`}
+            className={`flex items-center gap-3 p-4 ${t(theme, 'bg-gray-900/60 border-gray-700/50 hover:border-gray-600', 'bg-white border-gray-200 hover:border-gray-400')} border-2 rounded-xl transition-all duration-200 min-h-[100px]`}
           >
             <div className="text-3xl flex-shrink-0">🌐</div>
             <div className="text-left flex-1 min-w-0">
               <div className={`text-base font-bold ${t(theme, 'text-white', 'text-gray-900')} truncate`}>Online</div>
-              <div className={`text-xs ${t(theme, 'text-gray-300', 'text-gray-600')} font-semibold`}>
+              <div className={`text-xs ${t(theme, 'text-gray-400', 'text-gray-600')} font-semibold`}>
                 Play with friends
               </div>
             </div>
@@ -399,12 +391,12 @@ export function MainMenu({ player, onSelectMode, onNavigate, theme, toggleTheme 
 
           <button
             onClick={() => onNavigate('google')}
-            className={`flex items-center gap-3 p-4 ${t(theme, 'bg-gradient-to-br from-red-900/60 to-pink-900/60 hover:from-red-800/60 hover:to-pink-800/60 border-red-500/50', 'bg-gradient-to-br from-red-100 to-pink-100 hover:from-red-200 hover:to-pink-200 border-red-400 shadow-lg')} border-2 rounded-3xl transition-all duration-300 transform hover:scale-105 backdrop-blur-xl min-h-[100px]`}
+            className={`flex items-center gap-3 p-4 ${t(theme, 'bg-gray-900/60 border-gray-700/50 hover:border-gray-600', 'bg-white border-gray-200 hover:border-gray-400')} border-2 rounded-xl transition-all duration-200 min-h-[100px]`}
           >
             <div className="text-3xl flex-shrink-0">{player.googleAccount ? '✅' : '🔐'}</div>
             <div className="text-left flex-1 min-w-0">
               <div className={`text-base font-bold ${t(theme, 'text-white', 'text-gray-900')} truncate`}>Google</div>
-              <div className={`text-xs ${t(theme, 'text-gray-300', 'text-gray-600')} font-semibold`}>
+              <div className={`text-xs ${t(theme, 'text-gray-400', 'text-gray-600')} font-semibold`}>
                 {player.googleAccount ? 'Connected' : 'Sync progress'}
               </div>
             </div>
@@ -416,20 +408,20 @@ export function MainMenu({ player, onSelectMode, onNavigate, theme, toggleTheme 
       <div className="w-full max-w-2xl relative z-10">
         <h3 className={`text-sm ${t(theme, 'text-gray-300', 'text-gray-600')} uppercase tracking-wider mb-3 font-bold text-center`}>Your Stats</h3>
         <div className="grid grid-cols-4 gap-3">
-          <div className={`${t(theme, 'bg-gray-900/60 border-gray-700/50', 'bg-white border-gray-200 shadow-lg')} rounded-2xl p-4 text-center border-2 backdrop-blur-xl min-h-[90px] flex flex-col items-center justify-center`}>
+          <div className={`${t(theme, 'bg-gray-900/60 border-gray-700/50', 'bg-white border-gray-200')} rounded-xl p-4 text-center border-2 min-h-[90px] flex flex-col items-center justify-center`}>
             <div className={`text-3xl font-black ${t(theme, 'text-white', 'text-gray-900')}`}>{player.gamesPlayed}</div>
             <div className={`text-xs ${t(theme, 'text-gray-400', 'text-gray-600')} font-bold mt-1`}>Games</div>
           </div>
-          <div className={`${t(theme, 'bg-gray-900/60 border-gray-700/50', 'bg-white border-gray-200 shadow-lg')} rounded-2xl p-4 text-center border-2 backdrop-blur-xl min-h-[90px] flex flex-col items-center justify-center`}>
-            <div className="text-3xl font-black neon-green">{player.totalScore}</div>
+          <div className={`${t(theme, 'bg-gray-900/60 border-gray-700/50', 'bg-white border-gray-200')} rounded-xl p-4 text-center border-2 min-h-[90px] flex flex-col items-center justify-center`}>
+            <div className={`text-3xl font-black ${t(theme, 'text-white', 'text-gray-900')}`}>{player.totalScore}</div>
             <div className={`text-xs ${t(theme, 'text-gray-400', 'text-gray-600')} font-bold mt-1`}>Score</div>
           </div>
-          <div className={`${t(theme, 'bg-gray-900/60 border-gray-700/50', 'bg-white border-gray-200 shadow-lg')} rounded-2xl p-4 text-center border-2 backdrop-blur-xl min-h-[90px] flex flex-col items-center justify-center`}>
-            <div className="text-3xl font-black neon-orange">{player.trophies.length}/{TROPHIES.length}</div>
+          <div className={`${t(theme, 'bg-gray-900/60 border-gray-700/50', 'bg-white border-gray-200')} rounded-xl p-4 text-center border-2 min-h-[90px] flex flex-col items-center justify-center`}>
+            <div className={`text-3xl font-black ${t(theme, 'text-white', 'text-gray-900')}`}>{player.trophies.length}/{TROPHIES.length}</div>
             <div className={`text-xs ${t(theme, 'text-gray-400', 'text-gray-600')} font-bold mt-1`}>Trophies</div>
           </div>
-          <div className={`${t(theme, 'bg-gray-900/60 border-gray-700/50', 'bg-white border-gray-200 shadow-lg')} rounded-2xl p-4 text-center border-2 backdrop-blur-xl min-h-[90px] flex flex-col items-center justify-center`}>
-            <div className="text-3xl font-black neon-purple">{player.titles.length}/{TITLES.length}</div>
+          <div className={`${t(theme, 'bg-gray-900/60 border-gray-700/50', 'bg-white border-gray-200')} rounded-xl p-4 text-center border-2 min-h-[90px] flex flex-col items-center justify-center`}>
+            <div className={`text-3xl font-black ${t(theme, 'text-white', 'text-gray-900')}`}>{player.titles.length}/{TITLES.length}</div>
             <div className={`text-xs ${t(theme, 'text-gray-400', 'text-gray-600')} font-bold mt-1`}>Titles</div>
           </div>
         </div>
@@ -439,7 +431,7 @@ export function MainMenu({ player, onSelectMode, onNavigate, theme, toggleTheme 
 }
 
 // ============ PROFILE SCREEN ============
-export function ProfileScreen({ player, setPlayer, onBack, onNavigate, theme }: { player: Player; setPlayer: (p: Player) => void; onBack: () => void; onNavigate?: (screen: Screen) => void; theme: Theme }) {
+export function ProfileScreen({ player, setPlayer, onBack, onNavigate, theme, toggleTheme }: { player: Player; setPlayer: (p: Player) => void; onBack: () => void; onNavigate?: (screen: Screen) => void; theme: Theme; toggleTheme: () => void }) {
   const [editing, setEditing] = useState(false);
   const [newUsername, setNewUsername] = useState(player.username);
   const [showAvatarPicker, setShowAvatarPicker] = useState(false);
@@ -461,9 +453,12 @@ export function ProfileScreen({ player, setPlayer, onBack, onNavigate, theme }: 
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-slate-900 to-gray-800 p-4">
+    <div className={`min-h-screen ${t(theme, 'bg-gradient-to-br from-gray-900 via-slate-900 to-gray-800', 'bg-gradient-to-br from-gray-50 via-slate-50 to-white')} p-4`}>
       <div className="max-w-md mx-auto">
-        <button onClick={onBack} className="mb-3 px-3 py-1.5 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg text-sm border border-gray-700/50">← Back</button>
+        <div className="flex items-center justify-between mb-3">
+          <button onClick={onBack} className={`px-3 py-1.5 ${t(theme, 'bg-gray-800 hover:bg-gray-700 text-gray-300 border-gray-700/50', 'bg-white hover:bg-gray-50 text-gray-700 border-gray-300')} rounded-lg text-sm border`}>← Back</button>
+          <ThemeToggle theme={theme} toggleTheme={toggleTheme} />
+        </div>
         
         {/* Profile Card */}
         <div className="bg-gray-800/80 rounded-2xl p-5 border border-gray-700/50 mb-4 text-center">

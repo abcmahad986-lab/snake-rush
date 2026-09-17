@@ -284,7 +284,7 @@ function App() {
     case 'menu':
       return <MainMenu player={player} onSelectMode={handleSelectMode} onNavigate={setScreen} theme={theme} toggleTheme={toggleTheme} />;
     case 'profile':
-      return <ProfileScreen player={player} setPlayer={handleUpdatePlayer} onBack={() => setScreen('menu')} onNavigate={setScreen} theme={theme} />;
+      return <ProfileScreen player={player} setPlayer={handleUpdatePlayer} onBack={() => setScreen('menu')} onNavigate={setScreen} theme={theme} toggleTheme={toggleTheme} />;
     case 'trophies':
       return <TrophiesScreen player={player} onBack={() => setScreen('menu')} theme={theme} />;
     case 'titles':
