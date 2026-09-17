@@ -2,8 +2,7 @@ import { useState, useEffect } from 'react';
 import { Player, Screen, GameMode, Difficulty, TROPHIES, TITLES, ACHIEVEMENTS, Theme } from './types';
 import { loadPlayer, savePlayer, createNewPlayer, addXp } from './store';
 import Game from './components/Game';
-import { LoginScreen, ProfileScreen, TrophiesScreen, ShopScreen, EventsScreen, RewardsScreen, SettingsScreen, TitlesScreen } from './components/Screens';
-import { WoodenMainMenu } from './components/WoodenMainMenu';
+import { LoginScreen, MainMenu, ProfileScreen, TrophiesScreen, ShopScreen, EventsScreen, RewardsScreen, SettingsScreen, TitlesScreen } from './components/Screens';
 import { RealLeaderboardScreen } from './components/RealLeaderboard';
 import { SubscriptionScreen, BattlePassScreen, OnlineMultiplayerScreen, GoogleLoginScreen } from './components/PremiumScreens';
 import { CharactersScreen, ChestsScreen } from './components/CharacterScreens';
@@ -283,7 +282,7 @@ function App() {
 
   switch (screen) {
     case 'menu':
-      return <WoodenMainMenu player={player} onSelectMode={handleSelectMode} onNavigate={setScreen} theme={theme} toggleTheme={toggleTheme} />;
+      return <MainMenu player={player} onSelectMode={handleSelectMode} onNavigate={setScreen} theme={theme} toggleTheme={toggleTheme} />;
     case 'profile':
       return <ProfileScreen player={player} setPlayer={handleUpdatePlayer} onBack={() => setScreen('menu')} onNavigate={setScreen} theme={theme} />;
     case 'trophies':
@@ -327,7 +326,7 @@ function App() {
     case 'maps':
       return <MapsScreen player={player} setPlayer={handleUpdatePlayer} onBack={() => setScreen('menu')} theme={theme} />;
     default:
-      return <WoodenMainMenu player={player} onSelectMode={handleSelectMode} onNavigate={setScreen} theme={theme} toggleTheme={toggleTheme} />;
+      return <MainMenu player={player} onSelectMode={handleSelectMode} onNavigate={setScreen} theme={theme} toggleTheme={toggleTheme} />;
   }
 }
 
