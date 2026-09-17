@@ -4,211 +4,30 @@ import { audioManager } from '../audio';
 
 const t = (theme: Theme, dark: string, light: string) => theme === 'dark' ? dark : light;
 const GRID = 20;
+const LUDO_SIZE = 15;
 
-// ============ SNAKE LEADER GAME ============
-// Lead your snake army - followers follow the leader
-export function SnakeLeaderGame({ onBack, theme }: { onBack: () => void; theme: Theme }) {
-  const [leader, setLeader] = useState<Position[]>([{ x: 10, y: 10 }, { x: 9, y: 10 }, { x: 8, y: 10 }]);
-  const [followers, setFollowers] = useState<Position[][]>([]);
-  const [food, setFood] = useState<Position>({ x: 15, y: 15 });
-  const [dir, setDir] = useState<Direction>('RIGHT');
-  const [score, setScore] = useState(0);
-  const [gameOver, setGameOver] = useState(false);
-  const [started, setStarted] = useState(false);
-  const dirRef = useRef<Direction>('RIGHT');
-  const leaderRef = useRef(leader);
-  const followersRef = useRef(followers);
-
-  useEffect(() => { dirRef.current = dir; }, [dir]);
-  useEffect(() => { leaderRef.current = leader; }, [leader]);
-  useEffect(() => { followersRef.current = followers; }, [followers]);
-
-  const spawnFood = useCallback((snake: Position[]) => {
-    let f: Position;
-    do {
-      f = { x: Math.floor(Math.random() * GRID), y: Math.floor(Math.random() * GRID) };
-    } while (snake.some(s => s.x === f.x && s.y === f.y));
-    return f;
-  }, []);
-
-  useEffect(() => {
-    if (!started || gameOver) return;
-    const interval = setInterval(() => {
-      setLeader(prev => {
-        const head = prev[0];
-        const d = dirRef.current;
-        const newHead = { ...head };
-        if (d === 'UP') newHead.y--;
-        else if (d === 'DOWN') newHead.y++;
-        else if (d === 'LEFT') newHead.x--;
-        else newHead.x++;
-
-        if (newHead.x < 0) newHead.x = GRID - 1;
-        if (newHead.x >= GRID) newHead.x = 0;
-        if (newHead.y < 0) newHead.y = GRID - 1;
-        if (newHead.y >= GRID) newHead.y = 0;
-
-        if (prev.slice(1).some(s => s.x === newHead.x && s.y === newHead.y)) {
-          setGameOver(true);
-          audioManager.playGameOverSound();
-          return prev;
-        }
-
-        const newLeader = [newHead, ...prev];
-        if (newHead.x === food.x && newHead.y === food.y) {
-          audioManager.playEatSound();
-          setScore(s => s + 10);
-          setFood(spawnFood(newLeader));
-          // Every 50 points, add a follower
-          const newScore = score + 10;
-          if (newScore % 50 === 0) {
-            const lastTail = newLeader[newLeader.length - 1];
-            const newFollower: Position[] = [
-              { x: lastTail.x, y: lastTail.y },
-              { x: lastTail.x - 1, y: lastTail.y },
-              { x: lastTail.x - 2, y: lastTail.y },
-            ];
-            setFollowers(prev => [...prev, newFollower]);
-          }
-        } else {
-          newLeader.pop();
-        }
-        return newLeader;
-      });
-
-      // Move followers - they follow the leader's path
-      setFollowers(prev => {
-        if (prev.length === 0) return prev;
-        const currentLeader = leaderRef.current;
-        return prev.map((follower, idx) => {
-          // Each follower follows the leader's tail with offset
-          const offset = (idx + 1) * 4;
-          const newPath: Position[] = [];
-          for (let i = 0; i < follower.length; i++) {
-            const leaderIdx = Math.min(offset + i, currentLeader.length - 1);
-            if (leaderIdx < currentLeader.length) {
-              newPath.push({ ...currentLeader[leaderIdx] });
-            }
-          }
-          return newPath.length >= 2 ? newPath : follower;
-        });
-      });
-    }, 150);
-    return () => clearInterval(interval);
-  }, [started, gameOver, food, spawnFood, score]);
-
-  useEffect(() => {
-    const handleKey = (e: KeyboardEvent) => {
-      const map: Record<string, Direction> = { ArrowUp: 'UP', ArrowDown: 'DOWN', ArrowLeft: 'LEFT', ArrowRight: 'RIGHT', w: 'UP', s: 'DOWN', a: 'LEFT', d: 'RIGHT' };
-      const newDir = map[e.key];
-      if (newDir) {
-        const opp: Record<Direction, Direction> = { UP: 'DOWN', DOWN: 'UP', LEFT: 'RIGHT', RIGHT: 'LEFT' };
-        if (opp[newDir] !== dirRef.current) {
-          setDir(newDir);
-          dirRef.current = newDir;
-        }
-      }
-    };
-    window.addEventListener('keydown', handleKey);
-    return () => window.removeEventListener('keydown', handleKey);
-  }, []);
-
-  const restart = () => {
-    setLeader([{ x: 10, y: 10 }, { x: 9, y: 10 }, { x: 8, y: 10 }]);
-    setFollowers([]);
-    setFood({ x: 15, y: 15 });
-    setDir('RIGHT');
-    dirRef.current = 'RIGHT';
-    setScore(0);
-    setGameOver(false);
-    setStarted(true);
-  };
-
-  return (
-    <div className={`min-h-screen ${t(theme, 'bg-black', 'bg-white')} p-4 flex flex-col items-center`}>
-      <div className="w-full max-w-lg">
-        <div className="flex justify-between items-center mb-3">
-          <button onClick={onBack} className={`px-3 py-1.5 ${t(theme, 'bg-black text-white border-white', 'bg-white text-black border-black')} border-2 rounded-lg text-sm font-bold`}>← Back</button>
-          <h2 className={`text-xl font-black ${t(theme, 'text-white', 'text-black')}`}>👑 Snake Leader</h2>
-          <div className={`text-lg font-bold ${t(theme, 'text-white', 'text-black')}`}>🪙 {score}</div>
-        </div>
-
-        <div className={`${t(theme, 'bg-black border-white', 'bg-white border-black')} border-2 rounded-xl p-2 mb-3`}>
-          <div className="text-center text-xs font-bold mb-1">Army: {followers.length} followers</div>
-          <div className={`text-center text-[10px] ${t(theme, 'text-gray-400', 'text-gray-600')}`}>Eat 50 points to gain a follower!</div>
-        </div>
-
-        <div className={`relative aspect-square ${t(theme, 'bg-gray-900 border-white', 'bg-gray-100 border-black')} border-2 rounded-xl overflow-hidden`}>
-          {/* Food */}
-          <div className="absolute w-[5%] h-[5%] bg-red-500 rounded-full animate-pulse" style={{ left: `${(food.x / GRID) * 100}%`, top: `${(food.y / GRID) * 100}%` }} />
-          
-          {/* Followers */}
-          {followers.map((follower, fi) => (
-            follower.map((seg, si) => (
-              <div key={`f${fi}-${si}`} className="absolute rounded-sm" style={{
-                left: `${(seg.x / GRID) * 100}%`, top: `${(seg.y / GRID) * 100}%`,
-                width: `${100 / GRID}%`, height: `${100 / GRID}%`, padding: '1px'
-              }}>
-                <div className="w-full h-full rounded-sm" style={{ backgroundColor: `hsl(${200 + fi * 40}, 70%, ${50 - si * 2}%)` }} />
-              </div>
-            ))
-          ))}
-
-          {/* Leader */}
-          {leader.map((seg, i) => (
-            <div key={`l${i}`} className="absolute rounded-sm" style={{
-              left: `${(seg.x / GRID) * 100}%`, top: `${(seg.y / GRID) * 100}%`,
-              width: `${100 / GRID}%`, height: `${100 / GRID}%`, padding: '1px', zIndex: 10
-            }}>
-              <div className="w-full h-full rounded-sm" style={{ backgroundColor: i === 0 ? '#fbbf24' : '#f59e0b' }} />
-            </div>
-          ))}
-
-          {!started && !gameOver && (
-            <div className="absolute inset-0 bg-black/70 flex items-center justify-center">
-              <button onClick={() => { audioManager.playClickSound(); setStarted(true); }} className="px-6 py-3 bg-white text-black font-bold rounded-xl">▶ Start</button>
-            </div>
-          )}
-          {gameOver && (
-            <div className="absolute inset-0 bg-black/70 flex flex-col items-center justify-center">
-              <div className="text-2xl font-bold text-white mb-2">Game Over!</div>
-              <div className="text-white mb-3">Score: {score} | Army: {followers.length}</div>
-              <button onClick={restart} className="px-6 py-3 bg-white text-black font-bold rounded-xl">↺ Play Again</button>
-            </div>
-          )}
-        </div>
-
-        {/* Touch Controls */}
-        <div className="mt-3 grid grid-cols-3 gap-2 w-40 h-40 mx-auto">
-          <div />
-          <button onClick={() => { if (dirRef.current !== 'DOWN') { setDir('UP'); dirRef.current = 'UP'; } }} className={`${t(theme, 'bg-black text-white border-white', 'bg-white text-black border-black')} border-2 rounded-xl text-2xl font-bold`}>▲</button>
-          <div />
-          <button onClick={() => { if (dirRef.current !== 'RIGHT') { setDir('LEFT'); dirRef.current = 'LEFT'; } }} className={`${t(theme, 'bg-black text-white border-white', 'bg-white text-black border-black')} border-2 rounded-xl text-2xl font-bold`}>◀</button>
-          <div />
-          <button onClick={() => { if (dirRef.current !== 'LEFT') { setDir('RIGHT'); dirRef.current = 'RIGHT'; } }} className={`${t(theme, 'bg-black text-white border-white', 'bg-white text-black border-black')} border-2 rounded-xl text-2xl font-bold`}>▶</button>
-          <div />
-          <button onClick={() => { if (dirRef.current !== 'UP') { setDir('DOWN'); dirRef.current = 'DOWN'; } }} className={`${t(theme, 'bg-black text-white border-white', 'bg-white text-black border-black')} border-2 rounded-xl text-2xl font-bold`}>▼</button>
-          <div />
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ============ LUDO MASTER GAME ============
-// Simplified 4-player dice game
+// ============ PROFESSIONAL LUDO MASTER GAME ============
+// Real Ludo board game with proper mechanics
 export function LudoMasterGame({ onBack, theme }: { onBack: () => void; theme: Theme }) {
   const [currentPlayer, setCurrentPlayer] = useState(0);
-  const [dice, setDice] = useState(1);
+  const [dice, setDice] = useState(0);
   const [rolling, setRolling] = useState(false);
-  const [positions, setPositions] = useState<number[][]>([[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]]);
+  const [tokens, setTokens] = useState<number[][]>([
+    [-1, -1, -1, -1], // Red: -1 = home, 0-51 = path, 52-57 = home stretch
+    [-1, -1, -1, -1], // Blue
+    [-1, -1, -1, -1], // Green
+    [-1, -1, -1, -1], // Yellow
+  ]);
   const [winner, setWinner] = useState<number | null>(null);
-  const [message, setMessage] = useState('Roll the dice!');
+  const [message, setMessage] = useState('Roll the dice to start!');
+  const [canMove, setCanMove] = useState(false);
+
   const playerColors = ['#ef4444', '#3b82f6', '#22c55e', '#eab308'];
   const playerNames = ['Red', 'Blue', 'Green', 'Yellow'];
+  const startPositions = [0, 13, 26, 39]; // Starting positions for each player
 
   const rollDice = () => {
-    if (rolling || winner !== null) return;
+    if (rolling || winner !== null || canMove) return;
     setRolling(true);
     audioManager.playClickSound();
     
@@ -221,47 +40,93 @@ export function LudoMasterGame({ onBack, theme }: { onBack: () => void; theme: T
         const finalDice = Math.floor(Math.random() * 6) + 1;
         setDice(finalDice);
         setRolling(false);
-        
-        // Move a token
-        const newPositions = positions.map(p => [...p]);
-        const playerTokens = newPositions[currentPlayer];
-        const movableToken = playerTokens.findIndex(t => t + finalDice <= 57 && t >= 0);
-        
-        if (movableToken !== -1) {
-          playerTokens[movableToken] += finalDice;
-          if (playerTokens[movableToken] === 57) {
-            setMessage(`${playerNames[currentPlayer]} token reached home!`);
-            if (playerTokens.every(t => t === 57)) {
-              setWinner(currentPlayer);
-              setMessage(`${playerNames[currentPlayer]} wins!`);
-              audioManager.playSuccessSound();
-            }
-          } else {
-            setMessage(`${playerNames[currentPlayer]} moved ${finalDice} steps`);
-          }
-        } else {
-          setMessage(`No valid moves for ${playerNames[currentPlayer]}`);
-        }
-        
-        setPositions(newPositions);
-        if (finalDice !== 6 && winner === null) {
-          setTimeout(() => setCurrentPlayer((currentPlayer + 1) % 4), 1000);
-        }
+        setCanMove(true);
+        setMessage(`${playerNames[currentPlayer]} rolled ${finalDice}! Select a token to move.`);
       }
     }, 80);
   };
 
+  const moveToken = (tokenIndex: number) => {
+    if (!canMove || winner !== null) return;
+    
+    const playerTokens = [...tokens[currentPlayer]];
+    const currentPos = playerTokens[tokenIndex];
+    
+    // Can't move if token is home and didn't roll 6
+    if (currentPos === -1 && dice !== 6) {
+      setMessage('Need a 6 to move token out of home!');
+      return;
+    }
+    
+    let newPos = currentPos;
+    if (currentPos === -1) {
+      newPos = startPositions[currentPlayer];
+    } else if (currentPos < 52) {
+      newPos = currentPos + dice;
+      // Check if entering home stretch
+      if (newPos >= 52 + startPositions[currentPlayer] && newPos <= 57 + startPositions[currentPlayer]) {
+        newPos = newPos; // In home stretch
+      } else if (newPos > 57 + startPositions[currentPlayer]) {
+        newPos = 57 + startPositions[currentPlayer]; // Reached home
+      }
+    } else {
+      newPos = Math.min(currentPos + dice, 57 + startPositions[currentPlayer]);
+    }
+    
+    playerTokens[tokenIndex] = newPos;
+    const newTokens = [...tokens];
+    newTokens[currentPlayer] = playerTokens;
+    
+    // Check for captures
+    for (let p = 0; p < 4; p++) {
+      if (p === currentPlayer) continue;
+      for (let t = 0; t < 4; t++) {
+        if (newTokens[p][t] === newPos && newPos < 52) {
+          newTokens[p][t] = -1; // Send back home
+          setMessage(`${playerNames[currentPlayer]} captured ${playerNames[p]}'s token!`);
+        }
+      }
+    }
+    
+    setTokens(newTokens);
+    audioManager.playClickSound();
+    
+    // Check win condition
+    if (playerTokens.every(pos => pos >= 57 + startPositions[currentPlayer])) {
+      setWinner(currentPlayer);
+      setMessage(`${playerNames[currentPlayer]} wins! 🏆`);
+      audioManager.playSuccessSound();
+      return;
+    }
+    
+    // Next turn (roll 6 = extra turn)
+    if (dice !== 6) {
+      setCurrentPlayer((currentPlayer + 1) % 4);
+      setCanMove(false);
+      setMessage(`${playerNames[(currentPlayer + 1) % 4]}'s turn. Roll the dice!`);
+    } else {
+      setCanMove(false);
+      setMessage(`${playerNames[currentPlayer]} rolled 6! Roll again!`);
+    }
+  };
+
   const restart = () => {
     setCurrentPlayer(0);
-    setDice(1);
-    setPositions([[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]]);
+    setDice(0);
+    setTokens([
+      [-1, -1, -1, -1],
+      [-1, -1, -1, -1],
+      [-1, -1, -1, -1],
+      [-1, -1, -1, -1],
+    ]);
     setWinner(null);
-    setMessage('Roll the dice!');
+    setMessage('Roll the dice to start!');
+    setCanMove(false);
   };
 
   return (
     <div className={`min-h-screen ${t(theme, 'bg-black', 'bg-white')} p-4 flex flex-col items-center`}>
-      <div className="w-full max-w-lg">
+      <div className="w-full max-w-2xl">
         <div className="flex justify-between items-center mb-3">
           <button onClick={onBack} className={`px-3 py-1.5 ${t(theme, 'bg-black text-white border-white', 'bg-white text-black border-black')} border-2 rounded-lg text-sm font-bold`}>← Back</button>
           <h2 className={`text-xl font-black ${t(theme, 'text-white', 'text-black')}`}>🎲 Ludo Master</h2>
@@ -270,11 +135,14 @@ export function LudoMasterGame({ onBack, theme }: { onBack: () => void; theme: T
 
         {/* Board */}
         <div className={`${t(theme, 'bg-black border-white', 'bg-white border-black')} border-2 rounded-xl p-4 mb-3`}>
+          {/* Player Status */}
           <div className="grid grid-cols-4 gap-2 mb-4">
             {playerColors.map((color, i) => (
-              <div key={i} className={`text-center p-2 rounded-lg border-2 ${currentPlayer === i ? 'opacity-100' : 'opacity-50'}`} style={{ borderColor: color }}>
+              <div key={i} className={`text-center p-2 rounded-lg border-2 ${currentPlayer === i ? 'opacity-100 scale-105' : 'opacity-50'} transition-all`} style={{ borderColor: color }}>
                 <div className="text-xs font-bold" style={{ color }}>{playerNames[i]}</div>
-                <div className={`text-sm font-bold ${t(theme, 'text-white', 'text-black')}`}>{positions[i].filter(p => p === 57).length}/4</div>
+                <div className={`text-sm font-bold ${t(theme, 'text-white', 'text-black')}`}>
+                  {tokens[i].filter(p => p >= 57 + startPositions[i]).length}/4
+                </div>
               </div>
             ))}
           </div>
@@ -282,7 +150,7 @@ export function LudoMasterGame({ onBack, theme }: { onBack: () => void; theme: T
           {/* Dice */}
           <div className="flex justify-center mb-4">
             <div className={`w-20 h-20 ${t(theme, 'bg-gray-900 border-white', 'bg-gray-100 border-black')} border-2 rounded-xl flex items-center justify-center text-4xl font-black ${t(theme, 'text-white', 'text-black')} ${rolling ? 'animate-bounce' : ''}`}>
-              {['⚀', '⚁', '⚂', '⚃', '⚄', '⚅'][dice - 1]}
+              {dice > 0 ? ['⚀', '⚁', '⚂', '⚃', '⚄', '⚅'][dice - 1] : '?'}
             </div>
           </div>
 
@@ -292,10 +160,31 @@ export function LudoMasterGame({ onBack, theme }: { onBack: () => void; theme: T
           </div>
 
           {/* Roll Button */}
-          {!winner && (
+          {!winner && !canMove && (
             <button onClick={rollDice} disabled={rolling} className={`w-full py-3 font-bold rounded-xl border-2 ${t(theme, 'bg-black text-white border-white hover:bg-gray-900', 'bg-white text-black border-black hover:bg-gray-100')} disabled:opacity-50`}>
               {rolling ? '🎲 Rolling...' : `🎲 ${playerNames[currentPlayer]}'s Turn - Roll!`}
             </button>
+          )}
+
+          {/* Token Selection */}
+          {canMove && !winner && (
+            <div className="grid grid-cols-4 gap-2">
+              {tokens[currentPlayer].map((pos, i) => (
+                <button
+                  key={i}
+                  onClick={() => moveToken(i)}
+                  className={`p-3 rounded-lg border-2 ${t(theme, 'border-white', 'border-black')} hover:scale-105 transition-all`}
+                  style={{ backgroundColor: playerColors[currentPlayer] + '20' }}
+                >
+                  <div className="text-xs font-bold" style={{ color: playerColors[currentPlayer] }}>
+                    Token {i + 1}
+                  </div>
+                  <div className={`text-sm ${t(theme, 'text-white', 'text-black')}`}>
+                    {pos === -1 ? '🏠 Home' : pos >= 57 + startPositions[currentPlayer] ? '🏆 Done' : `Pos ${pos}`}
+                  </div>
+                </button>
+              ))}
+            </div>
           )}
 
           {winner !== null && (
@@ -304,28 +193,246 @@ export function LudoMasterGame({ onBack, theme }: { onBack: () => void; theme: T
               <button onClick={restart} className={`px-6 py-3 font-bold rounded-xl border-2 ${t(theme, 'bg-black text-white border-white', 'bg-white text-black border-black')}`}>Play Again</button>
             </div>
           )}
-
-          {/* Token positions visualization */}
-          <div className="mt-4 grid grid-cols-4 gap-2">
-            {playerColors.map((color, pi) => (
-              <div key={pi} className="space-y-1">
-                {positions[pi].map((pos, ti) => (
-                  <div key={ti} className="flex items-center gap-1">
-                    <div className="w-4 h-4 rounded-full" style={{ backgroundColor: color }} />
-                    <div className={`text-xs ${t(theme, 'text-gray-400', 'text-gray-600')}`}>{pos === 57 ? '🏠' : pos === 0 ? 'Start' : `${pos}/57`}</div>
-                  </div>
-                ))}
-              </div>
-            ))}
-          </div>
         </div>
       </div>
     </div>
   );
 }
 
-// ============ SNAKE PUZZLE GAME ============
-// Guide snake to eat all food without hitting walls
+// ============ PROFESSIONAL SNAKE LEADER (2 PLAYER) ============
+// Two-player competitive snake game - Player 1 (WASD) vs Player 2 (Arrow Keys)
+export function SnakeLeaderGame({ onBack, theme }: { onBack: () => void; theme: Theme }) {
+  const [snake1, setSnake1] = useState<Position[]>([{ x: 5, y: 10 }, { x: 4, y: 10 }, { x: 3, y: 10 }]);
+  const [snake2, setSnake2] = useState<Position[]>([{ x: 15, y: 10 }, { x: 16, y: 10 }, { x: 17, y: 10 }]);
+  const [food, setFood] = useState<Position>({ x: 10, y: 10 });
+  const [dir1, setDir1] = useState<Direction>('RIGHT');
+  const [dir2, setDir2] = useState<Direction>('LEFT');
+  const [score1, setScore1] = useState(0);
+  const [score2, setScore2] = useState(0);
+  const [gameOver, setGameOver] = useState(false);
+  const [winner, setWinner] = useState<number | null>(null);
+  const [started, setStarted] = useState(false);
+  const dir1Ref = useRef<Direction>('RIGHT');
+  const dir2Ref = useRef<Direction>('LEFT');
+
+  useEffect(() => { dir1Ref.current = dir1; }, [dir1]);
+  useEffect(() => { dir2Ref.current = dir2; }, [dir2]);
+
+  const spawnFood = useCallback((snakes: Position[][]) => {
+    let f: Position;
+    const allSegments = snakes.flat();
+    do {
+      f = { x: Math.floor(Math.random() * GRID), y: Math.floor(Math.random() * GRID) };
+    } while (allSegments.some(s => s.x === f.x && s.y === f.y));
+    return f;
+  }, []);
+
+  useEffect(() => {
+    if (!started || gameOver) return;
+    const interval = setInterval(() => {
+      // Move Player 1
+      setSnake1(prev => {
+        const head = prev[0];
+        const d = dir1Ref.current;
+        const newHead = { ...head };
+        if (d === 'UP') newHead.y--;
+        else if (d === 'DOWN') newHead.y++;
+        else if (d === 'LEFT') newHead.x--;
+        else newHead.x++;
+
+        // Wall wrap
+        if (newHead.x < 0) newHead.x = GRID - 1;
+        if (newHead.x >= GRID) newHead.x = 0;
+        if (newHead.y < 0) newHead.y = GRID - 1;
+        if (newHead.y >= GRID) newHead.y = 0;
+
+        // Self collision
+        if (prev.slice(1).some(s => s.x === newHead.x && s.y === newHead.y)) {
+          setGameOver(true);
+          setWinner(2);
+          audioManager.playGameOverSound();
+          return prev;
+        }
+
+        // Collision with Player 2
+        if (snake2.some(s => s.x === newHead.x && s.y === newHead.y)) {
+          setGameOver(true);
+          setWinner(2);
+          audioManager.playGameOverSound();
+          return prev;
+        }
+
+        const newSnake = [newHead, ...prev];
+        if (newHead.x === food.x && newHead.y === food.y) {
+          audioManager.playEatSound();
+          setScore1(s => s + 10);
+          setFood(spawnFood([newSnake, snake2]));
+        } else {
+          newSnake.pop();
+        }
+        return newSnake;
+      });
+
+      // Move Player 2
+      setSnake2(prev => {
+        const head = prev[0];
+        const d = dir2Ref.current;
+        const newHead = { ...head };
+        if (d === 'UP') newHead.y--;
+        else if (d === 'DOWN') newHead.y++;
+        else if (d === 'LEFT') newHead.x--;
+        else newHead.x++;
+
+        // Wall wrap
+        if (newHead.x < 0) newHead.x = GRID - 1;
+        if (newHead.x >= GRID) newHead.x = 0;
+        if (newHead.y < 0) newHead.y = GRID - 1;
+        if (newHead.y >= GRID) newHead.y = 0;
+
+        // Self collision
+        if (prev.slice(1).some(s => s.x === newHead.x && s.y === newHead.y)) {
+          setGameOver(true);
+          setWinner(1);
+          audioManager.playGameOverSound();
+          return prev;
+        }
+
+        // Collision with Player 1
+        if (snake1.some(s => s.x === newHead.x && s.y === newHead.y)) {
+          setGameOver(true);
+          setWinner(1);
+          audioManager.playGameOverSound();
+          return prev;
+        }
+
+        const newSnake = [newHead, ...prev];
+        if (newHead.x === food.x && newHead.y === food.y) {
+          audioManager.playEatSound();
+          setScore2(s => s + 10);
+          setFood(spawnFood([snake1, newSnake]));
+        } else {
+          newSnake.pop();
+        }
+        return newSnake;
+      });
+    }, 150);
+    return () => clearInterval(interval);
+  }, [started, gameOver, food, spawnFood, snake1, snake2]);
+
+  useEffect(() => {
+    const handleKey = (e: KeyboardEvent) => {
+      const opp: Record<Direction, Direction> = { UP: 'DOWN', DOWN: 'UP', LEFT: 'RIGHT', RIGHT: 'LEFT' };
+      
+      // Player 1: WASD
+      const p1Map: Record<string, Direction> = { w: 'UP', s: 'DOWN', a: 'LEFT', d: 'RIGHT' };
+      if (p1Map[e.key.toLowerCase()]) {
+        const newDir = p1Map[e.key.toLowerCase()];
+        if (opp[newDir] !== dir1Ref.current) {
+          setDir1(newDir);
+          dir1Ref.current = newDir;
+        }
+      }
+      
+      // Player 2: Arrow Keys
+      const p2Map: Record<string, Direction> = { ArrowUp: 'UP', ArrowDown: 'DOWN', ArrowLeft: 'LEFT', ArrowRight: 'RIGHT' };
+      if (p2Map[e.key]) {
+        const newDir = p2Map[e.key];
+        if (opp[newDir] !== dir2Ref.current) {
+          setDir2(newDir);
+          dir2Ref.current = newDir;
+        }
+      }
+    };
+    window.addEventListener('keydown', handleKey);
+    return () => window.removeEventListener('keydown', handleKey);
+  }, []);
+
+  const restart = () => {
+    setSnake1([{ x: 5, y: 10 }, { x: 4, y: 10 }, { x: 3, y: 10 }]);
+    setSnake2([{ x: 15, y: 10 }, { x: 16, y: 10 }, { x: 17, y: 10 }]);
+    setFood({ x: 10, y: 10 });
+    setDir1('RIGHT');
+    setDir2('LEFT');
+    dir1Ref.current = 'RIGHT';
+    dir2Ref.current = 'LEFT';
+    setScore1(0);
+    setScore2(0);
+    setGameOver(false);
+    setWinner(null);
+    setStarted(true);
+  };
+
+  return (
+    <div className={`min-h-screen ${t(theme, 'bg-black', 'bg-white')} p-4 flex flex-col items-center`}>
+      <div className="w-full max-w-lg">
+        <div className="flex justify-between items-center mb-3">
+          <button onClick={onBack} className={`px-3 py-1.5 ${t(theme, 'bg-black text-white border-white', 'bg-white text-black border-black')} border-2 rounded-lg text-sm font-bold`}>← Back</button>
+          <h2 className={`text-xl font-black ${t(theme, 'text-white', 'text-black')}`}>👑 Snake Battle 2P</h2>
+          <div className="w-16" />
+        </div>
+
+        <div className={`${t(theme, 'bg-black border-white', 'bg-white border-black')} border-2 rounded-xl p-2 mb-3 flex justify-between`}>
+          <div className="text-center">
+            <div className="text-xs font-bold text-green-400">Player 1 (WASD)</div>
+            <div className={`text-lg font-bold ${t(theme, 'text-white', 'text-black')}`}>{score1}</div>
+          </div>
+          <div className="text-center">
+            <div className="text-xs font-bold text-blue-400">Player 2 (Arrows)</div>
+            <div className={`text-lg font-bold ${t(theme, 'text-white', 'text-black')}`}>{score2}</div>
+          </div>
+        </div>
+
+        <div className={`relative aspect-square ${t(theme, 'bg-gray-900 border-white', 'bg-gray-100 border-black')} border-2 rounded-xl overflow-hidden`}>
+          {/* Food */}
+          <div className="absolute w-[5%] h-[5%] bg-red-500 rounded-full animate-pulse" style={{ left: `${(food.x / GRID) * 100}%`, top: `${(food.y / GRID) * 100}%` }} />
+          
+          {/* Player 1 - Green */}
+          {snake1.map((seg, i) => (
+            <div key={`p1-${i}`} className="absolute rounded-sm" style={{
+              left: `${(seg.x / GRID) * 100}%`, top: `${(seg.y / GRID) * 100}%`,
+              width: `${100 / GRID}%`, height: `${100 / GRID}%`, padding: '1px', zIndex: 10
+            }}>
+              <div className="w-full h-full rounded-sm" style={{ backgroundColor: i === 0 ? '#22c55e' : '#16a34a' }} />
+            </div>
+          ))}
+
+          {/* Player 2 - Blue */}
+          {snake2.map((seg, i) => (
+            <div key={`p2-${i}`} className="absolute rounded-sm" style={{
+              left: `${(seg.x / GRID) * 100}%`, top: `${(seg.y / GRID) * 100}%`,
+              width: `${100 / GRID}%`, height: `${100 / GRID}%`, padding: '1px', zIndex: 10
+            }}>
+              <div className="w-full h-full rounded-sm" style={{ backgroundColor: i === 0 ? '#3b82f6' : '#2563eb' }} />
+            </div>
+          ))}
+
+          {!started && !gameOver && (
+            <div className="absolute inset-0 bg-black/70 flex flex-col items-center justify-center">
+              <div className="text-white text-sm mb-2">P1: WASD | P2: Arrow Keys</div>
+              <button onClick={() => { audioManager.playClickSound(); setStarted(true); }} className="px-6 py-3 bg-white text-black font-bold rounded-xl">▶ Start Battle</button>
+            </div>
+          )}
+          {gameOver && (
+            <div className="absolute inset-0 bg-black/70 flex flex-col items-center justify-center">
+              <div className="text-2xl font-bold text-white mb-2">
+                {winner === 1 ? '🟢 Player 1 Wins!' : '🔵 Player 2 Wins!'}
+              </div>
+              <div className="text-white mb-3">P1: {score1} | P2: {score2}</div>
+              <button onClick={restart} className="px-6 py-3 bg-white text-black font-bold rounded-xl">↺ Rematch</button>
+            </div>
+          )}
+        </div>
+
+        <div className={`mt-3 text-center text-xs ${t(theme, 'text-gray-400', 'text-gray-600')}`}>
+          Player 1: WASD | Player 2: Arrow Keys | Eat food, avoid collisions!
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ============ PROFESSIONAL SNAKE PUZZLE GAME ============
+// Pre-designed puzzle levels with increasing difficulty
 export function SnakePuzzleGame({ onBack, theme }: { onBack: () => void; theme: Theme }) {
   const [level, setLevel] = useState(1);
   const [snake, setSnake] = useState<Position[]>([{ x: 1, y: 1 }]);
@@ -336,46 +443,36 @@ export function SnakePuzzleGame({ onBack, theme }: { onBack: () => void; theme: 
   const [gameOver, setGameOver] = useState(false);
   const [won, setWon] = useState(false);
   const [started, setStarted] = useState(false);
+  const [showLevelSelect, setShowLevelSelect] = useState(true);
   const dirRef = useRef<Direction>('RIGHT');
 
-  const generateLevel = useCallback((lvl: number) => {
-    const newWalls: Position[] = [];
-    const newFoods: Position[] = [];
-    
-    // Add walls based on level
-    const wallCount = lvl * 3 + 5;
-    for (let i = 0; i < wallCount; i++) {
-      const w = { x: Math.floor(Math.random() * (GRID - 4)) + 2, y: Math.floor(Math.random() * (GRID - 4)) + 2 };
-      if (!newWalls.some(ww => ww.x === w.x && ww.y === w.y) && !(w.x === 1 && w.y === 1)) {
-        newWalls.push(w);
-      }
-    }
-    
-    // Add foods
-    const foodCount = 3 + lvl;
-    for (let i = 0; i < foodCount; i++) {
-      let f: Position;
-      do {
-        f = { x: Math.floor(Math.random() * GRID), y: Math.floor(Math.random() * GRID) };
-      } while (
-        newWalls.some(w => w.x === f.x && w.y === f.y) ||
-        newFoods.some(ff => ff.x === f.x && ff.y === f.y) ||
-        (f.x === 1 && f.y === 1)
-      );
-      newFoods.push(f);
-    }
-    
-    setWalls(newWalls);
-    setFoods(newFoods);
-    setSnake([{ x: 1, y: 1 }]);
+  // Pre-designed levels
+  const levels = [
+    // Level 1: Simple introduction
+    { walls: [], foods: [{ x: 5, y: 5 }, { x: 10, y: 10 }, { x: 15, y: 5 }], start: { x: 1, y: 1 } },
+    // Level 2: Basic walls
+    { walls: [{ x: 5, y: 3 }, { x: 5, y: 4 }, { x: 5, y: 5 }], foods: [{ x: 3, y: 8 }, { x: 10, y: 10 }, { x: 15, y: 3 }], start: { x: 1, y: 1 } },
+    // Level 3: Corridor
+    { walls: [{ x: 3, y: 2 }, { x: 3, y: 3 }, { x: 3, y: 4 }, { x: 3, y: 5 }, { x: 3, y: 6 }, { x: 3, y: 7 }, { x: 3, y: 8 }], foods: [{ x: 8, y: 5 }, { x: 15, y: 10 }], start: { x: 1, y: 1 } },
+    // Level 4: Maze-like
+    { walls: [{ x: 5, y: 2 }, { x: 5, y: 3 }, { x: 5, y: 4 }, { x: 10, y: 6 }, { x: 10, y: 7 }, { x: 10, y: 8 }, { x: 15, y: 2 }, { x: 15, y: 3 }], foods: [{ x: 8, y: 8 }, { x: 12, y: 12 }, { x: 18, y: 5 }], start: { x: 1, y: 1 } },
+    // Level 5: Complex
+    { walls: [{ x: 4, y: 4 }, { x: 5, y: 4 }, { x: 6, y: 4 }, { x: 10, y: 8 }, { x: 11, y: 8 }, { x: 12, y: 8 }, { x: 15, y: 12 }, { x: 16, y: 12 }, { x: 17, y: 12 }], foods: [{ x: 8, y: 2 }, { x: 14, y: 6 }, { x: 18, y: 15 }, { x: 3, y: 15 }], start: { x: 1, y: 1 } },
+  ];
+
+  const loadLevel = useCallback((lvl: number) => {
+    const levelData = levels[Math.min(lvl - 1, levels.length - 1)];
+    setWalls(levelData.walls);
+    setFoods(levelData.foods);
+    setSnake([levelData.start]);
     setDir('RIGHT');
     dirRef.current = 'RIGHT';
     setMoves(0);
     setGameOver(false);
     setWon(false);
+    setStarted(false);
+    setShowLevelSelect(false);
   }, []);
-
-  useEffect(() => { generateLevel(level); }, [level, generateLevel]);
 
   const moveSnake = useCallback(() => {
     if (gameOver || won || !started) return;
@@ -455,17 +552,53 @@ export function SnakePuzzleGame({ onBack, theme }: { onBack: () => void; theme: 
   }, []);
 
   const nextLevel = () => {
-    setLevel(l => l + 1);
-    setStarted(false);
+    if (level < levels.length) {
+      setLevel(level + 1);
+      loadLevel(level + 1);
+    } else {
+      setShowLevelSelect(true);
+    }
   };
+
+  if (showLevelSelect) {
+    return (
+      <div className={`min-h-screen ${t(theme, 'bg-black', 'bg-white')} p-4 flex flex-col items-center`}>
+        <div className="w-full max-w-lg">
+          <div className="flex justify-between items-center mb-3">
+            <button onClick={onBack} className={`px-3 py-1.5 ${t(theme, 'bg-black text-white border-white', 'bg-white text-black border-black')} border-2 rounded-lg text-sm font-bold`}>← Back</button>
+            <h2 className={`text-xl font-black ${t(theme, 'text-white', 'text-black')}`}>🧩 Snake Puzzle</h2>
+            <div className="w-16" />
+          </div>
+
+          <div className={`${t(theme, 'bg-black border-white', 'bg-white border-black')} border-2 rounded-xl p-4`}>
+            <h3 className={`text-lg font-bold ${t(theme, 'text-white', 'text-black')} mb-4 text-center`}>Select Level</h3>
+            <div className="grid grid-cols-3 gap-3">
+              {levels.map((_, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => { setLevel(idx + 1); loadLevel(idx + 1); }}
+                  className={`p-4 rounded-xl border-2 ${t(theme, 'border-white hover:bg-gray-900', 'border-black hover:bg-gray-100')} transition-all`}
+                >
+                  <div className={`text-2xl font-black ${t(theme, 'text-white', 'text-black')}`}>Level {idx + 1}</div>
+                  <div className={`text-xs ${t(theme, 'text-gray-400', 'text-gray-600')} mt-1`}>
+                    {levels[idx].foods.length} foods
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={`min-h-screen ${t(theme, 'bg-black', 'bg-white')} p-4 flex flex-col items-center`}>
       <div className="w-full max-w-lg">
         <div className="flex justify-between items-center mb-3">
-          <button onClick={onBack} className={`px-3 py-1.5 ${t(theme, 'bg-black text-white border-white', 'bg-white text-black border-black')} border-2 rounded-lg text-sm font-bold`}>← Back</button>
-          <h2 className={`text-xl font-black ${t(theme, 'text-white', 'text-black')}`}>🧩 Snake Puzzle</h2>
-          <div className={`text-lg font-bold ${t(theme, 'text-white', 'text-black')}`}>Lv.{level}</div>
+          <button onClick={() => setShowLevelSelect(true)} className={`px-3 py-1.5 ${t(theme, 'bg-black text-white border-white', 'bg-white text-black border-black')} border-2 rounded-lg text-sm font-bold`}>← Levels</button>
+          <h2 className={`text-xl font-black ${t(theme, 'text-white', 'text-black')}`}>🧩 Level {level}</h2>
+          <div className={`text-lg font-bold ${t(theme, 'text-white', 'text-black')}`}>{moves} moves</div>
         </div>
 
         <div className={`${t(theme, 'bg-black border-white', 'bg-white border-black')} border-2 rounded-xl p-2 mb-3 flex justify-between`}>
@@ -481,7 +614,7 @@ export function SnakePuzzleGame({ onBack, theme }: { onBack: () => void; theme: 
           
           {/* Foods */}
           {foods.map((f, i) => (
-            <div key={`f${i}`} className="absolute w-[80%] h-[80%] bg-red-500 rounded-full" style={{ left: `${(f.x / GRID) * 100 + 10}%`, top: `${(f.y / GRID) * 100 + 10}%` }} />
+            <div key={`f${i}`} className="absolute w-[80%] h-[80%] bg-red-500 rounded-full animate-pulse" style={{ left: `${(f.x / GRID) * 100 + 10}%`, top: `${(f.y / GRID) * 100 + 10}%` }} />
           ))}
           
           {/* Snake */}
@@ -499,14 +632,16 @@ export function SnakePuzzleGame({ onBack, theme }: { onBack: () => void; theme: 
           {gameOver && (
             <div className="absolute inset-0 bg-black/70 flex flex-col items-center justify-center">
               <div className="text-2xl font-bold text-white mb-2">Stuck!</div>
-              <button onClick={() => generateLevel(level)} className="px-6 py-3 bg-white text-black font-bold rounded-xl mb-2">↺ Retry</button>
+              <button onClick={() => loadLevel(level)} className="px-6 py-3 bg-white text-black font-bold rounded-xl mb-2">↺ Retry</button>
             </div>
           )}
           {won && (
             <div className="absolute inset-0 bg-black/70 flex flex-col items-center justify-center">
               <div className="text-2xl font-bold text-green-400 mb-2">🎉 Level Complete!</div>
               <div className="text-white mb-3">Moves: {moves}</div>
-              <button onClick={nextLevel} className="px-6 py-3 bg-white text-black font-bold rounded-xl">Next Level →</button>
+              <button onClick={nextLevel} className="px-6 py-3 bg-white text-black font-bold rounded-xl">
+                {level < levels.length ? 'Next Level →' : 'Back to Levels'}
+              </button>
             </div>
           )}
         </div>
@@ -528,85 +663,194 @@ export function SnakePuzzleGame({ onBack, theme }: { onBack: () => void; theme: 
   );
 }
 
-// ============ SNAKE RUNNER GAME ============
-// Auto-running snake, avoid obstacles
+// ============ PROFESSIONAL SNAKE RUNNER GAME ============
+// Endless runner with jump mechanics, power-ups, and increasing difficulty
 export function SnakeRunnerGame({ onBack, theme }: { onBack: () => void; theme: Theme }) {
-  const [snakeY, setSnakeY] = useState(10);
-  const [obstacles, setObstacles] = useState<{ x: number; y: number; h: number }[]>([]);
-  const [foods, setFoods] = useState<{ x: number; y: number }[]>([]);
+  const [snakeY, setSnakeY] = useState(5);
+  const [isJumping, setIsJumping] = useState(false);
+  const [obstacles, setObstacles] = useState<{ x: number; y: number; type: 'low' | 'high' | 'full' }[]>([]);
+  const [coins, setCoins] = useState<{ x: number; y: number }[]>([]);
+  const [powerUps, setPowerUps] = useState<{ x: number; y: number; type: 'shield' | 'magnet' | 'slow' }[]>([]);
+  const [activePowerUp, setActivePowerUp] = useState<string | null>(null);
+  const [powerUpTimer, setPowerUpTimer] = useState(0);
   const [score, setScore] = useState(0);
-  const [speed, setSpeed] = useState(5);
+  const [distance, setDistance] = useState(0);
+  const [highScore, setHighScore] = useState(() => {
+    const saved = localStorage.getItem('snake-runner-highscore');
+    return saved ? parseInt(saved) : 0;
+  });
+  const [speed, setSpeed] = useState(8);
   const [gameOver, setGameOver] = useState(false);
   const [started, setStarted] = useState(false);
-  const snakeYRef = useRef(10);
+  const snakeYRef = useRef(5);
+  const jumpVelocityRef = useRef(0);
 
   useEffect(() => { snakeYRef.current = snakeY; }, [snakeY]);
 
+  // Save high score
+  useEffect(() => {
+    if (score > highScore) {
+      setHighScore(score);
+      localStorage.setItem('snake-runner-highscore', score.toString());
+    }
+  }, [score, highScore]);
+
+  // Power-up timer
+  useEffect(() => {
+    if (activePowerUp && powerUpTimer > 0) {
+      const timer = setTimeout(() => {
+        setPowerUpTimer(powerUpTimer - 1);
+        if (powerUpTimer <= 1) {
+          setActivePowerUp(null);
+        }
+      }, 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [activePowerUp, powerUpTimer]);
+
+  // Jump physics
+  useEffect(() => {
+    if (!isJumping) return;
+    const jumpInterval = setInterval(() => {
+      jumpVelocityRef.current -= 0.5;
+      setSnakeY(y => {
+        const newY = y + jumpVelocityRef.current;
+        if (newY <= 5) {
+          setIsJumping(false);
+          jumpVelocityRef.current = 0;
+          return 5;
+        }
+        return newY;
+      });
+    }, 50);
+    return () => clearInterval(jumpInterval);
+  }, [isJumping]);
+
+  // Main game loop
   useEffect(() => {
     if (!started || gameOver) return;
     const interval = setInterval(() => {
-      // Move obstacles and food left
+      // Move obstacles
       setObstacles(prev => {
-        const moved = prev.map(o => ({ ...o, x: o.x - 1 })).filter(o => o.x > -3);
+        const moved = prev.map(o => ({ ...o, x: o.x - 1 })).filter(o => o.x > -2);
         // Spawn new obstacles
-        if (Math.random() < 0.15) {
-          const h = Math.floor(Math.random() * 8) + 3;
-          const y = Math.floor(Math.random() * (GRID - h));
-          moved.push({ x: GRID, y, h });
+        if (Math.random() < 0.02 + (speed * 0.002)) {
+          const types: ('low' | 'high' | 'full')[] = ['low', 'high', 'full'];
+          const type = types[Math.floor(Math.random() * types.length)];
+          const y = type === 'low' ? 8 : type === 'high' ? 2 : 5;
+          moved.push({ x: 20, y, type });
         }
         return moved;
       });
 
-      setFoods(prev => {
-        const moved = prev.map(f => ({ x: f.x - 1, y: f.y })).filter(f => f.x > -1);
-        if (Math.random() < 0.1) {
-          moved.push({ x: GRID, y: Math.floor(Math.random() * GRID) });
+      // Move coins
+      setCoins(prev => {
+        const moved = prev.map(c => ({ x: c.x - 1, y: c.y })).filter(c => c.x > -1);
+        if (Math.random() < 0.05) {
+          moved.push({ x: 20, y: Math.floor(Math.random() * 8) + 2 });
+        }
+        return moved;
+      });
+
+      // Move power-ups
+      setPowerUps(prev => {
+        const moved = prev.map(p => ({ x: p.x - 1, y: p.y, type: p.type })).filter(p => p.x > -1);
+        if (Math.random() < 0.005) {
+          const types: ('shield' | 'magnet' | 'slow')[] = ['shield', 'magnet', 'slow'];
+          const type = types[Math.floor(Math.random() * types.length)];
+          moved.push({ x: 20, y: Math.floor(Math.random() * 8) + 2, type });
         }
         return moved;
       });
 
       // Check collisions
       const currentY = snakeYRef.current;
-      if (obstacles.some(o => o.x <= 3 && o.x >= 1 && currentY >= o.y && currentY < o.y + o.h)) {
-        setGameOver(true);
-        audioManager.playGameOverSound();
-        return;
+      
+      // Obstacle collision (unless shield active)
+      if (activePowerUp !== 'shield') {
+        if (obstacles.some(o => {
+          if (o.x !== 3) return false;
+          if (o.type === 'low') return currentY >= 8;
+          if (o.type === 'high') return currentY <= 3;
+          return currentY >= 4 && currentY <= 6;
+        })) {
+          setGameOver(true);
+          audioManager.playGameOverSound();
+          return;
+        }
       }
 
-      // Check food collection
-      setFoods(prev => {
-        const remaining = prev.filter(f => !(f.x <= 3 && f.x >= 1 && f.y === currentY));
-        if (remaining.length < prev.length) {
-          audioManager.playEatSound();
-          setScore(s => s + 10);
-        }
+      // Coin collection (with magnet range)
+      setCoins(prev => {
+        const magnetRange = activePowerUp === 'magnet' ? 3 : 0;
+        const remaining = prev.filter(c => {
+          if (c.x === 3 && Math.abs(c.y - currentY) <= magnetRange) {
+            audioManager.playEatSound();
+            setScore(s => s + 10);
+            return false;
+          }
+          return c.x > 2;
+        });
         return remaining;
       });
 
+      // Power-up collection
+      setPowerUps(prev => {
+        const remaining: typeof prev = [];
+        prev.forEach(p => {
+          if (p.x === 3 && p.y === currentY) {
+            audioManager.playSuccessSound();
+            setActivePowerUp(p.type);
+            setPowerUpTimer(5);
+            if (p.type === 'slow') {
+              setSpeed(s => Math.max(4, s - 3));
+              setTimeout(() => setSpeed(s => s + 3), 5000);
+            }
+          } else if (p.x > 2) {
+            remaining.push(p);
+          }
+        });
+        return remaining;
+      });
+
+      setDistance(d => d + 1);
       setScore(s => s + 1);
-      setSpeed(sp => Math.min(sp + 0.05, 15));
+      setSpeed(sp => Math.min(sp + 0.01, 20));
     }, 1000 / speed);
     return () => clearInterval(interval);
-  }, [started, gameOver, speed, obstacles]);
+  }, [started, gameOver, speed, obstacles, activePowerUp]);
+
+  const jump = () => {
+    if (!isJumping && !gameOver && started) {
+      setIsJumping(true);
+      jumpVelocityRef.current = 3;
+      audioManager.playClickSound();
+    }
+  };
 
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
-      if (e.key === 'ArrowUp' || e.key === 'w') {
-        setSnakeY(y => Math.max(0, y - 1));
-      } else if (e.key === 'ArrowDown' || e.key === 's') {
-        setSnakeY(y => Math.min(GRID - 1, y + 1));
+      if (e.key === ' ' || e.key === 'ArrowUp' || e.key === 'w') {
+        e.preventDefault();
+        jump();
       }
     };
     window.addEventListener('keydown', handleKey);
     return () => window.removeEventListener('keydown', handleKey);
-  }, []);
+  }, [isJumping, gameOver, started]);
 
   const restart = () => {
-    setSnakeY(10);
+    setSnakeY(5);
+    setIsJumping(false);
+    jumpVelocityRef.current = 0;
     setObstacles([]);
-    setFoods([]);
+    setCoins([]);
+    setPowerUps([]);
+    setActivePowerUp(null);
+    setPowerUpTimer(0);
     setScore(0);
-    setSpeed(5);
+    setDistance(0);
+    setSpeed(8);
     setGameOver(false);
     setStarted(true);
   };
@@ -617,50 +861,80 @@ export function SnakeRunnerGame({ onBack, theme }: { onBack: () => void; theme: 
         <div className="flex justify-between items-center mb-3">
           <button onClick={onBack} className={`px-3 py-1.5 ${t(theme, 'bg-black text-white border-white', 'bg-white text-black border-black')} border-2 rounded-lg text-sm font-bold`}>← Back</button>
           <h2 className={`text-xl font-black ${t(theme, 'text-white', 'text-black')}`}>🏃 Snake Runner</h2>
-          <div className={`text-lg font-bold ${t(theme, 'text-white', 'text-black')}`}>🪙 {score}</div>
+          <div className={`text-lg font-bold ${t(theme, 'text-white', 'text-black')}`}>🏆 {highScore}</div>
+        </div>
+
+        <div className={`${t(theme, 'bg-black border-white', 'bg-white border-black')} border-2 rounded-xl p-2 mb-3 flex justify-between`}>
+          <span className={`text-sm font-bold ${t(theme, 'text-white', 'text-black')}`}>Score: {score}</span>
+          <span className={`text-sm font-bold ${t(theme, 'text-white', 'text-black')}`}>Distance: {distance}m</span>
+          {activePowerUp && (
+            <span className={`text-sm font-bold ${t(theme, 'text-yellow-400', 'text-yellow-600')}`}>
+              {activePowerUp === 'shield' ? '🛡️' : activePowerUp === 'magnet' ? '🧲' : '🐌'} {powerUpTimer}s
+            </span>
+          )}
         </div>
 
         <div className={`relative aspect-[2/1] ${t(theme, 'bg-gray-900 border-white', 'bg-gray-100 border-black')} border-2 rounded-xl overflow-hidden`}>
+          {/* Ground line */}
+          <div className={`absolute bottom-0 left-0 right-0 h-[10%] ${t(theme, 'bg-gray-800', 'bg-gray-200')}`} />
+
           {/* Obstacles */}
           {obstacles.map((o, i) => (
-            <div key={`o${i}`} className="absolute bg-red-600" style={{
-              left: `${(o.x / GRID) * 100}%`, top: `${(o.y / GRID) * 100}%`,
-              width: `${100 / GRID}%`, height: `${(o.h / GRID) * 100}%`
+            <div key={`o${i}`} className={`absolute ${o.type === 'low' ? 'bg-red-600' : o.type === 'high' ? 'bg-orange-600' : 'bg-purple-600'}`} style={{
+              left: `${(o.x / 20) * 100}%`, top: `${(o.y / 10) * 100}%`,
+              width: '5%', height: o.type === 'full' ? '30%' : '20%'
             }} />
           ))}
 
-          {/* Foods */}
-          {foods.map((f, i) => (
-            <div key={`f${i}`} className="absolute w-[4%] h-[4%] bg-yellow-400 rounded-full" style={{
-              left: `${(f.x / GRID) * 100}%`, top: `${(f.y / GRID) * 100}%`
+          {/* Coins */}
+          {coins.map((c, i) => (
+            <div key={`c${i}`} className="absolute w-[3%] h-[3%] bg-yellow-400 rounded-full animate-pulse" style={{
+              left: `${(c.x / 20) * 100}%`, top: `${(c.y / 10) * 100}%`
             }} />
+          ))}
+
+          {/* Power-ups */}
+          {powerUps.map((p, i) => (
+            <div key={`p${i}`} className="absolute w-[4%] h-[4%] rounded-full flex items-center justify-center text-xs" style={{
+              left: `${(p.x / 20) * 100}%`, top: `${(p.y / 10) * 100}%`,
+              backgroundColor: p.type === 'shield' ? '#3b82f6' : p.type === 'magnet' ? '#a855f7' : '#22c55e'
+            }}>
+              {p.type === 'shield' ? '🛡️' : p.type === 'magnet' ? '🧲' : '🐌'}
+            </div>
           ))}
 
           {/* Snake */}
-          <div className="absolute bg-green-500 rounded-sm" style={{
-            left: `${(2 / GRID) * 100}%`, top: `${(snakeY / GRID) * 100}%`,
-            width: `${100 / GRID}%`, height: `${100 / GRID}%`
+          <div className={`absolute w-[5%] h-[10%] rounded-sm ${activePowerUp === 'shield' ? 'bg-blue-400' : 'bg-green-500'}`} style={{
+            left: '15%', top: `${(snakeY / 10) * 100}%`,
+            transition: 'top 0.05s linear'
           }} />
 
           {!started && !gameOver && (
             <div className="absolute inset-0 bg-black/70 flex flex-col items-center justify-center">
-              <div className="text-white text-sm mb-3">↑↓ or Swipe to move</div>
-              <button onClick={() => { audioManager.playClickSound(); setStarted(true); }} className="px-6 py-3 bg-white text-black font-bold rounded-xl">▶ Start</button>
+              <div className="text-white text-sm mb-3">Space/↑ to jump | Avoid obstacles!</div>
+              <button onClick={() => { audioManager.playClickSound(); setStarted(true); }} className="px-6 py-3 bg-white text-black font-bold rounded-xl">▶ Start Running</button>
             </div>
           )}
           {gameOver && (
             <div className="absolute inset-0 bg-black/70 flex flex-col items-center justify-center">
               <div className="text-2xl font-bold text-white mb-2">Game Over!</div>
-              <div className="text-white mb-3">Score: {score}</div>
-              <button onClick={restart} className="px-6 py-3 bg-white text-black font-bold rounded-xl">↺ Play Again</button>
+              <div className="text-white mb-1">Score: {score}</div>
+              <div className="text-white mb-3">Distance: {distance}m</div>
+              {score > highScore && <div className="text-yellow-400 font-bold mb-3">🏆 New High Score!</div>}
+              <button onClick={restart} className="px-6 py-3 bg-white text-black font-bold rounded-xl">↺ Run Again</button>
             </div>
           )}
         </div>
 
-        {/* Touch Controls */}
-        <div className="mt-3 flex justify-center gap-4">
-          <button onClick={() => setSnakeY(y => Math.max(0, y - 1))} className={`w-16 h-16 ${t(theme, 'bg-black text-white border-white', 'bg-white text-black border-black')} border-2 rounded-xl text-2xl font-bold`}>▲</button>
-          <button onClick={() => setSnakeY(y => Math.min(GRID - 1, y + 1))} className={`w-16 h-16 ${t(theme, 'bg-black text-white border-white', 'bg-white text-black border-black')} border-2 rounded-xl text-2xl font-bold`}>▼</button>
+        {/* Jump Button */}
+        <div className="mt-3 flex justify-center">
+          <button onClick={jump} className={`w-32 h-16 ${t(theme, 'bg-black text-white border-white', 'bg-white text-black border-black')} border-2 rounded-xl text-xl font-bold active:scale-95 transition-transform`}>
+            ⬆️ JUMP
+          </button>
+        </div>
+
+        <div className={`mt-2 text-center text-xs ${t(theme, 'text-gray-400', 'text-gray-600')}`}>
+          Press Space or ↑ to jump | Collect coins and power-ups!
         </div>
       </div>
     </div>
