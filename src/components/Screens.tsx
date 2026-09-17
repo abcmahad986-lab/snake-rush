@@ -406,23 +406,23 @@ export function MainMenu({ player, onSelectMode, onNavigate, theme, toggleTheme 
 
       {/* Stats Summary */}
       <div className="w-full max-w-2xl relative z-10">
-        <h3 className={`text-sm ${t(theme, 'text-gray-300', 'text-gray-600')} uppercase tracking-wider mb-3 font-bold text-center`}>Your Stats</h3>
-        <div className="grid grid-cols-4 gap-3">
-          <div className={`${t(theme, 'bg-gray-900/60 border-gray-700/50', 'bg-white border-gray-200')} rounded-xl p-4 text-center border-2 min-h-[90px] flex flex-col items-center justify-center`}>
-            <div className={`text-3xl font-black ${t(theme, 'text-white', 'text-gray-900')}`}>{player.gamesPlayed}</div>
-            <div className={`text-xs ${t(theme, 'text-gray-400', 'text-gray-600')} font-bold mt-1`}>Games</div>
+        <h3 className={`text-xs ${t(theme, 'text-gray-300', 'text-gray-600')} uppercase tracking-wider mb-2 font-bold text-center`}>Your Stats</h3>
+        <div className="grid grid-cols-4 gap-2">
+          <div className={`${t(theme, 'bg-gray-900/60 border-gray-700/50', 'bg-white border-gray-200')} rounded-lg p-2 text-center border-2 min-h-[60px] flex flex-col items-center justify-center`}>
+            <div className={`text-xl font-bold ${t(theme, 'text-white', 'text-gray-900')}`}>{player.gamesPlayed}</div>
+            <div className={`text-[10px] ${t(theme, 'text-gray-400', 'text-gray-600')} font-semibold mt-0.5`}>Games</div>
           </div>
-          <div className={`${t(theme, 'bg-gray-900/60 border-gray-700/50', 'bg-white border-gray-200')} rounded-xl p-4 text-center border-2 min-h-[90px] flex flex-col items-center justify-center`}>
-            <div className={`text-3xl font-black ${t(theme, 'text-white', 'text-gray-900')}`}>{player.totalScore}</div>
-            <div className={`text-xs ${t(theme, 'text-gray-400', 'text-gray-600')} font-bold mt-1`}>Score</div>
+          <div className={`${t(theme, 'bg-gray-900/60 border-gray-700/50', 'bg-white border-gray-200')} rounded-lg p-2 text-center border-2 min-h-[60px] flex flex-col items-center justify-center`}>
+            <div className={`text-xl font-bold ${t(theme, 'text-white', 'text-gray-900')}`}>{player.totalScore}</div>
+            <div className={`text-[10px] ${t(theme, 'text-gray-400', 'text-gray-600')} font-semibold mt-0.5`}>Score</div>
           </div>
-          <div className={`${t(theme, 'bg-gray-900/60 border-gray-700/50', 'bg-white border-gray-200')} rounded-xl p-4 text-center border-2 min-h-[90px] flex flex-col items-center justify-center`}>
-            <div className={`text-3xl font-black ${t(theme, 'text-white', 'text-gray-900')}`}>{player.trophies.length}/{TROPHIES.length}</div>
-            <div className={`text-xs ${t(theme, 'text-gray-400', 'text-gray-600')} font-bold mt-1`}>Trophies</div>
+          <div className={`${t(theme, 'bg-gray-900/60 border-gray-700/50', 'bg-white border-gray-200')} rounded-lg p-2 text-center border-2 min-h-[60px] flex flex-col items-center justify-center`}>
+            <div className={`text-xl font-bold ${t(theme, 'text-white', 'text-gray-900')}`}>{player.trophies.length}/{TROPHIES.length}</div>
+            <div className={`text-[10px] ${t(theme, 'text-gray-400', 'text-gray-600')} font-semibold mt-0.5`}>Trophies</div>
           </div>
-          <div className={`${t(theme, 'bg-gray-900/60 border-gray-700/50', 'bg-white border-gray-200')} rounded-xl p-4 text-center border-2 min-h-[90px] flex flex-col items-center justify-center`}>
-            <div className={`text-3xl font-black ${t(theme, 'text-white', 'text-gray-900')}`}>{player.titles.length}/{TITLES.length}</div>
-            <div className={`text-xs ${t(theme, 'text-gray-400', 'text-gray-600')} font-bold mt-1`}>Titles</div>
+          <div className={`${t(theme, 'bg-gray-900/60 border-gray-700/50', 'bg-white border-gray-200')} rounded-lg p-2 text-center border-2 min-h-[60px] flex flex-col items-center justify-center`}>
+            <div className={`text-xl font-bold ${t(theme, 'text-white', 'text-gray-900')}`}>{player.titles.length}/{TITLES.length}</div>
+            <div className={`text-[10px] ${t(theme, 'text-gray-400', 'text-gray-600')} font-semibold mt-0.5`}>Titles</div>
           </div>
         </div>
       </div>
