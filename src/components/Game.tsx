@@ -414,8 +414,15 @@ export default function Game({ player, setPlayer, mode, difficulty, onBack, isMu
           }
         }
 
-        // Multiplayer collision - SNAKES CAN NOW PASS THROUGH EACH OTHER!
-        // Removed collision detection between player snakes
+        // Multiplayer collision
+        // In competitive mode, snakes collide with each other
+        // In other multiplayer modes, snakes can pass through each other
+        if (isMultiplayer && mode === 'competitive') {
+          if (snake2Ref.current.some(s => s.x === newHead.x && s.y === newHead.y)) {
+            setGameState('GAME_OVER');
+            return prev;
+          }
+        }
 
         const newSnake = [newHead, ...prev];
         let ate = false;
@@ -501,6 +508,13 @@ export default function Game({ player, setPlayer, mode, difficulty, onBack, isMu
 
           // Self collision
           if (prev.slice(0, -1).some(s => s.x === newHead.x && s.y === newHead.y)) {
+            setGameState('GAME_OVER');
+            return prev;
+          }
+
+          // Multiplayer collision - competitive mode
+          // Bot collides with player snake
+          if (mode === 'competitive' && snakeRef.current.some(s => s.x === newHead.x && s.y === newHead.y)) {
             setGameState('GAME_OVER');
             return prev;
           }

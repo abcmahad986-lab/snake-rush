@@ -346,6 +346,7 @@ function App() {
           setMatchType(type);
           setGameMode('competitive');
           setGameDifficulty('medium');
+          setMultiplayerType('bot'); // Set to bot for competitive mode
           setScreen('game');
         }}
       />;
