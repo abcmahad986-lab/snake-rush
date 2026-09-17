@@ -19,21 +19,36 @@ interface GameProps {
   toggleTheme: () => void;
 }
 
-function getRandomFood(snake: Position[]): Position {
+function getRandomFood(snake: Position[], obstacles?: Position[]): Position {
   let food: Position;
   do {
     food = { x: Math.floor(Math.random() * GRID_SIZE), y: Math.floor(Math.random() * GRID_SIZE) };
-  } while (snake.some(s => s.x === food.x && s.y === food.y));
+  } while (
+    snake.some(s => s.x === food.x && s.y === food.y) ||
+    (obstacles && obstacles.some(o => o.x === food.x && o.y === food.y))
+  );
   return food;
 }
 
-function getRandomPowerUp(): PowerUp | null {
+function getRandomPowerUp(snake: Position[], obstacles?: Position[]): PowerUp | null {
   if (Math.random() > 0.15) return null;
   const types: PowerUp['type'][] = ['speed', 'slow', 'double', 'shrink', 'shield', 'time_slow', 'coin_magnet', 'ghost_pass', 'score_boost'];
   const icons = ['⚡', '🐌', '✖️2', '🔽', '🛡️', '⏱️', '🧲', '👻', '💫'];
   const idx = Math.floor(Math.random() * types.length);
+  
+  let position: Position;
+  let attempts = 0;
+  do {
+    position = { x: Math.floor(Math.random() * GRID_SIZE), y: Math.floor(Math.random() * GRID_SIZE) };
+    attempts++;
+  } while (
+    attempts < 100 &&
+    (snake.some(s => s.x === position.x && s.y === position.y) ||
+    (obstacles && obstacles.some(o => o.x === position.x && o.y === position.y)))
+  );
+  
   return {
-    position: { x: Math.floor(Math.random() * GRID_SIZE), y: Math.floor(Math.random() * GRID_SIZE) },
+    position,
     type: types[idx],
     icon: icons[idx],
     expiresAt: Date.now() + 8000,
@@ -117,7 +132,10 @@ function getBotDirection(snake: Position[], food: Position, currentDir: Directio
 export default function Game({ player, setPlayer, mode, difficulty, onBack, isMultiplayer, multiplayerType = 'player', matchType = 'unranked', theme, toggleTheme }: GameProps) {
   const [snake, setSnake] = useState<Position[]>([{ x: 10, y: 10 }, { x: 9, y: 10 }, { x: 8, y: 10 }]);
   const [snake2, setSnake2] = useState<Position[]>([{ x: 10, y: 15 }, { x: 9, y: 15 }, { x: 8, y: 15 }]);
-  const [food, setFood] = useState<Position>(() => getRandomFood([{ x: 10, y: 10 }]));
+  const [food, setFood] = useState<Position>(() => {
+    const currentMap = GAME_MAPS.find(m => m.id === player.activeMap);
+    return getRandomFood([{ x: 10, y: 10 }], currentMap?.obstacles);
+  });
   const [direction, setDirection] = useState<Direction>('RIGHT');
   const [direction2, setDirection2] = useState<Direction>('LEFT');
   const [gameState, setGameState] = useState<GameState>('IDLE');
@@ -208,13 +226,15 @@ export default function Game({ player, setPlayer, mode, difficulty, onBack, isMu
   useEffect(() => {
     if (gameState !== 'PLAYING') return;
     const interval = setInterval(() => {
-      const pu = getRandomPowerUp();
+      const currentMap = GAME_MAPS.find(m => m.id === player.activeMap);
+      const allSnakes = isMultiplayer ? [...snakeRef.current, ...snake2Ref.current] : snakeRef.current;
+      const pu = getRandomPowerUp(allSnakes, currentMap?.obstacles);
       if (pu) {
         setPowerUps(prev => [...prev.filter(p => p.expiresAt > Date.now()), pu]);
       }
     }, 5000);
     return () => clearInterval(interval);
-  }, [gameState]);
+  }, [gameState, isMultiplayer, player.activeMap]);
 
   // Coin magnet effect - move food closer to snake
   useEffect(() => {
@@ -254,7 +274,8 @@ export default function Game({ player, setPlayer, mode, difficulty, onBack, isMu
     const initSnake = [{ x: 10, y: 10 }, { x: 9, y: 10 }, { x: 8, y: 10 }];
     setSnake(initSnake);
     snakeRef.current = initSnake;
-    setFood(getRandomFood(initSnake));
+    const currentMap = GAME_MAPS.find(m => m.id === player.activeMap);
+    setFood(getRandomFood(initSnake, currentMap?.obstacles));
     setDirection('RIGHT');
     dirRef.current = 'RIGHT';
     setScore(0);
@@ -437,9 +458,10 @@ export default function Game({ player, setPlayer, mode, difficulty, onBack, isMu
           setScore(s => s + points);
           setCombo(c => c + 1);
           
-          // Get all snakes to avoid food spawning on them
+          // Get all snakes and obstacles to avoid food spawning on them
           const allSnakes = isMultiplayer ? [...newSnake, ...snake2Ref.current] : newSnake;
-          setFood(getRandomFood(allSnakes));
+          const currentMap = GAME_MAPS.find(m => m.id === player.activeMap);
+          setFood(getRandomFood(allSnakes, currentMap?.obstacles));
           addParticle(newHead.x, newHead.y, `+${points}`);
         } else {
           newSnake.pop();
@@ -523,7 +545,8 @@ export default function Game({ player, setPlayer, mode, difficulty, onBack, isMu
           if (newHead.x === foodRef.current.x && newHead.y === foodRef.current.y) {
             setScore2(s => s + 10);
             const allSnakes = [...newSnake, ...snakeRef.current];
-            setFood(getRandomFood(allSnakes));
+            const currentMap = GAME_MAPS.find(m => m.id === player.activeMap);
+            setFood(getRandomFood(allSnakes, currentMap?.obstacles));
           } else {
             newSnake.pop();
           }
