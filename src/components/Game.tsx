@@ -132,6 +132,8 @@ export default function Game({ player, setPlayer, mode, difficulty, onBack, isMu
   const [coinsEarned, setCoinsEarned] = useState(0);
   const [newTitles, setNewTitles] = useState<string[]>([]);
   const [isMuted, setIsMuted] = useState(audioManager.getIsMuted());
+  const [survivalTime, setSurvivalTime] = useState(0);
+  const [survivalSpeed, setSurvivalSpeed] = useState(1);
 
   const dirRef = useRef<Direction>('RIGHT');
   const dir2Ref = useRef<Direction>('LEFT');
@@ -177,6 +179,26 @@ export default function Game({ player, setPlayer, mode, difficulty, onBack, isMu
       });
     }, 1000);
     return () => clearInterval(interval);
+  }, [gameState, mode]);
+
+  // Survival mode - track time and increase speed
+  useEffect(() => {
+    if (gameState !== 'PLAYING' || mode !== 'survival') return;
+    
+    // Track survival time
+    const timeInterval = setInterval(() => {
+      setSurvivalTime(t => t + 1);
+    }, 1000);
+    
+    // Increase speed every 10 seconds
+    const speedInterval = setInterval(() => {
+      setSurvivalSpeed(s => s + 1);
+    }, 10000);
+    
+    return () => {
+      clearInterval(timeInterval);
+      clearInterval(speedInterval);
+    };
   }, [gameState, mode]);
 
   // Power-up spawner
@@ -237,6 +259,8 @@ export default function Game({ player, setPlayer, mode, difficulty, onBack, isMu
     setPowerUps([]);
     setActiveEffects([]);
     setTimeLeft(TIMED_DURATIONS[difficulty]);
+    setSurvivalTime(0);
+    setSurvivalSpeed(1);
 
     if (isMultiplayer) {
       const initSnake2 = [{ x: 10, y: 15 }, { x: 9, y: 15 }, { x: 8, y: 15 }];
@@ -312,6 +336,12 @@ export default function Game({ player, setPlayer, mode, difficulty, onBack, isMu
   useEffect(() => {
     if (gameState !== 'PLAYING') return;
     let speed = DIFFICULTY_SPEEDS[difficulty];
+    
+    // Survival mode - speed increases over time
+    if (mode === 'survival') {
+      speed = speed / survivalSpeed;
+    }
+    
     if (activeEffects.includes('speed')) speed *= 0.6;
     if (activeEffects.includes('slow')) speed *= 1.5;
     if (activeEffects.includes('time_slow')) speed *= 2.0; // Even slower than 'slow'
@@ -486,13 +516,14 @@ export default function Game({ player, setPlayer, mode, difficulty, onBack, isMu
     }, speed);
 
     return () => clearInterval(interval);
-  }, [gameState, difficulty, activeEffects, combo, isMultiplayer, multiplayerType, mode]);
+  }, [gameState, difficulty, activeEffects, combo, isMultiplayer, multiplayerType, mode, survivalSpeed]);
 
   // Handle game over - save stats
   useEffect(() => {
     if (gameState === 'GAME_OVER' && !showResult) {
       audioManager.playGameOverSound();
-      const finalS = isMultiplayer ? Math.max(score, score2) : score;
+      // For survival mode, use survival time as score
+      const finalS = mode === 'survival' ? survivalTime : (isMultiplayer ? Math.max(score, score2) : score);
       setFinalScore(finalS);
       
       const foodEaten = Math.floor(score / 10);
@@ -689,6 +720,18 @@ export default function Game({ player, setPlayer, mode, difficulty, onBack, isMu
             <div className={`text-[10px] ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Time</div>
             <div className={`text-lg font-bold ${timeLeft <= 10 ? 'text-red-400 animate-pulse' : theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>{formatTime(timeLeft)}</div>
           </div>
+        )}
+        {mode === 'survival' && (
+          <>
+            <div className="text-center">
+              <div className={`text-[10px] ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Survived</div>
+              <div className={`text-lg font-bold ${survivalTime >= 60 ? 'text-yellow-400' : theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>{formatTime(survivalTime)}</div>
+            </div>
+            <div className="text-center">
+              <div className={`text-[10px] ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Speed</div>
+              <div className={`text-lg font-bold ${survivalSpeed >= 5 ? 'text-red-400 animate-pulse' : survivalSpeed >= 3 ? 'text-orange-400' : theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>x{survivalSpeed}</div>
+            </div>
+          </>
         )}
         {combo > 2 && (
           <div className="text-center">
@@ -905,15 +948,34 @@ export default function Game({ player, setPlayer, mode, difficulty, onBack, isMu
               </div>
               
               <div className="bg-gray-800/80 rounded-xl p-3 mb-3 w-full max-w-[250px] border border-gray-700/50">
-                <div className="flex justify-between text-sm mb-1">
-                  <span className="text-gray-400">Your Score</span>
-                  <span className="text-white font-bold">{finalScore}</span>
-                </div>
-                {isMultiplayer && (
-                  <div className="flex justify-between text-sm mb-1">
-                    <span className="text-gray-400">{(multiplayerType === 'bot' || multiplayerType === 'zen') ? 'Bot' : 'P2'} Score</span>
-                    <span className="text-blue-400 font-bold">{score2}</span>
-                  </div>
+                {mode === 'survival' ? (
+                  <>
+                    <div className="flex justify-between text-sm mb-1">
+                      <span className="text-gray-400">Survived</span>
+                      <span className="text-white font-bold">{formatTime(finalScore)}</span>
+                    </div>
+                    <div className="flex justify-between text-sm mb-1">
+                      <span className="text-gray-400">Max Speed</span>
+                      <span className="text-orange-400 font-bold">x{survivalSpeed}</span>
+                    </div>
+                    <div className="flex justify-between text-sm mb-1">
+                      <span className="text-gray-400">Score</span>
+                      <span className="text-green-400 font-bold">{score}</span>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="flex justify-between text-sm mb-1">
+                      <span className="text-gray-400">Your Score</span>
+                      <span className="text-white font-bold">{finalScore}</span>
+                    </div>
+                    {isMultiplayer && (
+                      <div className="flex justify-between text-sm mb-1">
+                        <span className="text-gray-400">{(multiplayerType === 'bot' || multiplayerType === 'zen') ? 'Bot' : 'P2'} Score</span>
+                        <span className="text-blue-400 font-bold">{score2}</span>
+                      </div>
+                    )}
+                  </>
                 )}
                 <div className="flex justify-between text-sm mb-1">
                   <span className="text-gray-400">Length</span>

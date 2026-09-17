@@ -35,6 +35,13 @@ export const SimpleZenIcon = ({ className = "w-12 h-12" }: { className?: string 
   </svg>
 );
 
+export const SimpleSurvivalIcon = ({ className = "w-12 h-12" }: { className?: string }) => (
+  <svg className={className} viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M24 4L28 16L40 16L30 24L34 36L24 28L14 36L18 24L8 16L20 16L24 4Z" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
+    <circle cx="24" cy="24" r="6" stroke="currentColor" strokeWidth="2"/>
+  </svg>
+);
+
 // Difficulty Icons - Simple Geometric
 export const SimpleEasyIcon = ({ className = "w-6 h-6" }: { className?: string }) => (
   <svg className={className} viewBox="0 0 24 24" fill="currentColor">
