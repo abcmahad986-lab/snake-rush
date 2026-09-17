@@ -2,13 +2,14 @@ import { useState, useEffect } from 'react';
 import { Player, Screen, GameMode, Difficulty, TROPHIES, TITLES, ACHIEVEMENTS, Theme } from './types';
 import { loadPlayer, savePlayer, createNewPlayer, addXp } from './store';
 import Game from './components/Game';
-import { LoginScreen, MainMenu, ProfileScreen, TrophiesScreen, ShopScreen, EventsScreen, RewardsScreen, SettingsScreen, TitlesScreen } from './components/Screens';
+import { LoginScreen, MainMenu, ProfileScreen, TrophiesScreen, ShopScreen, EventsScreen, RewardsScreen, TitlesScreen } from './components/Screens';
 import { RealLeaderboardScreen } from './components/RealLeaderboard';
 import { SubscriptionScreen, BattlePassScreen, OnlineMultiplayerScreen, GoogleLoginScreen } from './components/PremiumScreens';
 import { CharactersScreen, ChestsScreen } from './components/CharacterScreens';
 import { AchievementsScreen, SpinWheelScreen, VisualThemesScreen } from './components/NewFeatures';
 import { RealMoneyShopScreen, MapsScreen } from './components/ShopAndMaps';
 import { RealFriendsScreen } from './components/RealFriends';
+import { HomeScreen, GamesScreen, PrivacyScreen, TermsScreen, AboutScreen, EnhancedSettingsScreen } from './components/NewScreens';
 
 type MultiplayerType = 'bot' | 'player' | 'zen';
 
@@ -31,7 +32,7 @@ function App() {
     const saved = loadPlayer();
     if (saved) {
       setPlayer(saved);
-      setScreen('menu');
+      setScreen('home');
       
       // Check for new trophies
       checkTrophies(saved);
@@ -281,6 +282,8 @@ function App() {
   }
 
   switch (screen) {
+    case 'home':
+      return <HomeScreen onNavigate={setScreen} theme={theme} />;
     case 'menu':
       return <MainMenu player={player} onSelectMode={handleSelectMode} onNavigate={setScreen} theme={theme} toggleTheme={toggleTheme} />;
     case 'profile':
@@ -298,7 +301,7 @@ function App() {
     case 'rewards':
       return <RewardsScreen player={player} setPlayer={handleUpdatePlayer} onBack={() => setScreen('menu')} theme={theme} />;
     case 'settings':
-      return <SettingsScreen player={player} onBack={() => setScreen('menu')} onLogout={handleLogout} theme={theme} toggleTheme={toggleTheme} />;
+      return <EnhancedSettingsScreen player={player} setPlayer={handleUpdatePlayer} onBack={() => setScreen('menu')} onNavigate={setScreen} theme={theme} toggleTheme={toggleTheme} />;
     case 'subscription':
       return <SubscriptionScreen player={player} setPlayer={handleUpdatePlayer} onBack={() => setScreen('menu')} theme={theme} />;
     case 'battlepass':
@@ -325,6 +328,14 @@ function App() {
       return <RealMoneyShopScreen player={player} setPlayer={handleUpdatePlayer} onBack={() => setScreen('menu')} theme={theme} />;
     case 'maps':
       return <MapsScreen player={player} setPlayer={handleUpdatePlayer} onBack={() => setScreen('menu')} theme={theme} />;
+    case 'games':
+      return <GamesScreen onBack={() => setScreen('menu')} theme={theme} />;
+    case 'privacy':
+      return <PrivacyScreen onBack={() => setScreen('settings')} theme={theme} />;
+    case 'terms':
+      return <TermsScreen onBack={() => setScreen('settings')} theme={theme} />;
+    case 'about':
+      return <AboutScreen onBack={() => setScreen('settings')} theme={theme} />;
     default:
       return <MainMenu player={player} onSelectMode={handleSelectMode} onNavigate={setScreen} theme={theme} toggleTheme={toggleTheme} />;
   }
