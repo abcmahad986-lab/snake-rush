@@ -39,7 +39,7 @@ function getRandomPowerUp(): PowerUp | null {
 }
 
 // Bot AI - moves toward food intelligently
-function getBotDirection(snake: Position[], food: Position, currentDir: Direction, otherSnake?: Position[]): Direction {
+function getBotDirection(snake: Position[], food: Position, currentDir: Direction, otherSnake?: Position[], isZenMode?: boolean): Direction {
   const head = snake[0];
   const possibleDirs: Direction[] = ['UP', 'DOWN', 'LEFT', 'RIGHT'];
   const opposites: Record<Direction, Direction> = { UP: 'DOWN', DOWN: 'UP', LEFT: 'RIGHT', RIGHT: 'LEFT' };
@@ -59,12 +59,28 @@ function getBotDirection(snake: Position[], food: Position, currentDir: Directio
     
     let score = 0;
     
+    // In zen mode, wrap around walls
+    if (isZenMode) {
+      if (newHead.x < 0) newHead.x = GRID_SIZE - 1;
+      else if (newHead.x >= GRID_SIZE) newHead.x = 0;
+      if (newHead.y < 0) newHead.y = GRID_SIZE - 1;
+      else if (newHead.y >= GRID_SIZE) newHead.y = 0;
+    }
+    
     // Distance to food (closer is better)
-    const dist = Math.abs(newHead.x - food.x) + Math.abs(newHead.y - food.y);
+    // In zen mode, calculate distance considering wrapping
+    let dist;
+    if (isZenMode) {
+      const dx = Math.min(Math.abs(newHead.x - food.x), GRID_SIZE - Math.abs(newHead.x - food.x));
+      const dy = Math.min(Math.abs(newHead.y - food.y), GRID_SIZE - Math.abs(newHead.y - food.y));
+      dist = dx + dy;
+    } else {
+      dist = Math.abs(newHead.x - food.x) + Math.abs(newHead.y - food.y);
+    }
     score -= dist * 2;
     
-    // Check if out of bounds (bad)
-    if (newHead.x < 0 || newHead.x >= GRID_SIZE || newHead.y < 0 || newHead.y >= GRID_SIZE) {
+    // Check if out of bounds (bad) - only in non-zen mode
+    if (!isZenMode && (newHead.x < 0 || newHead.x >= GRID_SIZE || newHead.y < 0 || newHead.y >= GRID_SIZE)) {
       score -= 1000;
     } else {
       // Check self collision (very bad)
@@ -298,9 +314,9 @@ export default function Game({ player, setPlayer, mode, difficulty, onBack, isMu
     const interval = setInterval(() => {
       if (stateRef.current !== 'PLAYING') return;
 
-      // Bot AI movement (if multiplayer with bot)
-      if (isMultiplayer && multiplayerType === 'bot') {
-        const botDir = getBotDirection(snake2Ref.current, foodRef.current, dir2Ref.current, snakeRef.current);
+      // Bot AI movement (if multiplayer with bot or zen multiplayer)
+      if (isMultiplayer && (multiplayerType === 'bot' || multiplayerType === 'zen')) {
+        const botDir = getBotDirection(snake2Ref.current, foodRef.current, dir2Ref.current, snakeRef.current, multiplayerType === 'zen');
         dir2Ref.current = botDir;
         setDirection2(botDir);
       }
@@ -868,7 +884,7 @@ export default function Game({ player, setPlayer, mode, difficulty, onBack, isMu
                 {isMultiplayer && score > score2 ? '🏆' : score >= (player.highScores[difficulty] || 0) ? '🎉' : '💀'}
               </div>
               <h2 className="text-xl font-bold text-red-400 mb-1">
-                {isMultiplayer ? (score > score2 ? 'You Win!' : score2 > score ? (multiplayerType === 'bot' ? 'Bot Wins!' : 'Player 2 Wins!') : 'Tie!') : 'Game Over!'}
+                {isMultiplayer ? (score > score2 ? 'You Win!' : score2 > score ? ((multiplayerType === 'bot' || multiplayerType === 'zen') ? 'Bot Wins!' : 'Player 2 Wins!') : 'Tie!') : 'Game Over!'}
               </h2>
               <div className="flex items-center gap-1 mb-2">
                 <span className="text-xs text-gray-400">{player.avatar} {player.username}</span>
@@ -886,7 +902,7 @@ export default function Game({ player, setPlayer, mode, difficulty, onBack, isMu
                 </div>
                 {isMultiplayer && (
                   <div className="flex justify-between text-sm mb-1">
-                    <span className="text-gray-400">{multiplayerType === 'bot' ? 'Bot' : 'P2'} Score</span>
+                    <span className="text-gray-400">{(multiplayerType === 'bot' || multiplayerType === 'zen') ? 'Bot' : 'P2'} Score</span>
                     <span className="text-blue-400 font-bold">{score2}</span>
                   </div>
                 )}
