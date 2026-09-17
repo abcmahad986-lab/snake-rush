@@ -31,6 +31,160 @@
   .font-mono-tech {
     font-family: 'JetBrains Mono', 'Courier New', monospace;
   }
+
+  /* Wood Texture Base */
+  .wood-texture {
+    background: linear-gradient(135deg, #8B6F47 0%, #A0826D 25%, #8B6F47 50%, #6B5445 75%, #8B6F47 100%);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .wood-texture::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: 
+      repeating-linear-gradient(
+        90deg,
+        transparent,
+        transparent 2px,
+        rgba(0, 0, 0, 0.05) 2px,
+        rgba(0, 0, 0, 0.05) 4px
+      ),
+      repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 3px,
+        rgba(139, 111, 71, 0.1) 3px,
+        rgba(139, 111, 71, 0.1) 6px
+      );
+    pointer-events: none;
+  }
+
+  /* Animated Snake Scale Effect */
+  .wood-snake-scales {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .wood-snake-scales::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    right: -50%;
+    bottom: -50%;
+    background: repeating-linear-gradient(
+      45deg,
+      transparent,
+      transparent 10px,
+      rgba(101, 67, 33, 0.08) 10px,
+      rgba(101, 67, 33, 0.08) 20px,
+      transparent 20px,
+      transparent 30px
+    );
+    animation: snake-slither 8s linear infinite;
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  @keyframes snake-slither {
+    0% {
+      transform: translate(0, 0);
+    }
+    100% {
+      transform: translate(30px, 30px);
+    }
+  }
+
+  /* Wood Panel Styles */
+  .wood-panel {
+    background: linear-gradient(135deg, #8B6F47 0%, #A0826D 50%, #8B6F47 100%);
+    border: 4px solid #6B5445;
+    border-radius: 16px;
+    box-shadow: 
+      inset 0 2px 4px rgba(255, 255, 255, 0.2),
+      inset 0 -2px 4px rgba(0, 0, 0, 0.3),
+      0 4px 8px rgba(0, 0, 0, 0.4);
+    position: relative;
+  }
+
+  .wood-panel-dark {
+    background: linear-gradient(135deg, #6B5445 0%, #5C4A3A 50%, #6B5445 100%);
+    border: 4px solid #4A3728;
+    border-radius: 16px;
+    box-shadow: 
+      inset 0 2px 4px rgba(255, 255, 255, 0.1),
+      inset 0 -2px 4px rgba(0, 0, 0, 0.4),
+      0 4px 8px rgba(0, 0, 0, 0.5);
+  }
+
+  .wood-button {
+    background: linear-gradient(135deg, #A0826D 0%, #8B6F47 50%, #A0826D 100%);
+    border: 3px solid #6B5445;
+    border-radius: 12px;
+    box-shadow: 
+      inset 0 2px 4px rgba(255, 255, 255, 0.3),
+      inset 0 -2px 4px rgba(0, 0, 0, 0.2),
+      0 3px 6px rgba(0, 0, 0, 0.3);
+    transition: all 0.2s ease;
+  }
+
+  .wood-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 
+      inset 0 2px 4px rgba(255, 255, 255, 0.3),
+      inset 0 -2px 4px rgba(0, 0, 0, 0.2),
+      0 5px 10px rgba(0, 0, 0, 0.4);
+  }
+
+  .wood-button:active {
+    transform: translateY(0);
+    box-shadow: 
+      inset 0 2px 4px rgba(0, 0, 0, 0.2),
+      inset 0 -1px 2px rgba(255, 255, 255, 0.1),
+      0 2px 4px rgba(0, 0, 0, 0.3);
+  }
+
+  .wood-button-selected {
+    background: linear-gradient(135deg, #00b894 0%, #00a383 50%, #00b894 100%);
+    border-color: #008f74;
+  }
+
+  /* Wood Text Engraving */
+  .wood-text {
+    color: #3d2817;
+    text-shadow: 
+      0 1px 0 rgba(255, 255, 255, 0.3),
+      0 -1px 0 rgba(0, 0, 0, 0.5);
+  }
+
+  .wood-text-light {
+    color: #f5e6d3;
+    text-shadow: 
+      0 1px 2px rgba(0, 0, 0, 0.5),
+      0 0 10px rgba(245, 230, 211, 0.3);
+  }
+
+  /* Purple Wood Variant */
+  .wood-purple {
+    background: linear-gradient(135deg, #6B4C9A 0%, #8B6FBF 50%, #6B4C9A 100%);
+    border: 4px solid #4A3570;
+  }
+
+  /* Circular Wood Button */
+  .wood-circle {
+    background: linear-gradient(135deg, #A0826D 0%, #8B6F47 100%);
+    border: 3px solid #6B5445;
+    border-radius: 50%;
+    box-shadow: 
+      inset 0 2px 4px rgba(255, 255, 255, 0.3),
+      inset 0 -2px 4px rgba(0, 0, 0, 0.2),
+      0 3px 6px rgba(0, 0, 0, 0.3);
+  }
 }
 
 @layer utilities {
