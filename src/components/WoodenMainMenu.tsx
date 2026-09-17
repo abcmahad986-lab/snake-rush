@@ -125,7 +125,7 @@ export function WoodenMainMenu({ player, onSelectMode, onNavigate, theme, toggle
           {/* Game Mode Selection */}
           <div className="wood-panel wood-snake-scales p-4 sm:p-6 mb-4">
             <h3 className="text-sm sm:text-lg font-bold wood-text-light mb-3 sm:mb-4 text-center">SELECT GAME MODE</h3>
-            <div className="grid grid-cols-2 gap-2 sm:gap-4">
+            <div className="grid grid-cols-2 gap-3 sm:gap-4">
               {modes.map(m => (
                 <button
                   key={m.id}
@@ -133,18 +133,20 @@ export function WoodenMainMenu({ player, onSelectMode, onNavigate, theme, toggle
                     audioManager.playClickSound();
                     setSelectedMode(m.id);
                   }}
-                  className={`wood-button p-3 sm:p-6 transition-all ${
+                  className={`wood-button p-4 sm:p-6 transition-all flex flex-col items-center justify-center min-h-[120px] sm:min-h-[160px] ${
                     selectedMode === m.id ? 'wood-button-selected scale-105' : ''
                   }`}
                 >
-                  <div className="flex flex-col items-center text-center">
-                    <div className={`mb-2 sm:mb-3 ${selectedMode === m.id ? 'text-white' : 'wood-text-light'}`}>
-                      <div className="w-12 h-12 sm:w-20 sm:h-20">{m.icon}</div>
+                  <div className="flex flex-col items-center text-center w-full">
+                    <div className={`mb-3 ${selectedMode === m.id ? 'text-white' : 'wood-text-light'}`}>
+                      <div className="w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center">
+                        {m.icon}
+                      </div>
                     </div>
-                    <div className={`text-xs sm:text-lg font-bold mb-1 ${selectedMode === m.id ? 'text-white' : 'wood-text-light'}`}>
+                    <div className={`text-sm sm:text-lg font-bold mb-1 ${selectedMode === m.id ? 'text-white' : 'wood-text-light'}`}>
                       {m.name}
                     </div>
-                    <div className="text-[9px] sm:text-xs wood-text-light opacity-80 hidden sm:block">
+                    <div className={`text-[10px] sm:text-xs wood-text-light opacity-80 ${selectedMode === m.id ? 'text-white/90' : ''}`}>
                       {m.desc}
                     </div>
                   </div>
