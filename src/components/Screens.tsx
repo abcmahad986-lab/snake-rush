@@ -319,7 +319,7 @@ export function MainMenu({ player, onSelectMode, onNavigate, theme, toggleTheme 
       {/* Navigation - Secondary */}
       <div className="w-full max-w-2xl mb-4 relative z-10">
         <h3 className={`text-sm ${t(theme, 'text-gray-300', 'text-gray-600')} uppercase tracking-wider mb-3 font-bold text-center`}>Features</h3>
-        <div className="grid grid-cols-4 gap-3">
+        <div className="grid grid-cols-3 gap-3">
           {[
             { screen: 'events' as Screen, icon: '🎯', label: 'Events' },
             { screen: 'leaderboard' as Screen, icon: '📊', label: 'Ranks' },
@@ -329,7 +329,6 @@ export function MainMenu({ player, onSelectMode, onNavigate, theme, toggleTheme 
             { screen: 'visualthemes' as Screen, icon: '🎨', label: 'Themes' },
             { screen: 'realmoney' as Screen, icon: '💎', label: 'Premium' },
             { screen: 'maps' as Screen, icon: '🗺️', label: 'Maps' },
-            { screen: 'games' as Screen, icon: '🎮', label: 'Games' },
             { screen: 'settings' as Screen, icon: '⚙️', label: 'Settings' },
           ].map(item => (
             <button
