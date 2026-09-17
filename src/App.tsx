@@ -1,14 +1,17 @@
 import { useState, useEffect } from 'react';
-import { Player, Screen, GameMode, Difficulty, TROPHIES, TITLES, ACHIEVEMENTS, Theme } from './types';
+import { Player, Screen, GameMode, Difficulty, TROPHIES, TITLES, ACHIEVEMENTS, Theme, MatchType } from './types';
 import { loadPlayer, savePlayer, createNewPlayer, addXp } from './store';
 import Game from './components/Game';
-import { LoginScreen, MainMenu, ProfileScreen, TrophiesScreen, ShopScreen, EventsScreen, RewardsScreen, SettingsScreen, TitlesScreen } from './components/Screens';
+import { LoginScreen, MainMenu, ProfileScreen, TrophiesScreen, ShopScreen, EventsScreen, RewardsScreen, TitlesScreen } from './components/Screens';
 import { RealLeaderboardScreen } from './components/RealLeaderboard';
 import { SubscriptionScreen, BattlePassScreen, OnlineMultiplayerScreen, GoogleLoginScreen } from './components/PremiumScreens';
 import { CharactersScreen, ChestsScreen } from './components/CharacterScreens';
 import { AchievementsScreen, SpinWheelScreen, VisualThemesScreen } from './components/NewFeatures';
 import { RealMoneyShopScreen, MapsScreen } from './components/ShopAndMaps';
 import { RealFriendsScreen } from './components/RealFriends';
+import { HomeScreen, GamesScreen, PrivacyScreen, TermsScreen, AboutScreen, EnhancedSettingsScreen } from './components/NewScreens';
+import { SnakeLeaderGame, LudoMasterGame, SnakePuzzleGame, SnakeRunnerGame, SnakeBattleGame, SnakeMazeGame } from './components/MiniGames';
+import { CompetitiveScreen, getRankFromElo } from './components/CompetitiveScreen';
 
 type MultiplayerType = 'bot' | 'player' | 'zen';
 
@@ -20,6 +23,7 @@ function App() {
   const [multiplayerType, setMultiplayerType] = useState<MultiplayerType>('player');
   const [showMultiplayerChoice, setShowMultiplayerChoice] = useState(false);
   const [pendingDifficulty, setPendingDifficulty] = useState<Difficulty>('medium');
+  const [matchType, setMatchType] = useState<MatchType>('unranked');
   const [loading, setLoading] = useState(true);
   const [theme, setTheme] = useState<Theme>(() => {
     const saved = localStorage.getItem('snake-theme');
@@ -31,7 +35,7 @@ function App() {
     const saved = loadPlayer();
     if (saved) {
       setPlayer(saved);
-      setScreen('menu');
+      setScreen('home');
       
       // Check for new trophies
       checkTrophies(saved);
@@ -114,6 +118,10 @@ function App() {
       // Show multiplayer choice modal
       setPendingDifficulty(difficulty);
       setShowMultiplayerChoice(true);
+    } else if (mode === 'competitive') {
+      // Navigate to competitive screen to choose ranked/unranked
+      setPendingDifficulty(difficulty);
+      setScreen('competitive');
     } else {
       setGameMode(mode);
       setGameDifficulty(difficulty);
@@ -203,8 +211,9 @@ function App() {
         mode={gameMode}
         difficulty={gameDifficulty}
         onBack={() => setScreen('menu')}
-        isMultiplayer={gameMode === 'multiplayer'}
+        isMultiplayer={gameMode === 'multiplayer' || gameMode === 'competitive'}
         multiplayerType={multiplayerType}
+        matchType={matchType}
         theme={theme}
         toggleTheme={toggleTheme}
       />
@@ -281,10 +290,12 @@ function App() {
   }
 
   switch (screen) {
+    case 'home':
+      return <HomeScreen onNavigate={setScreen} theme={theme} />;
     case 'menu':
       return <MainMenu player={player} onSelectMode={handleSelectMode} onNavigate={setScreen} theme={theme} toggleTheme={toggleTheme} />;
     case 'profile':
-      return <ProfileScreen player={player} setPlayer={handleUpdatePlayer} onBack={() => setScreen('menu')} onNavigate={setScreen} theme={theme} />;
+      return <ProfileScreen player={player} setPlayer={handleUpdatePlayer} onBack={() => setScreen('menu')} onNavigate={setScreen} theme={theme} toggleTheme={toggleTheme} />;
     case 'trophies':
       return <TrophiesScreen player={player} onBack={() => setScreen('menu')} theme={theme} />;
     case 'titles':
@@ -298,7 +309,7 @@ function App() {
     case 'rewards':
       return <RewardsScreen player={player} setPlayer={handleUpdatePlayer} onBack={() => setScreen('menu')} theme={theme} />;
     case 'settings':
-      return <SettingsScreen player={player} onBack={() => setScreen('menu')} onLogout={handleLogout} theme={theme} toggleTheme={toggleTheme} />;
+      return <EnhancedSettingsScreen player={player} setPlayer={handleUpdatePlayer} onBack={() => setScreen('menu')} onNavigate={setScreen} theme={theme} toggleTheme={toggleTheme} />;
     case 'subscription':
       return <SubscriptionScreen player={player} setPlayer={handleUpdatePlayer} onBack={() => setScreen('menu')} theme={theme} />;
     case 'battlepass':
@@ -325,6 +336,43 @@ function App() {
       return <RealMoneyShopScreen player={player} setPlayer={handleUpdatePlayer} onBack={() => setScreen('menu')} theme={theme} />;
     case 'maps':
       return <MapsScreen player={player} setPlayer={handleUpdatePlayer} onBack={() => setScreen('menu')} theme={theme} />;
+    case 'competitive':
+      return <CompetitiveScreen 
+        player={player} 
+        setPlayer={handleUpdatePlayer} 
+        onBack={() => setScreen('menu')} 
+        theme={theme}
+        onStartMatch={(type) => {
+          setMatchType(type);
+          setGameMode('competitive');
+          setGameDifficulty('medium');
+          setMultiplayerType('bot'); // Set to bot for competitive mode
+          setScreen('game');
+        }}
+      />;
+    case 'games':
+      return <GamesScreen onBack={() => setScreen('menu')} theme={theme} onSelectGame={(gameId) => setScreen(gameId as Screen)} />;
+    case 'snake-classic':
+    case 'snake-rush':
+      return <Game player={player!} setPlayer={handleUpdatePlayer} mode="classic" difficulty="medium" onBack={() => setScreen('games')} theme={theme} toggleTheme={toggleTheme} />;
+    case 'snake-leader':
+      return <SnakeLeaderGame onBack={() => setScreen('games')} theme={theme} />;
+    case 'ludo':
+      return <LudoMasterGame onBack={() => setScreen('games')} theme={theme} />;
+    case 'puzzle':
+      return <SnakePuzzleGame onBack={() => setScreen('games')} theme={theme} />;
+    case 'runner':
+      return <SnakeRunnerGame onBack={() => setScreen('games')} theme={theme} />;
+    case 'battle':
+      return <SnakeBattleGame onBack={() => setScreen('games')} theme={theme} />;
+    case 'maze':
+      return <SnakeMazeGame onBack={() => setScreen('games')} theme={theme} />;
+    case 'privacy':
+      return <PrivacyScreen onBack={() => setScreen('settings')} theme={theme} />;
+    case 'terms':
+      return <TermsScreen onBack={() => setScreen('settings')} theme={theme} />;
+    case 'about':
+      return <AboutScreen onBack={() => setScreen('settings')} theme={theme} />;
     default:
       return <MainMenu player={player} onSelectMode={handleSelectMode} onNavigate={setScreen} theme={theme} toggleTheme={toggleTheme} />;
   }

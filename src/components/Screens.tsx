@@ -3,6 +3,7 @@ import { Player, Screen, Difficulty, GameMode, TROPHIES, TITLES, SNAKE_SKINS, SN
 import type { ShopItem } from '../types';
 import { savePlayer, claimDailyReward, getLoginReward } from '../store';
 import { audioManager } from '../audio';
+import { SimpleClassicIcon, SimpleTimedIcon, SimpleMultiplayerIcon, SimpleZenIcon, SimpleSurvivalIcon, SimpleCompetitiveIcon, SimpleEasyIcon, SimpleMediumIcon, SimpleHardIcon, SimpleInsaneIcon } from './SimpleIcons';
 
 // Theme helper
 const t = (theme: Theme, dark: string, light: string) => theme === 'dark' ? dark : light;
@@ -100,29 +101,86 @@ export function MainMenu({ player, onSelectMode, onNavigate, theme, toggleTheme 
   const [selectedMode, setSelectedMode] = useState<GameMode>('classic');
   const [selectedDiff, setSelectedDiff] = useState<Difficulty>('medium');
 
-  const modes: { id: GameMode; icon: string; name: string; desc: string; color: string }[] = [
-    { id: 'classic', icon: '🐍', name: 'Classic', desc: 'Endless snake fun', color: 'from-green-600 to-green-800' },
-    { id: 'timed', icon: '⏱️', name: 'Timed', desc: 'Score in 60 seconds', color: 'from-orange-600 to-red-800' },
-    { id: 'multiplayer', icon: '👥', name: 'Multiplayer', desc: 'vs Bot or vs Player', color: 'from-blue-600 to-purple-800' },
-    { id: 'zen', icon: '🧘', name: 'Zen', desc: 'Pass through walls!', color: 'from-teal-600 to-cyan-800' },
+  const modes: { id: GameMode; icon: React.ReactNode; name: string; desc: string }[] = [
+    { 
+      id: 'classic', 
+      icon: <SimpleClassicIcon className="w-12 h-12" />, 
+      name: 'Classic', 
+      desc: 'Endless snake fun'
+    },
+    { 
+      id: 'timed', 
+      icon: <SimpleTimedIcon className="w-12 h-12" />, 
+      name: 'Timed', 
+      desc: 'Score in 60 seconds'
+    },
+    { 
+      id: 'multiplayer', 
+      icon: <SimpleMultiplayerIcon className="w-12 h-12" />, 
+      name: 'Multiplayer', 
+      desc: 'vs Bot or vs Player'
+    },
+    { 
+      id: 'zen', 
+      icon: <SimpleZenIcon className="w-12 h-12" />, 
+      name: 'Zen', 
+      desc: 'Pass through walls!'
+    },
+    { 
+      id: 'survival', 
+      icon: <SimpleSurvivalIcon className="w-12 h-12" />, 
+      name: 'Survival', 
+      desc: 'Speed increases, survive!'
+    },
+    { 
+      id: 'competitive', 
+      icon: <SimpleCompetitiveIcon className="w-12 h-12" />, 
+      name: 'Competitive', 
+      desc: 'Ranked & Unranked matches'
+    },
   ];
 
   const dailyReward = getLoginReward(player);
 
+  const handleGoPro = () => {
+    if (player.googleAccount) {
+      // User is authenticated, open Lemon Squeezy checkout
+      import('../lib/lemonsqueezy').then(({ openLemonSqueezyCheckout, PRODUCT_IDS }) => {
+        openLemonSqueezyCheckout(PRODUCT_IDS.SNAKE_PASS_PREMIUM, {
+          userId: player.id,
+          userEmail: player.googleAccount!,
+          username: player.username,
+        });
+      });
+    } else {
+      // User not authenticated, navigate to Google login
+      onNavigate('google');
+    }
+  };
+
   return (
-    <div className={`min-h-screen ${t(theme, 'bg-gradient-to-br from-gray-900 via-slate-900 to-gray-800', 'bg-gradient-to-br from-gray-50 via-slate-50 to-white')} flex flex-col items-center p-3 md:p-4`}>
+    <div className={`min-h-screen ${t(theme, 'bg-gradient-to-br from-[#0f0c29] via-[#302b63] to-[#24243e]', 'bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50')} flex flex-col items-center p-4 md:p-6 relative overflow-hidden`}>
+      {/* Animated Background Elements */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-20 left-10 w-32 h-32 bg-purple-500/10 rounded-full blur-3xl animate-float"></div>
+        <div className="absolute bottom-20 right-10 w-40 h-40 bg-pink-500/10 rounded-full blur-3xl animate-float" style={{ animationDelay: '1s' }}></div>
+        <div className="absolute top-1/2 left-1/4 w-24 h-24 bg-cyan-500/10 rounded-full blur-3xl animate-float" style={{ animationDelay: '2s' }}></div>
+      </div>
+
       {/* Player Bar */}
-      <div className={`w-full max-w-md flex items-center justify-between ${t(theme, 'bg-gray-800/80 border-gray-700/50', 'bg-white border-gray-200')} rounded-xl px-3 py-2 mb-3 border`}>
-        <button onClick={() => onNavigate('profile')} className={`flex items-center gap-2 ${t(theme, 'hover:bg-gray-700/50', 'hover:bg-gray-100')} rounded-lg px-2 py-1 transition-all`}>
-          <span className="text-2xl">{player.avatar}</span>
+      <div className={`w-full max-w-2xl flex items-center justify-between ${t(theme, 'bg-gray-900/80 border-gray-700', 'bg-white border-gray-300')} rounded-2xl px-4 py-3 mb-4 border-2 relative z-10`}>
+        <button onClick={() => onNavigate('profile')} className={`flex items-center gap-3 ${t(theme, 'hover:bg-gray-800', 'hover:bg-gray-100')} rounded-xl px-3 py-2 transition-all`}>
+          <div className="relative">
+            <span className="text-3xl">{player.avatar}</span>
+          </div>
           <div>
-            <div className={`text-sm font-bold ${t(theme, 'text-white', 'text-gray-900')} leading-tight`}>{player.username}</div>
-            <div className="flex items-center gap-1">
-              <span className="text-[10px] text-green-400">Lvl {player.level}</span>
+            <div className={`text-base font-bold ${t(theme, 'text-white', 'text-gray-900')} leading-tight`}>{player.username}</div>
+            <div className="flex items-center gap-2">
+              <span className={`text-xs font-bold ${t(theme, 'text-gray-300', 'text-gray-600')}`}>Lvl {player.level}</span>
               {player.equippedTitle && (
                 <>
-                  <span className={`text-[10px] ${t(theme, 'text-gray-500', 'text-gray-400')}`}>•</span>
-                  <span className={`text-[10px] ${t(theme, 'text-indigo-300', 'text-indigo-600')}`}>
+                  <span className={`text-xs ${t(theme, 'text-gray-500', 'text-gray-400')}`}>•</span>
+                  <span className={`text-xs ${t(theme, 'text-gray-400', 'text-gray-600')} font-semibold`}>
                     {TITLES.find(ti => ti.id === player.equippedTitle)?.icon} {TITLES.find(ti => ti.id === player.equippedTitle)?.name}
                   </span>
                 </>
@@ -130,194 +188,227 @@ export function MainMenu({ player, onSelectMode, onNavigate, theme, toggleTheme 
             </div>
           </div>
         </button>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-4">
           <div className="text-center">
-            <div className="text-xs font-bold text-yellow-400">🪙 {player.coins}</div>
+            <div className={`text-sm font-bold ${t(theme, 'text-white', 'text-gray-900')}`}>🪙 {player.coins}</div>
           </div>
           <div className="text-center">
-            <div className="text-xs font-bold text-purple-400">💎 {player.gems}</div>
+            <div className={`text-sm font-bold ${t(theme, 'text-white', 'text-gray-900')}`}>💎 {player.gems}</div>
           </div>
           <ThemeToggle theme={theme} toggleTheme={toggleTheme} />
         </div>
       </div>
 
       {/* XP Bar */}
-      <div className="w-full max-w-md mb-3">
-        <div className={`flex justify-between text-[10px] ${t(theme, 'text-gray-400', 'text-gray-600')} mb-0.5`}>
-          <span>XP</span>
+      <div className="w-full max-w-2xl mb-4 relative z-10">
+        <div className={`flex justify-between text-xs ${t(theme, 'text-gray-300', 'text-gray-600')} mb-1 font-semibold`}>
+          <span>XP Progress</span>
           <span>{player.xp}/{player.xpToNext}</span>
         </div>
-        <div className={`h-2 ${t(theme, 'bg-gray-800 border-gray-700/50', 'bg-gray-200 border-gray-300')} rounded-full overflow-hidden border`}>
-          <div className="h-full bg-gradient-to-r from-green-500 to-emerald-400 rounded-full transition-all duration-500" style={{ width: `${(player.xp / player.xpToNext) * 100}%` }} />
+        <div className={`h-3 ${t(theme, 'bg-gray-800/50 border-purple-500/30', 'bg-gray-200 border-purple-300')} rounded-full overflow-hidden border-2 backdrop-blur-sm`}>
+          <div className="h-full bg-gradient-to-r from-green-400 via-emerald-400 to-green-500 rounded-full transition-all duration-500 animate-gradient-shift" style={{ width: `${(player.xp / player.xpToNext) * 100}%` }} />
         </div>
       </div>
 
       {/* Daily Reward Notification */}
       {dailyReward && (
-        <button onClick={() => onNavigate('rewards')} className={`w-full max-w-md mb-3 ${t(theme, 'bg-gradient-to-r from-yellow-900/40 to-orange-900/40 border-yellow-600/30 hover:from-yellow-900/60 hover:to-orange-900/60', 'bg-gradient-to-r from-yellow-100 to-orange-100 border-yellow-300 hover:from-yellow-200 hover:to-orange-200')} border rounded-xl px-3 py-2 flex items-center justify-between animate-pulse transition-all`}>
-          <div className="flex items-center gap-2">
-            <span className="text-xl">🎁</span>
+        <button onClick={() => onNavigate('rewards')} className={`w-full max-w-2xl mb-4 ${t(theme, 'bg-gradient-to-r from-yellow-500/20 to-orange-500/20 border-yellow-400/50 hover:from-yellow-500/30 hover:to-orange-500/30', 'bg-gradient-to-r from-yellow-100 to-orange-100 border-yellow-400 hover:from-yellow-200 hover:to-orange-200')} border-2 rounded-3xl px-4 py-3 flex items-center justify-between animate-pulse transition-all backdrop-blur-xl shadow-xl relative z-10`}>
+          <div className="flex items-center gap-3">
+            <span className="text-3xl animate-bounce">🎁</span>
             <div className="text-left">
-              <div className={`text-xs font-bold ${t(theme, 'text-yellow-300', 'text-yellow-700')}`}>Daily Reward Ready!</div>
-              <div className={`text-[10px] ${t(theme, 'text-yellow-400/70', 'text-yellow-600/70')}`}>Day {player.dailyStreak + 1} streak</div>
+              <div className={`text-sm font-bold ${t(theme, 'text-yellow-300', 'text-yellow-700')}`}>Daily Reward Ready!</div>
+              <div className={`text-xs ${t(theme, 'text-yellow-400', 'text-yellow-600')} font-semibold`}>Day {player.dailyStreak + 1} streak</div>
             </div>
           </div>
-          <span className="text-yellow-400">→</span>
+          <span className={`text-2xl ${t(theme, 'text-yellow-400', 'text-yellow-600')} animate-bounce`}>→</span>
         </button>
       )}
 
       {/* Game Mode Selection */}
-      <div className="w-full max-w-md mb-3">
-        <h3 className={`text-xs ${t(theme, 'text-gray-400', 'text-gray-600')} uppercase tracking-wide mb-2`}>Game Mode</h3>
-        <div className="grid grid-cols-2 gap-2">
+      <div className="w-full max-w-2xl mb-4 relative z-10">
+        <h3 className={`text-sm ${t(theme, 'text-gray-300', 'text-gray-600')} uppercase tracking-wider mb-3 font-bold text-center`}>Choose Your Mode</h3>
+        <div className="grid grid-cols-2 gap-3">
           {modes.map(m => (
             <button
               key={m.id}
               onClick={() => setSelectedMode(m.id)}
-              className={`p-3 rounded-xl border transition-all text-left ${
+              className={`p-5 rounded-2xl border-2 transition-all duration-200 text-center min-h-[140px] flex flex-col items-center justify-center ${
                 selectedMode === m.id
-                  ? `bg-gradient-to-br ${m.color} border-white/20 shadow-lg scale-[1.02]`
-                  : t(theme, 'bg-gray-800/60 border-gray-700/50 hover:border-gray-600', 'bg-white border-gray-200 hover:border-gray-400 shadow-sm')
+                  ? t(theme, 'bg-gray-800 border-gray-600', 'bg-gray-100 border-gray-400')
+                  : t(theme, 'bg-gray-900/60 border-gray-700/50 hover:border-gray-600', 'bg-white border-gray-200 hover:border-gray-400')
               }`}
             >
-              <div className="text-xl mb-1">{m.icon}</div>
-              <div className={`text-sm font-bold ${selectedMode === m.id ? 'text-white' : t(theme, 'text-white', 'text-gray-900')}`}>{m.name}</div>
-              <div className={`text-[10px] ${selectedMode === m.id ? 'text-gray-300' : t(theme, 'text-gray-300', 'text-gray-600')}`}>{m.desc}</div>
+              <div className={`mb-3 ${selectedMode === m.id ? t(theme, 'text-white', 'text-gray-900') : t(theme, 'text-gray-400', 'text-gray-600')}`}>
+                {m.icon}
+              </div>
+              <div className={`text-lg font-bold mb-1 ${selectedMode === m.id ? t(theme, 'text-white', 'text-gray-900') : t(theme, 'text-gray-300', 'text-gray-700')}`}>
+                {m.name}
+              </div>
+              <div className={`text-xs ${t(theme, 'text-gray-400', 'text-gray-600')}`}>
+                {m.desc}
+              </div>
             </button>
           ))}
         </div>
       </div>
 
       {/* Difficulty */}
-      <div className="w-full max-w-md mb-4">
-        <h3 className={`text-xs ${t(theme, 'text-gray-400', 'text-gray-600')} uppercase tracking-wide mb-2`}>Difficulty</h3>
-        <div className="flex gap-1.5">
-          {(['easy', 'medium', 'hard', 'insane'] as Difficulty[]).map(d => (
-            <button
-              key={d}
-              onClick={() => setSelectedDiff(d)}
-              className={`flex-1 py-2 rounded-xl text-xs font-medium transition-all ${
-                selectedDiff === d
-                  ? d === 'easy' ? 'bg-green-600 text-white shadow-lg shadow-green-600/30' :
-                    d === 'medium' ? 'bg-yellow-600 text-white shadow-lg shadow-yellow-600/30' :
-                    d === 'hard' ? 'bg-red-600 text-white shadow-lg shadow-red-600/30' :
-                    'bg-purple-600 text-white shadow-lg shadow-purple-600/30'
-                  : t(theme, 'bg-gray-800/60 text-gray-400 border-gray-700/50 hover:border-gray-600', 'bg-white text-gray-600 border-gray-200 hover:border-gray-400 shadow-sm')
-              } border`}
-            >
-              {DIFFICULTY_LABELS[d]}
-            </button>
-          ))}
+      <div className="w-full max-w-2xl mb-4 relative z-10">
+        <h3 className={`text-sm ${t(theme, 'text-gray-300', 'text-gray-600')} uppercase tracking-wider mb-3 font-bold text-center`}>Difficulty</h3>
+        <div className="grid grid-cols-4 gap-2">
+          {(['easy', 'medium', 'hard', 'insane'] as Difficulty[]).map((d, idx) => {
+            const icons = [
+              <SimpleEasyIcon className="w-5 h-5" />,
+              <SimpleMediumIcon className="w-5 h-5" />,
+              <SimpleHardIcon className="w-5 h-5" />,
+              <SimpleInsaneIcon className="w-5 h-5" />
+            ];
+            return (
+              <button
+                key={d}
+                onClick={() => setSelectedDiff(d)}
+                className={`py-3 px-2 rounded-xl text-sm font-bold transition-all duration-200 min-h-[60px] flex flex-col items-center justify-center gap-1 ${
+                  selectedDiff === d
+                    ? t(theme, 'bg-gray-800 border-gray-600 text-white', 'bg-gray-200 border-gray-400 text-gray-900')
+                    : t(theme, 'bg-gray-900/60 text-gray-400 border-gray-700/50 hover:border-gray-600', 'bg-white text-gray-600 border-gray-200 hover:border-gray-400')
+                } border-2`}
+              >
+                <div>{icons[idx]}</div>
+                <div>{d.charAt(0).toUpperCase() + d.slice(1)}</div>
+              </button>
+            );
+          })}
         </div>
       </div>
 
       {/* Play Button */}
       <button
         onClick={() => onSelectMode(selectedMode, selectedDiff)}
-        className="w-full max-w-md py-4 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-400 hover:to-emerald-500 text-white font-bold text-lg rounded-2xl transition-all transform hover:scale-[1.02] active:scale-95 shadow-xl shadow-green-500/30 mb-4"
+        className="w-full max-w-2xl py-6 bg-gradient-to-r from-green-400 via-emerald-500 to-green-600 hover:from-green-300 hover:via-emerald-400 hover:to-green-500 text-white font-black text-2xl rounded-3xl transition-all duration-300 transform hover:scale-105 active:scale-95 shadow-2xl shadow-green-500/50 mb-4 animate-gradient-shift border-4 border-green-300/50 relative z-10"
       >
-        ▶ PLAY
+        <span className="flex items-center justify-center gap-3">
+          <span className="text-3xl animate-bounce">▶</span>
+          <span>PLAY NOW</span>
+        </span>
       </button>
 
-      {/* Navigation */}
-      <div className="w-full max-w-md grid grid-cols-5 gap-2">
-        {[
-          { screen: 'trophies' as Screen, icon: '🏆', label: 'Trophies' },
-          { screen: 'titles' as Screen, icon: '🎖️', label: 'Titles' },
-          { screen: 'characters' as Screen, icon: '🎭', label: 'Heroes' },
-          { screen: 'chests' as Screen, icon: '🎁', label: 'Chests' },
-          { screen: 'shop' as Screen, icon: '🛒', label: 'Shop' },
-        ].map(item => (
-          <button
-            key={item.screen}
-            onClick={() => onNavigate(item.screen)}
-            className={`flex flex-col items-center gap-1 py-2.5 ${t(theme, 'bg-gray-800/60 hover:bg-gray-700/60 border-gray-700/50', 'bg-white hover:bg-gray-50 border-gray-200 shadow-sm')} rounded-xl border transition-all`}
-          >
-            <span className="text-xl">{item.icon}</span>
-            <span className={`text-[10px] ${t(theme, 'text-gray-400', 'text-gray-600')}`}>{item.label}</span>
-          </button>
-        ))}
+      {/* Go Pro Button */}
+      {!player.isPremium && (
+        <button
+          onClick={handleGoPro}
+          className="w-full max-w-2xl py-4 bg-gradient-to-r from-purple-500 via-pink-500 to-purple-600 hover:from-purple-400 hover:via-pink-400 hover:to-purple-500 text-white font-bold text-lg rounded-3xl transition-all duration-300 transform hover:scale-105 active:scale-95 shadow-2xl shadow-purple-500/50 mb-4 animate-gradient-shift border-4 border-purple-300/50 relative z-10"
+        >
+          <span className="flex items-center justify-center gap-2">
+            <span className="text-2xl">⭐</span>
+            <span>GO PRO - UNLOCK ALL</span>
+          </span>
+        </button>
+      )}
+
+      {/* Navigation - Primary */}
+      <div className="w-full max-w-2xl mb-4 relative z-10">
+        <h3 className={`text-sm ${t(theme, 'text-gray-300', 'text-gray-600')} uppercase tracking-wider mb-3 font-bold text-center`}>Collections</h3>
+        <div className="grid grid-cols-5 gap-3">
+          {[
+            { screen: 'trophies' as Screen, icon: '🏆', label: 'Trophies', color: 'from-yellow-500/20 to-orange-500/20 border-yellow-400/50 hover:border-yellow-400' },
+            { screen: 'titles' as Screen, icon: '🎖️', label: 'Titles', color: 'from-purple-500/20 to-pink-500/20 border-purple-400/50 hover:border-purple-400' },
+            { screen: 'characters' as Screen, icon: '🎭', label: 'Heroes', color: 'from-cyan-500/20 to-blue-500/20 border-cyan-400/50 hover:border-cyan-400' },
+            { screen: 'chests' as Screen, icon: '🎁', label: 'Chests', color: 'from-red-500/20 to-pink-500/20 border-red-400/50 hover:border-red-400' },
+            { screen: 'shop' as Screen, icon: '🛒', label: 'Shop', color: 'from-green-500/20 to-emerald-500/20 border-green-400/50 hover:border-green-400' },
+          ].map(item => (
+            <button
+              key={item.screen}
+              onClick={() => onNavigate(item.screen)}
+              className={`flex flex-col items-center justify-center gap-2 py-4 bg-gradient-to-br ${item.color} border-2 rounded-2xl transition-all duration-300 backdrop-blur-xl hover:scale-105 shadow-lg min-h-[100px]`}
+            >
+              <span className="text-3xl">{item.icon}</span>
+              <span className={`text-xs font-bold ${t(theme, 'text-white', 'text-gray-900')}`}>{item.label}</span>
+            </button>
+          ))}
+        </div>
       </div>
       
-      {/* Secondary Navigation */}
-      <div className="w-full max-w-md grid grid-cols-3 gap-2 mt-2">
-        {[
-          { screen: 'events' as Screen, icon: '🎯', label: 'Events' },
-          { screen: 'leaderboard' as Screen, icon: '📊', label: 'Ranks' },
-          { screen: 'battlepass' as Screen, icon: '🎖️', label: 'Pass' },
-          { screen: 'achievements' as Screen, icon: '🏅', label: 'Achieve' },
-          { screen: 'spinwheel' as Screen, icon: '🎰', label: 'Spin' },
-          { screen: 'visualthemes' as Screen, icon: '🎨', label: 'Themes' },
-          { screen: 'realmoney' as Screen, icon: '💎', label: 'Premium' },
-          { screen: 'maps' as Screen, icon: '🗺️', label: 'Maps' },
-        ].map(item => (
-          <button
-            key={item.screen}
-            onClick={() => onNavigate(item.screen)}
-            className={`flex flex-col items-center gap-1 py-2 ${t(theme, 'bg-gray-800/60 hover:bg-gray-700/60 border-gray-700/50', 'bg-white hover:bg-gray-50 border-gray-200 shadow-sm')} rounded-xl border transition-all`}
-          >
-            <span className="text-lg">{item.icon}</span>
-            <span className={`text-[10px] ${t(theme, 'text-gray-400', 'text-gray-600')}`}>{item.label}</span>
-          </button>
-        ))}
+      {/* Navigation - Secondary */}
+      <div className="w-full max-w-2xl mb-4 relative z-10">
+        <h3 className={`text-sm ${t(theme, 'text-gray-300', 'text-gray-600')} uppercase tracking-wider mb-3 font-bold text-center`}>Features</h3>
+        <div className="grid grid-cols-3 gap-3">
+          {[
+            { screen: 'events' as Screen, icon: '🎯', label: 'Events' },
+            { screen: 'leaderboard' as Screen, icon: '📊', label: 'Ranks' },
+            { screen: 'battlepass' as Screen, icon: '🎫', label: 'Pass' },
+            { screen: 'achievements' as Screen, icon: '🏆', label: 'Achieve' },
+            { screen: 'spinwheel' as Screen, icon: '🎰', label: 'Spin' },
+            { screen: 'visualthemes' as Screen, icon: '🎨', label: 'Themes' },
+            { screen: 'realmoney' as Screen, icon: '💎', label: 'Premium' },
+            { screen: 'maps' as Screen, icon: '🗺️', label: 'Maps' },
+            { screen: 'settings' as Screen, icon: '⚙️', label: 'Settings' },
+          ].map(item => (
+            <button
+              key={item.screen}
+              onClick={() => onNavigate(item.screen)}
+              className={`flex flex-col items-center justify-center gap-2 py-3 ${t(theme, 'bg-gray-900/60 hover:bg-gray-800/60 border-gray-700/50 hover:border-purple-500/50', 'bg-white hover:bg-gray-50 border-gray-200 hover:border-purple-400 shadow-md')} border-2 rounded-2xl transition-all duration-300 backdrop-blur-xl hover:scale-105 min-h-[90px]`}
+            >
+              <span className="text-2xl">{item.icon}</span>
+              <span className={`text-xs font-bold ${t(theme, 'text-gray-300', 'text-gray-600')}`}>{item.label}</span>
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Premium Features */}
-      <div className="w-full max-w-md mt-4 space-y-2">
-        <h3 className={`text-xs ${t(theme, 'text-gray-400', 'text-gray-600')} uppercase tracking-wide mb-2`}>Premium</h3>
+      <div className="w-full max-w-2xl mb-4 relative z-10">
+        <h3 className={`text-xs ${t(theme, 'text-gray-300', 'text-gray-600')} uppercase tracking-wider mb-2 font-bold text-center`}>Premium Features</h3>
         <div className="grid grid-cols-2 gap-2">
           <button
             onClick={() => onNavigate('subscription')}
-            className={`flex items-center gap-3 p-3 ${
+            className={`flex items-center gap-2 p-3 ${
               player.isPremium 
-                ? 'bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500' 
-                : t(theme, 'bg-gradient-to-r from-purple-900/40 to-blue-900/40 hover:from-purple-900/60 hover:to-blue-900/60 border-purple-500/30', 'bg-gradient-to-r from-purple-100 to-blue-100 hover:from-purple-200 hover:to-blue-200 border-purple-300')
-            } border rounded-xl transition-all transform hover:scale-105`}
+                ? t(theme, 'bg-gray-800 border-gray-600', 'bg-gray-100 border-gray-400')
+                : t(theme, 'bg-gray-900/60 border-gray-700/50 hover:border-gray-600', 'bg-white border-gray-200 hover:border-gray-400')
+            } border-2 rounded-lg transition-all duration-200 min-h-[70px]`}
           >
-            <div className="text-2xl">{player.isPremium ? '⭐' : '🎫'}</div>
-            <div className="text-left flex-1">
-              <div className={`text-sm font-bold ${player.isPremium ? 'text-white' : t(theme, 'text-white', 'text-gray-900')}`}>
+            <div className="text-2xl flex-shrink-0">{player.isPremium ? '⭐' : '🎫'}</div>
+            <div className="text-left flex-1 min-w-0">
+              <div className={`text-sm font-bold ${t(theme, 'text-white', 'text-gray-900')} truncate`}>
                 {player.isPremium ? 'Premium Active' : 'Snake Pass'}
               </div>
-              <div className={`text-[10px] ${player.isPremium ? 'text-gray-200' : t(theme, 'text-gray-300', 'text-gray-600')}`}>
-                {player.isPremium ? 'Enjoy benefits!' : 'Unlock features'}
+              <div className={`text-[10px] ${t(theme, 'text-gray-400', 'text-gray-600')}`}>
+                {player.isPremium ? 'All features unlocked' : 'Unlock all premium features'}
               </div>
             </div>
           </button>
 
           <button
             onClick={() => onNavigate('battlepass')}
-            className={`flex items-center gap-3 p-3 ${t(theme, 'bg-gradient-to-r from-yellow-900/40 to-orange-900/40 hover:from-yellow-900/60 hover:to-orange-900/60 border-yellow-500/30', 'bg-gradient-to-r from-yellow-100 to-orange-100 hover:from-yellow-200 hover:to-orange-200 border-yellow-300')} border rounded-xl transition-all transform hover:scale-105`}
+            className={`flex items-center gap-2 p-3 ${t(theme, 'bg-gray-900/60 border-gray-700/50 hover:border-gray-600', 'bg-white border-gray-200 hover:border-gray-400')} border-2 rounded-lg transition-all duration-200 min-h-[70px]`}
           >
-            <div className="text-2xl">🎖️</div>
-            <div className="text-left flex-1">
-              <div className={`text-sm font-bold ${t(theme, 'text-white', 'text-gray-900')}`}>Battle Pass</div>
-              <div className={`text-[10px] ${t(theme, 'text-gray-300', 'text-gray-600')}`}>Level {player.battlePassLevel}</div>
+            <div className="text-2xl flex-shrink-0">🎖️</div>
+            <div className="text-left flex-1 min-w-0">
+              <div className={`text-sm font-bold ${t(theme, 'text-white', 'text-gray-900')} truncate`}>Battle Pass</div>
+              <div className={`text-[10px] ${t(theme, 'text-gray-400', 'text-gray-600')}`}>Season Level {player.battlePassLevel}</div>
             </div>
           </button>
 
           <button
             onClick={() => onNavigate('online')}
-            className={`flex items-center gap-3 p-3 ${t(theme, 'bg-gradient-to-r from-green-900/40 to-teal-900/40 hover:from-green-900/60 hover:to-teal-900/60 border-green-500/30', 'bg-gradient-to-r from-green-100 to-teal-100 hover:from-green-200 hover:to-teal-200 border-green-300')} border rounded-xl transition-all transform hover:scale-105`}
+            className={`flex items-center gap-2 p-3 ${t(theme, 'bg-gray-900/60 border-gray-700/50 hover:border-gray-600', 'bg-white border-gray-200 hover:border-gray-400')} border-2 rounded-lg transition-all duration-200 min-h-[70px]`}
           >
-            <div className="text-2xl">🌐</div>
-            <div className="text-left flex-1">
-              <div className={`text-sm font-bold ${t(theme, 'text-white', 'text-gray-900')}`}>Online</div>
-              <div className={`text-[10px] ${t(theme, 'text-gray-300', 'text-gray-600')}`}>
-                Play with friends
-              </div>
+            <div className="text-2xl flex-shrink-0">🌐</div>
+            <div className="text-left flex-1 min-w-0">
+              <div className={`text-sm font-bold ${t(theme, 'text-white', 'text-gray-900')} truncate`}>Online Play</div>
+              <div className={`text-[10px] ${t(theme, 'text-gray-400', 'text-gray-600')}`}>Compete with friends</div>
             </div>
           </button>
 
           <button
             onClick={() => onNavigate('google')}
-            className={`flex items-center gap-3 p-3 ${t(theme, 'bg-gradient-to-r from-red-900/40 to-pink-900/40 hover:from-red-900/60 hover:to-pink-900/60 border-red-500/30', 'bg-gradient-to-r from-red-100 to-pink-100 hover:from-red-200 hover:to-pink-200 border-red-300')} border rounded-xl transition-all transform hover:scale-105`}
+            className={`flex items-center gap-2 p-3 ${t(theme, 'bg-gray-900/60 border-gray-700/50 hover:border-gray-600', 'bg-white border-gray-200 hover:border-gray-400')} border-2 rounded-lg transition-all duration-200 min-h-[70px]`}
           >
-            <div className="text-2xl">{player.googleAccount ? '✅' : '🔐'}</div>
-            <div className="text-left flex-1">
-              <div className={`text-sm font-bold ${t(theme, 'text-white', 'text-gray-900')}`}>Google</div>
-              <div className={`text-[10px] ${t(theme, 'text-gray-300', 'text-gray-600')}`}>
-                {player.googleAccount ? 'Connected' : 'Sync progress'}
+            <div className="text-2xl flex-shrink-0">{player.googleAccount ? '✅' : '🔐'}</div>
+            <div className="text-left flex-1 min-w-0">
+              <div className={`text-sm font-bold ${t(theme, 'text-white', 'text-gray-900')} truncate`}>Cloud Save</div>
+              <div className={`text-[10px] ${t(theme, 'text-gray-400', 'text-gray-600')}`}>
+                {player.googleAccount ? 'Synced to cloud' : 'Connect to save progress'}
               </div>
             </div>
           </button>
@@ -325,22 +416,25 @@ export function MainMenu({ player, onSelectMode, onNavigate, theme, toggleTheme 
       </div>
 
       {/* Stats Summary */}
-      <div className="w-full max-w-md mt-4 grid grid-cols-4 gap-2">
-        <div className={`${t(theme, 'bg-gray-800/40 border-gray-700/30', 'bg-white border-gray-200 shadow-sm')} rounded-xl p-2 text-center border`}>
-          <div className={`text-lg font-bold ${t(theme, 'text-white', 'text-gray-900')}`}>{player.gamesPlayed}</div>
-          <div className={`text-[10px] ${t(theme, 'text-gray-400', 'text-gray-600')}`}>Games</div>
-        </div>
-        <div className={`${t(theme, 'bg-gray-800/40 border-gray-700/30', 'bg-white border-gray-200 shadow-sm')} rounded-xl p-2 text-center border`}>
-          <div className="text-lg font-bold text-green-400">{player.totalScore}</div>
-          <div className={`text-[10px] ${t(theme, 'text-gray-400', 'text-gray-600')}`}>Score</div>
-        </div>
-        <div className={`${t(theme, 'bg-gray-800/40 border-gray-700/30', 'bg-white border-gray-200 shadow-sm')} rounded-xl p-2 text-center border`}>
-          <div className="text-lg font-bold text-yellow-400">{player.trophies.length}/{TROPHIES.length}</div>
-          <div className={`text-[10px] ${t(theme, 'text-gray-400', 'text-gray-600')}`}>Trophies</div>
-        </div>
-        <div className={`${t(theme, 'bg-gray-800/40 border-gray-700/30', 'bg-white border-gray-200 shadow-sm')} rounded-xl p-2 text-center border`}>
-          <div className="text-lg font-bold text-indigo-400">{player.titles.length}/{TITLES.length}</div>
-          <div className={`text-[10px] ${t(theme, 'text-gray-400', 'text-gray-600')}`}>Titles</div>
+      <div className="w-full max-w-2xl relative z-10">
+        <h3 className={`text-xs ${t(theme, 'text-gray-300', 'text-gray-600')} uppercase tracking-wider mb-2 font-bold text-center`}>Your Stats</h3>
+        <div className="grid grid-cols-4 gap-2">
+          <div className={`${t(theme, 'bg-gray-900/60 border-gray-700/50', 'bg-white border-gray-200')} rounded-lg p-2 text-center border-2 min-h-[60px] flex flex-col items-center justify-center`}>
+            <div className={`text-xl font-bold ${t(theme, 'text-white', 'text-gray-900')}`}>{player.gamesPlayed}</div>
+            <div className={`text-[10px] ${t(theme, 'text-gray-400', 'text-gray-600')} font-semibold mt-0.5`}>Games</div>
+          </div>
+          <div className={`${t(theme, 'bg-gray-900/60 border-gray-700/50', 'bg-white border-gray-200')} rounded-lg p-2 text-center border-2 min-h-[60px] flex flex-col items-center justify-center`}>
+            <div className={`text-xl font-bold ${t(theme, 'text-white', 'text-gray-900')}`}>{player.totalScore}</div>
+            <div className={`text-[10px] ${t(theme, 'text-gray-400', 'text-gray-600')} font-semibold mt-0.5`}>Score</div>
+          </div>
+          <div className={`${t(theme, 'bg-gray-900/60 border-gray-700/50', 'bg-white border-gray-200')} rounded-lg p-2 text-center border-2 min-h-[60px] flex flex-col items-center justify-center`}>
+            <div className={`text-xl font-bold ${t(theme, 'text-white', 'text-gray-900')}`}>{player.trophies.length}/{TROPHIES.length}</div>
+            <div className={`text-[10px] ${t(theme, 'text-gray-400', 'text-gray-600')} font-semibold mt-0.5`}>Trophies</div>
+          </div>
+          <div className={`${t(theme, 'bg-gray-900/60 border-gray-700/50', 'bg-white border-gray-200')} rounded-lg p-2 text-center border-2 min-h-[60px] flex flex-col items-center justify-center`}>
+            <div className={`text-xl font-bold ${t(theme, 'text-white', 'text-gray-900')}`}>{player.titles.length}/{TITLES.length}</div>
+            <div className={`text-[10px] ${t(theme, 'text-gray-400', 'text-gray-600')} font-semibold mt-0.5`}>Titles</div>
+          </div>
         </div>
       </div>
     </div>
@@ -348,7 +442,7 @@ export function MainMenu({ player, onSelectMode, onNavigate, theme, toggleTheme 
 }
 
 // ============ PROFILE SCREEN ============
-export function ProfileScreen({ player, setPlayer, onBack, onNavigate, theme }: { player: Player; setPlayer: (p: Player) => void; onBack: () => void; onNavigate?: (screen: Screen) => void; theme: Theme }) {
+export function ProfileScreen({ player, setPlayer, onBack, onNavigate, theme, toggleTheme }: { player: Player; setPlayer: (p: Player) => void; onBack: () => void; onNavigate?: (screen: Screen) => void; theme: Theme; toggleTheme: () => void }) {
   const [editing, setEditing] = useState(false);
   const [newUsername, setNewUsername] = useState(player.username);
   const [showAvatarPicker, setShowAvatarPicker] = useState(false);
@@ -370,45 +464,48 @@ export function ProfileScreen({ player, setPlayer, onBack, onNavigate, theme }: 
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-slate-900 to-gray-800 p-4">
+    <div className={`min-h-screen ${t(theme, 'bg-black', 'bg-white')} p-4`}>
       <div className="max-w-md mx-auto">
-        <button onClick={onBack} className="mb-3 px-3 py-1.5 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg text-sm border border-gray-700/50">← Back</button>
+        <div className="flex items-center justify-between mb-3">
+          <button onClick={onBack} className={`px-3 py-1.5 ${t(theme, 'bg-black hover:bg-gray-900 text-white border-white', 'bg-white hover:bg-gray-100 text-black border-black')} rounded-lg text-sm border-2`}>← Back</button>
+          <ThemeToggle theme={theme} toggleTheme={toggleTheme} />
+        </div>
         
         {/* Profile Card */}
-        <div className="bg-gray-800/80 rounded-2xl p-5 border border-gray-700/50 mb-4 text-center">
-          <button onClick={() => setShowAvatarPicker(!showAvatarPicker)} className="w-20 h-20 bg-gray-700 rounded-full flex items-center justify-center text-4xl border-3 border-green-500/50 mx-auto mb-3 hover:border-green-400 transition-all">
+        <div className={`${t(theme, 'bg-black border-white', 'bg-white border-black')} rounded-2xl p-5 border-2 mb-4 text-center`}>
+          <button onClick={() => setShowAvatarPicker(!showAvatarPicker)} className={`w-20 h-20 ${t(theme, 'bg-black border-white', 'bg-white border-black')} rounded-full flex items-center justify-center text-4xl border-2 mx-auto mb-3 hover:scale-105 transition-all`}>
             {player.avatar}
           </button>
           
           {showAvatarPicker && (
-            <div className="grid grid-cols-8 gap-1 mb-3 bg-gray-900/50 rounded-xl p-2">
+            <div className={`grid grid-cols-8 gap-1 mb-3 ${t(theme, 'bg-black', 'bg-white')} rounded-xl p-2 border-2 ${t(theme, 'border-white', 'border-black')}`}>
               {AVATARS.map(a => (
-                <button key={a} onClick={() => changeAvatar(a)} className={`text-lg p-0.5 rounded ${player.avatar === a ? 'bg-green-600/30 ring-1 ring-green-500' : 'hover:bg-gray-700'}`}>{a}</button>
+                <button key={a} onClick={() => changeAvatar(a)} className={`text-lg p-0.5 rounded ${player.avatar === a ? t(theme, 'bg-white text-black', 'bg-black text-white') : t(theme, 'hover:bg-gray-900', 'hover:bg-gray-100')}`}>{a}</button>
               ))}
             </div>
           )}
 
           {editing ? (
             <div className="flex gap-2 justify-center">
-              <input value={newUsername} onChange={e => setNewUsername(e.target.value)} className="px-3 py-1 bg-gray-900 border border-gray-600 rounded-lg text-white text-center text-sm" maxLength={16} />
-              <button onClick={handleSave} className="px-3 py-1 bg-green-600 text-white rounded-lg text-sm">✓</button>
+              <input value={newUsername} onChange={e => setNewUsername(e.target.value)} className={`px-3 py-1 ${t(theme, 'bg-black border-white text-white', 'bg-white border-black text-black')} border-2 rounded-lg text-center text-sm`} maxLength={16} />
+              <button onClick={handleSave} className={`px-3 py-1 ${t(theme, 'bg-white text-black', 'bg-black text-white')} rounded-lg text-sm font-bold`}>✓</button>
             </div>
           ) : (
             <div>
-              <h2 className="text-xl font-bold text-white">{player.username}</h2>
-              <button onClick={() => setEditing(true)} className="text-xs text-gray-400 hover:text-white">Edit</button>
+              <h2 className={`text-xl font-bold ${t(theme, 'text-white', 'text-black')}`}>{player.username}</h2>
+              <button onClick={() => setEditing(true)} className={`text-xs ${t(theme, 'text-gray-400 hover:text-white', 'text-gray-600 hover:text-black')}`}>Edit</button>
             </div>
           )}
           
           <div className="mt-2 flex flex-wrap gap-2 justify-center">
-            <span className="px-3 py-1 bg-green-600/20 text-green-400 rounded-full text-sm font-medium">Level {player.level}</span>
+            <span className={`px-3 py-1 ${t(theme, 'bg-white text-black', 'bg-black text-white')} rounded-full text-sm font-bold`}>Level {player.level}</span>
             {player.equippedTitle && onNavigate && (
-              <button onClick={() => onNavigate('titles')} className="px-3 py-1 bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-300 rounded-full text-sm font-medium flex items-center gap-1 transition-all">
+              <button onClick={() => onNavigate('titles')} className={`px-3 py-1 ${t(theme, 'bg-white text-black hover:bg-gray-200', 'bg-black text-white hover:bg-gray-800')} rounded-full text-sm font-bold flex items-center gap-1 transition-all`}>
                 {TITLES.find(t => t.id === player.equippedTitle)?.icon} {TITLES.find(t => t.id === player.equippedTitle)?.name} →
               </button>
             )}
             {player.equippedTitle && !onNavigate && (
-              <span className="px-3 py-1 bg-indigo-600/20 text-indigo-300 rounded-full text-sm font-medium flex items-center gap-1">
+              <span className={`px-3 py-1 ${t(theme, 'bg-white text-black', 'bg-black text-white')} rounded-full text-sm font-bold flex items-center gap-1`}>
                 {TITLES.find(t => t.id === player.equippedTitle)?.icon} {TITLES.find(t => t.id === player.equippedTitle)?.name}
               </span>
             )}
@@ -416,55 +513,85 @@ export function ProfileScreen({ player, setPlayer, onBack, onNavigate, theme }: 
         </div>
 
         {/* XP Bar */}
-        <div className="bg-gray-800/60 rounded-xl p-3 mb-4 border border-gray-700/50">
-          <div className="flex justify-between text-xs text-gray-400 mb-1">
+        <div className={`${t(theme, 'bg-black border-white', 'bg-white border-black')} rounded-xl p-3 mb-4 border-2`}>
+          <div className={`flex justify-between text-xs ${t(theme, 'text-white', 'text-black')} mb-1`}>
             <span>Experience</span>
             <span>{player.xp} / {player.xpToNext} XP</span>
           </div>
-          <div className="h-3 bg-gray-900 rounded-full overflow-hidden">
-            <div className="h-full bg-gradient-to-r from-green-500 to-emerald-400 rounded-full transition-all" style={{ width: `${(player.xp / player.xpToNext) * 100}%` }} />
+          <div className={`h-3 ${t(theme, 'bg-gray-900', 'bg-gray-200')} rounded-full overflow-hidden`}>
+            <div className={`h-full ${t(theme, 'bg-white', 'bg-black')} rounded-full transition-all`} style={{ width: `${(player.xp / player.xpToNext) * 100}%` }} />
           </div>
         </div>
 
         {/* Currency */}
         <div className="grid grid-cols-2 gap-3 mb-4">
-          <div className="bg-gray-800/60 rounded-xl p-3 border border-gray-700/50 text-center">
+          <div className={`${t(theme, 'bg-black border-white', 'bg-white border-black')} rounded-xl p-3 border-2 text-center`}>
             <div className="text-2xl mb-1">🪙</div>
-            <div className="text-xl font-bold text-yellow-400">{player.coins}</div>
-            <div className="text-[10px] text-gray-400">Coins</div>
+            <div className={`text-xl font-bold ${t(theme, 'text-white', 'text-black')}`}>{player.coins}</div>
+            <div className={`text-[10px] ${t(theme, 'text-gray-400', 'text-gray-600')}`}>Coins</div>
           </div>
-          <div className="bg-gray-800/60 rounded-xl p-3 border border-gray-700/50 text-center">
+          <div className={`${t(theme, 'bg-black border-white', 'bg-white border-black')} rounded-xl p-3 border-2 text-center`}>
             <div className="text-2xl mb-1">💎</div>
-            <div className="text-xl font-bold text-purple-400">{player.gems}</div>
-            <div className="text-[10px] text-gray-400">Gems</div>
+            <div className={`text-xl font-bold ${t(theme, 'text-white', 'text-black')}`}>{player.gems}</div>
+            <div className={`text-[10px] ${t(theme, 'text-gray-400', 'text-gray-600')}`}>Gems</div>
           </div>
         </div>
 
         {/* Stats */}
-        <div className="bg-gray-800/60 rounded-xl p-4 border border-gray-700/50 mb-4">
-          <h3 className="text-sm font-bold text-white mb-3">📊 Statistics</h3>
-          <div className="grid grid-cols-2 gap-2 text-sm">
-            <div className="flex justify-between"><span className="text-gray-400">Games Played</span><span className="text-white font-medium">{player.gamesPlayed}</span></div>
-            <div className="flex justify-between"><span className="text-gray-400">Total Score</span><span className="text-white font-medium">{player.totalScore}</span></div>
-            <div className="flex justify-between"><span className="text-gray-400">Food Eaten</span><span className="text-white font-medium">{player.totalFoodEaten}</span></div>
-            <div className="flex justify-between"><span className="text-gray-400">Longest Snake</span><span className="text-white font-medium">{player.longestSnake}</span></div>
-            <div className="flex justify-between"><span className="text-gray-400">Daily Streak</span><span className="text-white font-medium">{player.dailyStreak} 🔥</span></div>
-            <div className="flex justify-between"><span className="text-gray-400">Trophies</span><span className="text-white font-medium">{player.trophies.length}/{TROPHIES.length}</span></div>
-            <div className="flex justify-between"><span className="text-gray-400">Titles</span><span className="text-indigo-400 font-medium">{player.titles.length}/{TITLES.length}</span></div>
-            <div className="flex justify-between"><span className="text-gray-400">Bot Wins</span><span className="text-blue-400 font-medium">{player.gamesWonVsBot}</span></div>
+        <div className={`${t(theme, 'bg-black border-white', 'bg-white border-black')} rounded-xl p-4 border-2 mb-4`}>
+          <h3 className={`text-sm font-bold ${t(theme, 'text-white', 'text-black')} mb-3`}>📊 Statistics</h3>
+          <div className="space-y-2">
+            <div className="flex justify-between items-center">
+              <span className={`text-sm ${t(theme, 'text-gray-400', 'text-gray-600')}`}>Games Played</span>
+              <span className={`text-sm font-bold ${t(theme, 'text-white', 'text-black')}`}>{player.gamesPlayed}</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className={`text-sm ${t(theme, 'text-gray-400', 'text-gray-600')}`}>Total Score</span>
+              <span className={`text-sm font-bold ${t(theme, 'text-white', 'text-black')}`}>{player.totalScore}</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className={`text-sm ${t(theme, 'text-gray-400', 'text-gray-600')}`}>Food Eaten</span>
+              <span className={`text-sm font-bold ${t(theme, 'text-white', 'text-black')}`}>{player.totalFoodEaten}</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className={`text-sm ${t(theme, 'text-gray-400', 'text-gray-600')}`}>Longest Snake</span>
+              <span className={`text-sm font-bold ${t(theme, 'text-white', 'text-black')}`}>{player.longestSnake}</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className={`text-sm ${t(theme, 'text-gray-400', 'text-gray-600')}`}>Daily Streak</span>
+              <span className={`text-sm font-bold ${t(theme, 'text-white', 'text-black')}`}>{player.dailyStreak} 🔥</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className={`text-sm ${t(theme, 'text-gray-400', 'text-gray-600')}`}>Trophies</span>
+              <span className={`text-sm font-bold ${t(theme, 'text-white', 'text-black')}`}>{player.trophies.length}/{TROPHIES.length}</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className={`text-sm ${t(theme, 'text-gray-400', 'text-gray-600')}`}>Titles</span>
+              <span className={`text-sm font-bold ${t(theme, 'text-white', 'text-black')}`}>{player.titles.length}/{TITLES.length}</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className={`text-sm ${t(theme, 'text-gray-400', 'text-gray-600')}`}>Bot Wins</span>
+              <span className={`text-sm font-bold ${t(theme, 'text-white', 'text-black')}`}>{player.gamesWonVsBot}</span>
+            </div>
           </div>
         </div>
 
         {/* High Scores */}
-        <div className="bg-gray-800/60 rounded-xl p-4 border border-gray-700/50">
-          <h3 className="text-sm font-bold text-white mb-3">🏅 High Scores</h3>
-          <div className="space-y-2">
+        <div className={`${t(theme, 'bg-black border-white', 'bg-white border-black')} rounded-xl p-4 border-2`}>
+          <h3 className={`text-sm font-bold ${t(theme, 'text-white', 'text-black')} mb-3`}>🏅 High Scores</h3>
+          <div className="space-y-3">
             {(['easy', 'medium', 'hard', 'insane'] as Difficulty[]).map(d => (
               <div key={d} className="flex justify-between items-center">
-                <span className="text-xs text-gray-400">{DIFFICULTY_LABELS[d]}</span>
-                <div className="flex gap-3">
-                  <span className="text-xs text-green-400">Classic: {player.highScores[d]}</span>
-                  <span className="text-xs text-orange-400">Timed: {player.timedHighScores[d]}</span>
+                <span className={`text-sm ${t(theme, 'text-gray-400', 'text-gray-600')} font-medium`}>{DIFFICULTY_LABELS[d]}</span>
+                <div className="flex gap-4">
+                  <div className="text-right">
+                    <div className={`text-xs ${t(theme, 'text-gray-500', 'text-gray-500')}`}>Classic</div>
+                    <div className={`text-sm font-bold ${t(theme, 'text-white', 'text-black')}`}>{player.highScores[d]}</div>
+                  </div>
+                  <div className="text-right">
+                    <div className={`text-xs ${t(theme, 'text-gray-500', 'text-gray-500')}`}>Timed</div>
+                    <div className={`text-sm font-bold ${t(theme, 'text-white', 'text-black')}`}>{player.timedHighScores[d]}</div>
+                  </div>
                 </div>
               </div>
             ))}

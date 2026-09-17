@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
 @import "tailwindcss";
 
 @layer base {
@@ -9,6 +10,7 @@
     overflow-x: hidden;
     min-height: 100vh;
     min-height: 100dvh;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   }
 
   ::-webkit-scrollbar {
@@ -22,6 +24,166 @@
   ::-webkit-scrollbar-thumb {
     background: rgba(75, 85, 99, 0.5);
     border-radius: 4px;
+  }
+}
+
+@layer utilities {
+  .font-mono-tech {
+    font-family: 'JetBrains Mono', 'Courier New', monospace;
+  }
+
+  /* Wood Texture Base */
+  .wood-texture {
+    background: linear-gradient(135deg, #8B6F47 0%, #A0826D 25%, #8B6F47 50%, #6B5445 75%, #8B6F47 100%);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .wood-texture::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: 
+      repeating-linear-gradient(
+        90deg,
+        transparent,
+        transparent 2px,
+        rgba(0, 0, 0, 0.05) 2px,
+        rgba(0, 0, 0, 0.05) 4px
+      ),
+      repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 3px,
+        rgba(139, 111, 71, 0.1) 3px,
+        rgba(139, 111, 71, 0.1) 6px
+      );
+    pointer-events: none;
+  }
+
+  /* Animated Snake Scale Effect */
+  .wood-snake-scales {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .wood-snake-scales::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    right: -50%;
+    bottom: -50%;
+    background: repeating-linear-gradient(
+      45deg,
+      transparent,
+      transparent 10px,
+      rgba(101, 67, 33, 0.08) 10px,
+      rgba(101, 67, 33, 0.08) 20px,
+      transparent 20px,
+      transparent 30px
+    );
+    animation: snake-slither 8s linear infinite;
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  @keyframes snake-slither {
+    0% {
+      transform: translate(0, 0);
+    }
+    100% {
+      transform: translate(30px, 30px);
+    }
+  }
+
+  /* Wood Panel Styles */
+  .wood-panel {
+    background: linear-gradient(135deg, #8B6F47 0%, #A0826D 50%, #8B6F47 100%);
+    border: 4px solid #6B5445;
+    border-radius: 16px;
+    box-shadow: 
+      inset 0 2px 4px rgba(255, 255, 255, 0.2),
+      inset 0 -2px 4px rgba(0, 0, 0, 0.3),
+      0 4px 8px rgba(0, 0, 0, 0.4);
+    position: relative;
+  }
+
+  .wood-panel-dark {
+    background: linear-gradient(135deg, #6B5445 0%, #5C4A3A 50%, #6B5445 100%);
+    border: 4px solid #4A3728;
+    border-radius: 16px;
+    box-shadow: 
+      inset 0 2px 4px rgba(255, 255, 255, 0.1),
+      inset 0 -2px 4px rgba(0, 0, 0, 0.4),
+      0 4px 8px rgba(0, 0, 0, 0.5);
+  }
+
+  .wood-button {
+    background: linear-gradient(135deg, #A0826D 0%, #8B6F47 50%, #A0826D 100%);
+    border: 3px solid #6B5445;
+    border-radius: 12px;
+    box-shadow: 
+      inset 0 2px 4px rgba(255, 255, 255, 0.3),
+      inset 0 -2px 4px rgba(0, 0, 0, 0.2),
+      0 3px 6px rgba(0, 0, 0, 0.3);
+    transition: all 0.2s ease;
+  }
+
+  .wood-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 
+      inset 0 2px 4px rgba(255, 255, 255, 0.3),
+      inset 0 -2px 4px rgba(0, 0, 0, 0.2),
+      0 5px 10px rgba(0, 0, 0, 0.4);
+  }
+
+  .wood-button:active {
+    transform: translateY(0);
+    box-shadow: 
+      inset 0 2px 4px rgba(0, 0, 0, 0.2),
+      inset 0 -1px 2px rgba(255, 255, 255, 0.1),
+      0 2px 4px rgba(0, 0, 0, 0.3);
+  }
+
+  .wood-button-selected {
+    background: linear-gradient(135deg, #00b894 0%, #00a383 50%, #00b894 100%);
+    border-color: #008f74;
+  }
+
+  /* Wood Text Engraving */
+  .wood-text {
+    color: #3d2817;
+    text-shadow: 
+      0 1px 0 rgba(255, 255, 255, 0.3),
+      0 -1px 0 rgba(0, 0, 0, 0.5);
+  }
+
+  .wood-text-light {
+    color: #f5e6d3;
+    text-shadow: 
+      0 1px 2px rgba(0, 0, 0, 0.5),
+      0 0 10px rgba(245, 230, 211, 0.3);
+  }
+
+  /* Purple Wood Variant */
+  .wood-purple {
+    background: linear-gradient(135deg, #6B4C9A 0%, #8B6FBF 50%, #6B4C9A 100%);
+    border: 4px solid #4A3570;
+  }
+
+  /* Circular Wood Button */
+  .wood-circle {
+    background: linear-gradient(135deg, #A0826D 0%, #8B6F47 100%);
+    border: 3px solid #6B5445;
+    border-radius: 50%;
+    box-shadow: 
+      inset 0 2px 4px rgba(255, 255, 255, 0.3),
+      inset 0 -2px 4px rgba(0, 0, 0, 0.2),
+      0 3px 6px rgba(0, 0, 0, 0.3);
   }
 }
 
@@ -101,6 +263,39 @@
   75% { transform: rotate(3deg); }
 }
 
+@keyframes neon-pulse {
+  0%, 100% { 
+    box-shadow: 0 0 20px currentColor, 0 0 40px currentColor, 0 0 60px currentColor;
+    opacity: 1;
+  }
+  50% { 
+    box-shadow: 0 0 30px currentColor, 0 0 60px currentColor, 0 0 90px currentColor;
+    opacity: 0.8;
+  }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+}
+
+@keyframes gradient-shift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes glow-border {
+  0%, 100% { 
+    border-color: rgba(139, 92, 246, 0.5);
+    box-shadow: 0 0 20px rgba(139, 92, 246, 0.3);
+  }
+  50% { 
+    border-color: rgba(139, 92, 246, 0.8);
+    box-shadow: 0 0 30px rgba(139, 92, 246, 0.5);
+  }
+}
+
 .animate-bounce-subtle {
   animation: bounce-subtle 1s ease-in-out infinite;
 }
@@ -129,6 +324,70 @@
 
 .animate-wiggle {
   animation: wiggle 0.5s ease-in-out;
+}
+
+.animate-neon-pulse {
+  animation: neon-pulse 2s ease-in-out infinite;
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+.animate-gradient-shift {
+  background-size: 200% 200%;
+  animation: gradient-shift 3s ease infinite;
+}
+
+.animate-glow-border {
+  animation: glow-border 2s ease-in-out infinite;
+}
+
+/* Neon glow utilities */
+.neon-green {
+  color: #00ff88;
+  text-shadow: 0 0 10px #00ff88, 0 0 20px #00ff88, 0 0 30px #00ff88;
+}
+
+.neon-pink {
+  color: #ff00ff;
+  text-shadow: 0 0 10px #ff00ff, 0 0 20px #ff00ff, 0 0 30px #ff00ff;
+}
+
+.neon-cyan {
+  color: #00ffff;
+  text-shadow: 0 0 10px #00ffff, 0 0 20px #00ffff, 0 0 30px #00ffff;
+}
+
+.neon-orange {
+  color: #ff8800;
+  text-shadow: 0 0 10px #ff8800, 0 0 20px #ff8800, 0 0 30px #ff8800;
+}
+
+.neon-purple {
+  color: #8b5cf6;
+  text-shadow: 0 0 10px #8b5cf6, 0 0 20px #8b5cf6, 0 0 30px #8b5cf6;
+}
+
+/* Card glow effects */
+.card-glow-green {
+  box-shadow: 0 0 30px rgba(0, 255, 136, 0.3), 0 0 60px rgba(0, 255, 136, 0.2);
+}
+
+.card-glow-pink {
+  box-shadow: 0 0 30px rgba(255, 0, 255, 0.3), 0 0 60px rgba(255, 0, 255, 0.2);
+}
+
+.card-glow-cyan {
+  box-shadow: 0 0 30px rgba(0, 255, 255, 0.3), 0 0 60px rgba(0, 255, 255, 0.2);
+}
+
+.card-glow-orange {
+  box-shadow: 0 0 30px rgba(255, 136, 0, 0.3), 0 0 60px rgba(255, 136, 0, 0.2);
+}
+
+.card-glow-purple {
+  box-shadow: 0 0 30px rgba(139, 92, 246, 0.3), 0 0 60px rgba(139, 92, 246, 0.2);
 }
 
 /* Staggered animations */

@@ -3,8 +3,10 @@ export type Direction = 'UP' | 'DOWN' | 'LEFT' | 'RIGHT';
 export type Position = { x: number; y: number };
 export type GameState = 'IDLE' | 'PLAYING' | 'PAUSED' | 'GAME_OVER';
 export type Difficulty = 'easy' | 'medium' | 'hard' | 'insane';
-export type GameMode = 'classic' | 'timed' | 'multiplayer' | 'event' | 'zen' | 'online';
-export type Screen = 'login' | 'menu' | 'game' | 'profile' | 'trophies' | 'titles' | 'shop' | 'events' | 'leaderboard' | 'settings' | 'rewards' | 'subscription' | 'battlepass' | 'online' | 'google' | 'characters' | 'chests' | 'achievements' | 'spinwheel' | 'visualthemes' | 'realmoney' | 'maps';
+export type GameMode = 'classic' | 'timed' | 'multiplayer' | 'event' | 'zen' | 'online' | 'survival' | 'competitive';
+export type MatchType = 'ranked' | 'unranked';
+export type Rank = 'bronze' | 'silver' | 'gold' | 'platinum' | 'diamond' | 'master' | 'grandmaster';
+export type Screen = 'login' | 'home' | 'menu' | 'game' | 'profile' | 'trophies' | 'titles' | 'shop' | 'events' | 'leaderboard' | 'settings' | 'rewards' | 'subscription' | 'battlepass' | 'online' | 'google' | 'characters' | 'chests' | 'achievements' | 'spinwheel' | 'visualthemes' | 'realmoney' | 'maps' | 'competitive' | 'games' | 'privacy' | 'terms' | 'about' | 'snake-classic' | 'snake-rush' | 'snake-leader' | 'ludo' | 'puzzle' | 'runner' | 'battle' | 'maze';
 export type MapType = 'classic' | 'maze' | 'portal' | 'obstacles' | 'arena' | 'labyrinth' | 'space' | 'underwater';
 export type Theme = 'light' | 'dark';
 export type VisualTheme = 'default' | 'cyberpunk' | 'retro' | 'forest' | 'space' | 'sunset' | 'ocean';
@@ -250,6 +252,13 @@ export interface Player {
   // Maps
   activeMap: string;
   ownedMaps: string[];
+  // Competitive/Ranked
+  elo: number;
+  rank: Rank;
+  rankedWins: number;
+  rankedLosses: number;
+  unrankedGamesPlayed: number;
+  competitiveGamesPlayed: number;
 }
 
 export interface Title {

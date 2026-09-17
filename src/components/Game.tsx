@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { Position, Direction, GameState, Difficulty, GameMode, GRID_SIZE, DIFFICULTY_SPEEDS, TIMED_DURATIONS, Player, PowerUp, TITLES, Theme, GAME_MAPS } from '../types';
+import { Position, Direction, GameState, Difficulty, GameMode, GRID_SIZE, DIFFICULTY_SPEEDS, TIMED_DURATIONS, Player, PowerUp, TITLES, Theme, GAME_MAPS, MatchType } from '../types';
 import { savePlayer, addXp } from '../store';
 import { audioManager } from '../audio';
+import { getRankFromElo } from './CompetitiveScreen';
 
 type MultiplayerType = 'bot' | 'player' | 'zen';
 
@@ -13,25 +14,41 @@ interface GameProps {
   onBack: () => void;
   isMultiplayer?: boolean;
   multiplayerType?: MultiplayerType;
+  matchType?: MatchType;
   theme: Theme;
   toggleTheme: () => void;
 }
 
-function getRandomFood(snake: Position[]): Position {
+function getRandomFood(snake: Position[], obstacles?: Position[]): Position {
   let food: Position;
   do {
     food = { x: Math.floor(Math.random() * GRID_SIZE), y: Math.floor(Math.random() * GRID_SIZE) };
-  } while (snake.some(s => s.x === food.x && s.y === food.y));
+  } while (
+    snake.some(s => s.x === food.x && s.y === food.y) ||
+    (obstacles && obstacles.some(o => o.x === food.x && o.y === food.y))
+  );
   return food;
 }
 
-function getRandomPowerUp(): PowerUp | null {
+function getRandomPowerUp(snake: Position[], obstacles?: Position[]): PowerUp | null {
   if (Math.random() > 0.15) return null;
   const types: PowerUp['type'][] = ['speed', 'slow', 'double', 'shrink', 'shield', 'time_slow', 'coin_magnet', 'ghost_pass', 'score_boost'];
   const icons = ['⚡', '🐌', '✖️2', '🔽', '🛡️', '⏱️', '🧲', '👻', '💫'];
   const idx = Math.floor(Math.random() * types.length);
+  
+  let position: Position;
+  let attempts = 0;
+  do {
+    position = { x: Math.floor(Math.random() * GRID_SIZE), y: Math.floor(Math.random() * GRID_SIZE) };
+    attempts++;
+  } while (
+    attempts < 100 &&
+    (snake.some(s => s.x === position.x && s.y === position.y) ||
+    (obstacles && obstacles.some(o => o.x === position.x && o.y === position.y)))
+  );
+  
   return {
-    position: { x: Math.floor(Math.random() * GRID_SIZE), y: Math.floor(Math.random() * GRID_SIZE) },
+    position,
     type: types[idx],
     icon: icons[idx],
     expiresAt: Date.now() + 8000,
@@ -39,7 +56,7 @@ function getRandomPowerUp(): PowerUp | null {
 }
 
 // Bot AI - moves toward food intelligently
-function getBotDirection(snake: Position[], food: Position, currentDir: Direction, otherSnake?: Position[]): Direction {
+function getBotDirection(snake: Position[], food: Position, currentDir: Direction, otherSnake?: Position[], isZenMode?: boolean): Direction {
   const head = snake[0];
   const possibleDirs: Direction[] = ['UP', 'DOWN', 'LEFT', 'RIGHT'];
   const opposites: Record<Direction, Direction> = { UP: 'DOWN', DOWN: 'UP', LEFT: 'RIGHT', RIGHT: 'LEFT' };
@@ -59,12 +76,28 @@ function getBotDirection(snake: Position[], food: Position, currentDir: Directio
     
     let score = 0;
     
+    // In zen mode, wrap around walls
+    if (isZenMode) {
+      if (newHead.x < 0) newHead.x = GRID_SIZE - 1;
+      else if (newHead.x >= GRID_SIZE) newHead.x = 0;
+      if (newHead.y < 0) newHead.y = GRID_SIZE - 1;
+      else if (newHead.y >= GRID_SIZE) newHead.y = 0;
+    }
+    
     // Distance to food (closer is better)
-    const dist = Math.abs(newHead.x - food.x) + Math.abs(newHead.y - food.y);
+    // In zen mode, calculate distance considering wrapping
+    let dist;
+    if (isZenMode) {
+      const dx = Math.min(Math.abs(newHead.x - food.x), GRID_SIZE - Math.abs(newHead.x - food.x));
+      const dy = Math.min(Math.abs(newHead.y - food.y), GRID_SIZE - Math.abs(newHead.y - food.y));
+      dist = dx + dy;
+    } else {
+      dist = Math.abs(newHead.x - food.x) + Math.abs(newHead.y - food.y);
+    }
     score -= dist * 2;
     
-    // Check if out of bounds (bad)
-    if (newHead.x < 0 || newHead.x >= GRID_SIZE || newHead.y < 0 || newHead.y >= GRID_SIZE) {
+    // Check if out of bounds (bad) - only in non-zen mode
+    if (!isZenMode && (newHead.x < 0 || newHead.x >= GRID_SIZE || newHead.y < 0 || newHead.y >= GRID_SIZE)) {
       score -= 1000;
     } else {
       // Check self collision (very bad)
@@ -72,10 +105,8 @@ function getBotDirection(snake: Position[], food: Position, currentDir: Directio
         score -= 1000;
       }
       
-      // Check other snake collision (bad)
-      if (otherSnake && otherSnake.some(s => s.x === newHead.x && s.y === newHead.y)) {
-        score -= 500;
-      }
+      // Check other snake collision - SNAKES CAN PASS THROUGH EACH OTHER
+      // Removed penalty for moving into other snake
       
       // Bonus for being adjacent to food
       if (newHead.x === food.x && newHead.y === food.y) {
@@ -96,10 +127,13 @@ function getBotDirection(snake: Position[], food: Position, currentDir: Directio
   return scores[0]?.dir || currentDir;
 }
 
-export default function Game({ player, setPlayer, mode, difficulty, onBack, isMultiplayer, multiplayerType = 'player', theme, toggleTheme }: GameProps) {
+export default function Game({ player, setPlayer, mode, difficulty, onBack, isMultiplayer, multiplayerType = 'player', matchType = 'unranked', theme, toggleTheme }: GameProps) {
   const [snake, setSnake] = useState<Position[]>([{ x: 10, y: 10 }, { x: 9, y: 10 }, { x: 8, y: 10 }]);
   const [snake2, setSnake2] = useState<Position[]>([{ x: 10, y: 15 }, { x: 9, y: 15 }, { x: 8, y: 15 }]);
-  const [food, setFood] = useState<Position>(() => getRandomFood([{ x: 10, y: 10 }]));
+  const [food, setFood] = useState<Position>(() => {
+    const currentMap = GAME_MAPS.find(m => m.id === player.activeMap);
+    return getRandomFood([{ x: 10, y: 10 }], currentMap?.obstacles);
+  });
   const [direction, setDirection] = useState<Direction>('RIGHT');
   const [direction2, setDirection2] = useState<Direction>('LEFT');
   const [gameState, setGameState] = useState<GameState>('IDLE');
@@ -116,6 +150,9 @@ export default function Game({ player, setPlayer, mode, difficulty, onBack, isMu
   const [coinsEarned, setCoinsEarned] = useState(0);
   const [newTitles, setNewTitles] = useState<string[]>([]);
   const [isMuted, setIsMuted] = useState(audioManager.getIsMuted());
+  const [survivalTime, setSurvivalTime] = useState(0);
+  const [survivalSpeed, setSurvivalSpeed] = useState(1);
+  const [eloChange, setEloChange] = useState(0);
 
   const dirRef = useRef<Direction>('RIGHT');
   const dir2Ref = useRef<Direction>('LEFT');
@@ -125,6 +162,11 @@ export default function Game({ player, setPlayer, mode, difficulty, onBack, isMu
   const snakeRef = useRef<Position[]>([{ x: 10, y: 10 }, { x: 9, y: 10 }, { x: 8, y: 10 }]);
   const snake2Ref = useRef<Position[]>([{ x: 10, y: 15 }, { x: 9, y: 15 }, { x: 8, y: 15 }]);
   const foodRef = useRef<Position>(food);
+
+  // Keep foodRef in sync with food state
+  useEffect(() => {
+    foodRef.current = food;
+  }, [food]);
 
   useEffect(() => { stateRef.current = gameState; }, [gameState]);
   useEffect(() => { dirRef.current = direction; }, [direction]);
@@ -158,17 +200,39 @@ export default function Game({ player, setPlayer, mode, difficulty, onBack, isMu
     return () => clearInterval(interval);
   }, [gameState, mode]);
 
+  // Survival mode - track time and increase speed
+  useEffect(() => {
+    if (gameState !== 'PLAYING' || mode !== 'survival') return;
+    
+    // Track survival time
+    const timeInterval = setInterval(() => {
+      setSurvivalTime(t => t + 1);
+    }, 1000);
+    
+    // Increase speed every 10 seconds
+    const speedInterval = setInterval(() => {
+      setSurvivalSpeed(s => s + 1);
+    }, 10000);
+    
+    return () => {
+      clearInterval(timeInterval);
+      clearInterval(speedInterval);
+    };
+  }, [gameState, mode]);
+
   // Power-up spawner
   useEffect(() => {
     if (gameState !== 'PLAYING') return;
     const interval = setInterval(() => {
-      const pu = getRandomPowerUp();
+      const currentMap = GAME_MAPS.find(m => m.id === player.activeMap);
+      const allSnakes = isMultiplayer ? [...snakeRef.current, ...snake2Ref.current] : snakeRef.current;
+      const pu = getRandomPowerUp(allSnakes, currentMap?.obstacles);
       if (pu) {
         setPowerUps(prev => [...prev.filter(p => p.expiresAt > Date.now()), pu]);
       }
     }, 5000);
     return () => clearInterval(interval);
-  }, [gameState]);
+  }, [gameState, isMultiplayer, player.activeMap]);
 
   // Coin magnet effect - move food closer to snake
   useEffect(() => {
@@ -208,7 +272,8 @@ export default function Game({ player, setPlayer, mode, difficulty, onBack, isMu
     const initSnake = [{ x: 10, y: 10 }, { x: 9, y: 10 }, { x: 8, y: 10 }];
     setSnake(initSnake);
     snakeRef.current = initSnake;
-    setFood(getRandomFood(initSnake));
+    const currentMap = GAME_MAPS.find(m => m.id === player.activeMap);
+    setFood(getRandomFood(initSnake, currentMap?.obstacles));
     setDirection('RIGHT');
     dirRef.current = 'RIGHT';
     setScore(0);
@@ -216,6 +281,8 @@ export default function Game({ player, setPlayer, mode, difficulty, onBack, isMu
     setPowerUps([]);
     setActiveEffects([]);
     setTimeLeft(TIMED_DURATIONS[difficulty]);
+    setSurvivalTime(0);
+    setSurvivalSpeed(1);
 
     if (isMultiplayer) {
       const initSnake2 = [{ x: 10, y: 15 }, { x: 9, y: 15 }, { x: 8, y: 15 }];
@@ -291,6 +358,12 @@ export default function Game({ player, setPlayer, mode, difficulty, onBack, isMu
   useEffect(() => {
     if (gameState !== 'PLAYING') return;
     let speed = DIFFICULTY_SPEEDS[difficulty];
+    
+    // Survival mode - speed increases over time
+    if (mode === 'survival') {
+      speed = speed / survivalSpeed;
+    }
+    
     if (activeEffects.includes('speed')) speed *= 0.6;
     if (activeEffects.includes('slow')) speed *= 1.5;
     if (activeEffects.includes('time_slow')) speed *= 2.0; // Even slower than 'slow'
@@ -298,9 +371,9 @@ export default function Game({ player, setPlayer, mode, difficulty, onBack, isMu
     const interval = setInterval(() => {
       if (stateRef.current !== 'PLAYING') return;
 
-      // Bot AI movement (if multiplayer with bot)
-      if (isMultiplayer && multiplayerType === 'bot') {
-        const botDir = getBotDirection(snake2Ref.current, foodRef.current, dir2Ref.current, snakeRef.current);
+      // Bot AI movement (if multiplayer with bot or zen multiplayer)
+      if (isMultiplayer && (multiplayerType === 'bot' || multiplayerType === 'zen')) {
+        const botDir = getBotDirection(snake2Ref.current, foodRef.current, dir2Ref.current, snakeRef.current, multiplayerType === 'zen');
         dir2Ref.current = botDir;
         setDirection2(botDir);
       }
@@ -360,20 +433,13 @@ export default function Game({ player, setPlayer, mode, difficulty, onBack, isMu
           }
         }
 
-        // Multiplayer collision
-        if (isMultiplayer) {
-          setSnake2(s2 => {
-            if (s2.some(s => s.x === newHead.x && s.y === newHead.y)) {
-              setGameState('GAME_OVER');
-            }
-            return s2;
-          });
-        }
+        // Multiplayer collision - SNAKES CAN NOW PASS THROUGH EACH OTHER!
+        // Removed collision detection between player snakes in all modes
 
         const newSnake = [newHead, ...prev];
         let ate = false;
 
-        if (newHead.x === food.x && newHead.y === food.y) {
+        if (newHead.x === foodRef.current.x && newHead.y === foodRef.current.y) {
           ate = true;
           audioManager.playEatSound();
           let multiplier = activeEffects.includes('double') ? 2 : 1;
@@ -383,9 +449,10 @@ export default function Game({ player, setPlayer, mode, difficulty, onBack, isMu
           setScore(s => s + points);
           setCombo(c => c + 1);
           
-          // Get all snakes to avoid food spawning on them
+          // Get all snakes and obstacles to avoid food spawning on them
           const allSnakes = isMultiplayer ? [...newSnake, ...snake2Ref.current] : newSnake;
-          setFood(getRandomFood(allSnakes));
+          const currentMap = GAME_MAPS.find(m => m.id === player.activeMap);
+          setFood(getRandomFood(allSnakes, currentMap?.obstacles));
           addParticle(newHead.x, newHead.y, `+${points}`);
         } else {
           newSnake.pop();
@@ -458,11 +525,15 @@ export default function Game({ player, setPlayer, mode, difficulty, onBack, isMu
             return prev;
           }
 
+          // Multiplayer collision - SNAKES CAN NOW PASS THROUGH EACH OTHER!
+          // Removed collision detection between player and bot snakes
+
           const newSnake = [newHead, ...prev];
-          if (newHead.x === food.x && newHead.y === food.y) {
+          if (newHead.x === foodRef.current.x && newHead.y === foodRef.current.y) {
             setScore2(s => s + 10);
             const allSnakes = [...newSnake, ...snakeRef.current];
-            setFood(getRandomFood(allSnakes));
+            const currentMap = GAME_MAPS.find(m => m.id === player.activeMap);
+            setFood(getRandomFood(allSnakes, currentMap?.obstacles));
           } else {
             newSnake.pop();
           }
@@ -472,13 +543,15 @@ export default function Game({ player, setPlayer, mode, difficulty, onBack, isMu
     }, speed);
 
     return () => clearInterval(interval);
-  }, [gameState, difficulty, food, activeEffects, combo, isMultiplayer, multiplayerType, mode]);
+  }, [gameState, difficulty, activeEffects, combo, isMultiplayer, multiplayerType, mode, survivalSpeed]);
 
   // Handle game over - save stats
   useEffect(() => {
     if (gameState === 'GAME_OVER' && !showResult) {
       audioManager.playGameOverSound();
-      const finalS = isMultiplayer ? Math.max(score, score2) : score;
+      // For survival mode, use survival time as score
+      // For competitive mode, use player's score
+      const finalS = mode === 'survival' ? survivalTime : score;
       setFinalScore(finalS);
       
       const foodEaten = Math.floor(score / 10);
@@ -548,6 +621,38 @@ export default function Game({ player, setPlayer, mode, difficulty, onBack, isMu
         }
       }
 
+      // Handle competitive mode ELO changes
+      if (mode === 'competitive') {
+        updated.competitiveGamesPlayed += 1;
+        
+        if (matchType === 'ranked') {
+          // Simulate opponent ELO (random between player's ELO - 200 and + 200)
+          const opponentElo = Math.max(100, player.elo + Math.floor(Math.random() * 400) - 200);
+          
+          // Determine if player won (higher score wins in competitive mode)
+          const playerWon = score > score2;
+          
+          // Calculate ELO change using simplified ELO formula
+          const K = 32; // K-factor (determines how much ELO changes)
+          const expectedScore = 1 / (1 + Math.pow(10, (opponentElo - player.elo) / 400));
+          const actualScore = playerWon ? 1 : 0;
+          const eloChangeValue = Math.round(K * (actualScore - expectedScore));
+          
+          setEloChange(eloChangeValue);
+          updated.elo = Math.max(0, player.elo + eloChangeValue);
+          updated.rank = getRankFromElo(updated.elo);
+          
+          if (playerWon) {
+            updated.rankedWins += 1;
+          } else {
+            updated.rankedLosses += 1;
+          }
+        } else {
+          // Unranked match - just track games played
+          updated.unrankedGamesPlayed += 1;
+        }
+      }
+
       updated = addXp(updated, xp);
       
       // Check for new titles
@@ -606,12 +711,16 @@ export default function Game({ player, setPlayer, mode, difficulty, onBack, isMu
   const formatTime = (s: number) => `${Math.floor(s / 60)}:${(s % 60).toString().padStart(2, '0')}`;
 
   const getModeLabel = () => {
+    if (mode === 'competitive') {
+      return matchType === 'ranked' ? '🏆 Ranked' : '🎮 Unranked';
+    }
     if (isMultiplayer) {
       if (multiplayerType === 'zen') return '🌀 Zen Multiplayer';
       return multiplayerType === 'bot' ? '🤖 vs Bot' : '👥 vs Player';
     }
     if (mode === 'timed') return '⏱️ Timed';
     if (mode === 'zen') return '🧘 Zen';
+    if (mode === 'survival') return '💀 Survival';
     return '🐍 Classic';
   };
 
@@ -650,6 +759,17 @@ export default function Game({ player, setPlayer, mode, difficulty, onBack, isMu
           >
             {isMuted ? '🔇' : '🔊'}
           </button>
+          <button
+            onClick={toggleTheme}
+            className={`p-1.5 rounded-lg transition-all ${
+              theme === 'dark' 
+                ? 'bg-gray-800 hover:bg-gray-700 text-yellow-400 border-gray-700/50' 
+                : 'bg-white hover:bg-gray-50 text-gray-700 border-gray-300'
+            } border`}
+            title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+          >
+            {theme === 'dark' ? '☀️' : '🌙'}
+          </button>
         </div>
       </div>
 
@@ -663,6 +783,24 @@ export default function Game({ player, setPlayer, mode, difficulty, onBack, isMu
           <div className="text-center">
             <div className={`text-[10px] ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Time</div>
             <div className={`text-lg font-bold ${timeLeft <= 10 ? 'text-red-400 animate-pulse' : theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>{formatTime(timeLeft)}</div>
+          </div>
+        )}
+        {mode === 'survival' && (
+          <>
+            <div className="text-center">
+              <div className={`text-[10px] ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Survived</div>
+              <div className={`text-lg font-bold ${survivalTime >= 60 ? 'text-yellow-400' : theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>{formatTime(survivalTime)}</div>
+            </div>
+            <div className="text-center">
+              <div className={`text-[10px] ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Speed</div>
+              <div className={`text-lg font-bold ${survivalSpeed >= 5 ? 'text-red-400 animate-pulse' : survivalSpeed >= 3 ? 'text-orange-400' : theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>x{survivalSpeed}</div>
+            </div>
+          </>
+        )}
+        {mode === 'competitive' && (
+          <div className="text-center">
+            <div className={`text-[10px] ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>ELO</div>
+            <div className={`text-lg font-bold ${matchType === 'ranked' ? 'text-yellow-400' : 'text-blue-400'}`}>{player.elo}</div>
           </div>
         )}
         {combo > 2 && (
@@ -687,7 +825,7 @@ export default function Game({ player, setPlayer, mode, difficulty, onBack, isMu
           <div className="flex gap-1">
             {activeEffects.map(e => (
               <span key={e} className="text-xs animate-pulse">
-                {e === 'double' ? '✖️2' : e === 'speed' ? '⚡' : '🐌'}
+                {e === 'double' ? '✖️2' : e === 'speed' ? '⚡' : e === 'slow' ? '🐌' : e === 'time_slow' ? '⏱️' : e === 'coin_magnet' ? '🧲' : e === 'ghost_pass' ? '👻' : '💫'}
               </span>
             ))}
           </div>
@@ -696,7 +834,7 @@ export default function Game({ player, setPlayer, mode, difficulty, onBack, isMu
 
       {/* Game Board */}
       <div className="relative w-full max-w-lg aspect-square">
-        <div className={`absolute inset-0 bg-gray-900/90 rounded-2xl border-2 overflow-hidden shadow-2xl ${mode === 'zen' ? 'border-purple-500/40 shadow-purple-500/20' : 'border-gray-700/60'}`}>
+        <div className={`absolute inset-0 bg-gray-900/90 rounded-2xl border-2 overflow-hidden shadow-2xl ${mode === 'zen' || multiplayerType === 'zen' ? 'border-purple-500/40 shadow-purple-500/20' : 'border-gray-700/60'}`}>
           {/* Grid */}
           <div className="absolute inset-0 grid grid-cols-20 grid-rows-20">
             {Array.from({ length: GRID_SIZE * GRID_SIZE }).map((_, i) => (
@@ -832,15 +970,21 @@ export default function Game({ player, setPlayer, mode, difficulty, onBack, isMu
           {gameState === 'IDLE' && (
             <div className="absolute inset-0 bg-black/60 backdrop-blur-sm flex flex-col items-center justify-center rounded-2xl z-50 animate-fade-in">
               <div className="text-4xl mb-3">
-                {isMultiplayer 
+                {mode === 'competitive' 
+                  ? (matchType === 'ranked' ? '🏆' : '🎮')
+                  : isMultiplayer 
                   ? (multiplayerType === 'zen' ? '🌀' : multiplayerType === 'bot' ? '🤖' : '👥') 
-                  : mode === 'timed' ? '⏱️' : mode === 'zen' ? '🧘' : '🐍'}
+                  : mode === 'timed' ? '⏱️' : mode === 'zen' ? '🧘' : mode === 'survival' ? '💀' : '🐍'}
               </div>
               <h2 className="text-lg font-bold text-white mb-1">
-                {isMultiplayer 
+                {mode === 'competitive'
+                  ? (matchType === 'ranked' ? 'Ranked Match!' : 'Unranked Match!')
+                  : isMultiplayer 
                   ? (multiplayerType === 'zen' ? 'Zen Multiplayer!' : multiplayerType === 'bot' ? 'vs Bot!' : 'vs Player!') 
-                  : mode === 'timed' ? 'Timed Challenge' : mode === 'zen' ? 'Zen Mode' : 'Ready?'}
+                  : mode === 'timed' ? 'Timed Challenge' : mode === 'zen' ? 'Zen Mode' : mode === 'survival' ? 'Survival Mode' : 'Ready?'}
               </h2>
+              {mode === 'competitive' && matchType === 'ranked' && <p className="text-yellow-300 text-xs mb-2">ELO rating will be affected!</p>}
+              {mode === 'competitive' && matchType === 'unranked' && <p className="text-blue-300 text-xs mb-2">Casual match • No ELO changes</p>}
               {(mode === 'zen' || multiplayerType === 'zen') && <p className="text-purple-300 text-xs mb-2">Pass through walls freely!</p>}
               {isMultiplayer && multiplayerType === 'player' && <p className="text-gray-400 text-xs mb-2">P1: WASD/Arrows • P2: IJKL</p>}
               {isMultiplayer && multiplayerType === 'bot' && <p className="text-gray-400 text-xs mb-2">Use WASD/Arrows to compete!</p>}
@@ -868,7 +1012,11 @@ export default function Game({ player, setPlayer, mode, difficulty, onBack, isMu
                 {isMultiplayer && score > score2 ? '🏆' : score >= (player.highScores[difficulty] || 0) ? '🎉' : '💀'}
               </div>
               <h2 className="text-xl font-bold text-red-400 mb-1">
-                {isMultiplayer ? (score > score2 ? 'You Win!' : score2 > score ? (multiplayerType === 'bot' ? 'Bot Wins!' : 'Player 2 Wins!') : 'Tie!') : 'Game Over!'}
+                {mode === 'competitive' 
+                  ? (score > score2 ? '🏆 You Win!' : score2 > score ? '💀 Bot Wins!' : '🤝 Tie!')
+                  : isMultiplayer 
+                  ? (score > score2 ? 'You Win!' : score2 > score ? ((multiplayerType === 'bot' || multiplayerType === 'zen') ? 'Bot Wins!' : 'Player 2 Wins!') : 'Tie!') 
+                  : 'Game Over!'}
               </h2>
               <div className="flex items-center gap-1 mb-2">
                 <span className="text-xs text-gray-400">{player.avatar} {player.username}</span>
@@ -880,15 +1028,34 @@ export default function Game({ player, setPlayer, mode, difficulty, onBack, isMu
               </div>
               
               <div className="bg-gray-800/80 rounded-xl p-3 mb-3 w-full max-w-[250px] border border-gray-700/50">
-                <div className="flex justify-between text-sm mb-1">
-                  <span className="text-gray-400">Your Score</span>
-                  <span className="text-white font-bold">{finalScore}</span>
-                </div>
-                {isMultiplayer && (
-                  <div className="flex justify-between text-sm mb-1">
-                    <span className="text-gray-400">{multiplayerType === 'bot' ? 'Bot' : 'P2'} Score</span>
-                    <span className="text-blue-400 font-bold">{score2}</span>
-                  </div>
+                {mode === 'survival' ? (
+                  <>
+                    <div className="flex justify-between text-sm mb-1">
+                      <span className="text-gray-400">Survived</span>
+                      <span className="text-white font-bold">{formatTime(finalScore)}</span>
+                    </div>
+                    <div className="flex justify-between text-sm mb-1">
+                      <span className="text-gray-400">Max Speed</span>
+                      <span className="text-orange-400 font-bold">x{survivalSpeed}</span>
+                    </div>
+                    <div className="flex justify-between text-sm mb-1">
+                      <span className="text-gray-400">Score</span>
+                      <span className="text-green-400 font-bold">{score}</span>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="flex justify-between text-sm mb-1">
+                      <span className="text-gray-400">Your Score</span>
+                      <span className="text-white font-bold">{score}</span>
+                    </div>
+                    {(isMultiplayer || mode === 'competitive') && (
+                      <div className="flex justify-between text-sm mb-1">
+                        <span className="text-gray-400">{mode === 'competitive' ? 'Bot' : (multiplayerType === 'bot' || multiplayerType === 'zen') ? 'Bot' : 'P2'} Score</span>
+                        <span className="text-blue-400 font-bold">{score2}</span>
+                      </div>
+                    )}
+                  </>
                 )}
                 <div className="flex justify-between text-sm mb-1">
                   <span className="text-gray-400">Length</span>
@@ -903,6 +1070,21 @@ export default function Game({ player, setPlayer, mode, difficulty, onBack, isMu
                   <span className="text-yellow-500">+Coins</span>
                   <span className="text-yellow-500 font-bold">{coinsEarned}</span>
                 </div>
+                {mode === 'competitive' && matchType === 'ranked' && (
+                  <>
+                    <div className="border-t border-gray-700 my-2" />
+                    <div className="flex justify-between text-sm mb-1">
+                      <span className="text-gray-400">ELO Change</span>
+                      <span className={`font-bold ${eloChange >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                        {eloChange >= 0 ? '+' : ''}{eloChange}
+                      </span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-400">New Rank</span>
+                      <span className="text-purple-400 font-bold">{getRankFromElo(player.elo).toUpperCase()}</span>
+                    </div>
+                  </>
+                )}
               </div>
 
               {/* New Titles Unlocked */}
@@ -968,6 +1150,7 @@ export default function Game({ player, setPlayer, mode, difficulty, onBack, isMu
             {/* Center - Pause Button */}
             <button
               onClick={() => {
+                audioManager.playClickSound();
                 if (gameState === 'PLAYING') setGameState('PAUSED');
                 else if (gameState === 'PAUSED') setGameState('PLAYING');
               }}

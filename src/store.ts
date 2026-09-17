@@ -84,6 +84,13 @@ export function createNewPlayer(username: string): Player {
     // Maps
     activeMap: 'classic',
     ownedMaps: ['classic'],
+    // Competitive/Ranked
+    elo: 1000,
+    rank: 'bronze',
+    rankedWins: 0,
+    rankedLosses: 0,
+    unrankedGamesPlayed: 0,
+    competitiveGamesPlayed: 0,
   };
 }
 
@@ -216,6 +223,26 @@ export function loadPlayer(): Player | null {
     }
     if (!player.ownedMaps) {
       player.ownedMaps = ['classic'];
+    }
+    
+    // Migration: Competitive/Ranked
+    if (player.elo === undefined) {
+      player.elo = 1000;
+    }
+    if (!player.rank) {
+      player.rank = 'bronze';
+    }
+    if (player.rankedWins === undefined) {
+      player.rankedWins = 0;
+    }
+    if (player.rankedLosses === undefined) {
+      player.rankedLosses = 0;
+    }
+    if (player.unrankedGamesPlayed === undefined) {
+      player.unrankedGamesPlayed = 0;
+    }
+    if (player.competitiveGamesPlayed === undefined) {
+      player.competitiveGamesPlayed = 0;
     }
     
     return player;
