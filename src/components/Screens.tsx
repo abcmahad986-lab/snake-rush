@@ -527,28 +527,58 @@ export function ProfileScreen({ player, setPlayer, onBack, onNavigate, theme, to
         {/* Stats */}
         <div className={`${t(theme, 'bg-black border-white', 'bg-white border-black')} rounded-xl p-4 border-2 mb-4`}>
           <h3 className={`text-sm font-bold ${t(theme, 'text-white', 'text-black')} mb-3`}>📊 Statistics</h3>
-          <div className="grid grid-cols-2 gap-2 text-sm">
-            <div className="flex justify-between"><span className={t(theme, 'text-gray-400', 'text-gray-600')}>Games Played</span><span className={`${t(theme, 'text-white', 'text-black')} font-bold`}>{player.gamesPlayed}</span></div>
-            <div className="flex justify-between"><span className={t(theme, 'text-gray-400', 'text-gray-600')}>Total Score</span><span className={`${t(theme, 'text-white', 'text-black')} font-bold`}>{player.totalScore}</span></div>
-            <div className="flex justify-between"><span className={t(theme, 'text-gray-400', 'text-gray-600')}>Food Eaten</span><span className={`${t(theme, 'text-white', 'text-black')} font-bold`}>{player.totalFoodEaten}</span></div>
-            <div className="flex justify-between"><span className={t(theme, 'text-gray-400', 'text-gray-600')}>Longest Snake</span><span className={`${t(theme, 'text-white', 'text-black')} font-bold`}>{player.longestSnake}</span></div>
-            <div className="flex justify-between"><span className={t(theme, 'text-gray-400', 'text-gray-600')}>Daily Streak</span><span className={`${t(theme, 'text-white', 'text-black')} font-bold`}>{player.dailyStreak} 🔥</span></div>
-            <div className="flex justify-between"><span className={t(theme, 'text-gray-400', 'text-gray-600')}>Trophies</span><span className={`${t(theme, 'text-white', 'text-black')} font-bold`}>{player.trophies.length}/{TROPHIES.length}</span></div>
-            <div className="flex justify-between"><span className={t(theme, 'text-gray-400', 'text-gray-600')}>Titles</span><span className={`${t(theme, 'text-white', 'text-black')} font-bold`}>{player.titles.length}/{TITLES.length}</span></div>
-            <div className="flex justify-between"><span className={t(theme, 'text-gray-400', 'text-gray-600')}>Bot Wins</span><span className={`${t(theme, 'text-white', 'text-black')} font-bold`}>{player.gamesWonVsBot}</span></div>
+          <div className="space-y-2">
+            <div className="flex justify-between items-center">
+              <span className={`text-sm ${t(theme, 'text-gray-400', 'text-gray-600')}`}>Games Played</span>
+              <span className={`text-sm font-bold ${t(theme, 'text-white', 'text-black')}`}>{player.gamesPlayed}</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className={`text-sm ${t(theme, 'text-gray-400', 'text-gray-600')}`}>Total Score</span>
+              <span className={`text-sm font-bold ${t(theme, 'text-white', 'text-black')}`}>{player.totalScore}</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className={`text-sm ${t(theme, 'text-gray-400', 'text-gray-600')}`}>Food Eaten</span>
+              <span className={`text-sm font-bold ${t(theme, 'text-white', 'text-black')}`}>{player.totalFoodEaten}</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className={`text-sm ${t(theme, 'text-gray-400', 'text-gray-600')}`}>Longest Snake</span>
+              <span className={`text-sm font-bold ${t(theme, 'text-white', 'text-black')}`}>{player.longestSnake}</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className={`text-sm ${t(theme, 'text-gray-400', 'text-gray-600')}`}>Daily Streak</span>
+              <span className={`text-sm font-bold ${t(theme, 'text-white', 'text-black')}`}>{player.dailyStreak} 🔥</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className={`text-sm ${t(theme, 'text-gray-400', 'text-gray-600')}`}>Trophies</span>
+              <span className={`text-sm font-bold ${t(theme, 'text-white', 'text-black')}`}>{player.trophies.length}/{TROPHIES.length}</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className={`text-sm ${t(theme, 'text-gray-400', 'text-gray-600')}`}>Titles</span>
+              <span className={`text-sm font-bold ${t(theme, 'text-white', 'text-black')}`}>{player.titles.length}/{TITLES.length}</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className={`text-sm ${t(theme, 'text-gray-400', 'text-gray-600')}`}>Bot Wins</span>
+              <span className={`text-sm font-bold ${t(theme, 'text-white', 'text-black')}`}>{player.gamesWonVsBot}</span>
+            </div>
           </div>
         </div>
 
         {/* High Scores */}
         <div className={`${t(theme, 'bg-black border-white', 'bg-white border-black')} rounded-xl p-4 border-2`}>
           <h3 className={`text-sm font-bold ${t(theme, 'text-white', 'text-black')} mb-3`}>🏅 High Scores</h3>
-          <div className="space-y-2">
+          <div className="space-y-3">
             {(['easy', 'medium', 'hard', 'insane'] as Difficulty[]).map(d => (
               <div key={d} className="flex justify-between items-center">
-                <span className={`text-xs ${t(theme, 'text-gray-400', 'text-gray-600')}`}>{DIFFICULTY_LABELS[d]}</span>
-                <div className="flex gap-3">
-                  <span className={`text-xs ${t(theme, 'text-white', 'text-black')} font-bold`}>Classic: {player.highScores[d]}</span>
-                  <span className={`text-xs ${t(theme, 'text-white', 'text-black')} font-bold`}>Timed: {player.timedHighScores[d]}</span>
+                <span className={`text-sm ${t(theme, 'text-gray-400', 'text-gray-600')} font-medium`}>{DIFFICULTY_LABELS[d]}</span>
+                <div className="flex gap-4">
+                  <div className="text-right">
+                    <div className={`text-xs ${t(theme, 'text-gray-500', 'text-gray-500')}`}>Classic</div>
+                    <div className={`text-sm font-bold ${t(theme, 'text-white', 'text-black')}`}>{player.highScores[d]}</div>
+                  </div>
+                  <div className="text-right">
+                    <div className={`text-xs ${t(theme, 'text-gray-500', 'text-gray-500')}`}>Timed</div>
+                    <div className={`text-sm font-bold ${t(theme, 'text-white', 'text-black')}`}>{player.timedHighScores[d]}</div>
+                  </div>
                 </div>
               </div>
             ))}
