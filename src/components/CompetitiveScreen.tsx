@@ -63,7 +63,7 @@ export function CompetitiveScreen({ player, setPlayer, onBack, onStartMatch, the
   const rankIcon = getRankIcon(currentRank);
 
   return (
-    <div className={`min-h-screen ${t(theme, 'bg-gradient-to-br from-gray-900 via-slate-900 to-gray-800', 'bg-gradient-to-br from-gray-50 via-slate-50 to-white')} p-4`}>
+    <div className={`min-h-screen ${t(theme, 'bg-black', 'bg-white')} p-4`}>
       <div className="max-w-2xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
@@ -72,53 +72,53 @@ export function CompetitiveScreen({ player, setPlayer, onBack, onStartMatch, the
               audioManager.playClickSound();
               onBack();
             }}
-            className={`px-4 py-2 ${t(theme, 'bg-gray-800 hover:bg-gray-700 text-gray-300', 'bg-white hover:bg-gray-100 text-gray-700')} rounded-lg font-bold transition-all`}
+            className={`px-4 py-2 ${t(theme, 'bg-black text-white border-white', 'bg-white text-black border-black')} border-2 rounded-lg font-bold transition-all w-20`}
           >
             ← Back
           </button>
-          <h2 className={`text-2xl font-black ${t(theme, 'text-white', 'text-gray-900')}`}>🏆 Competitive</h2>
+          <h2 className={`text-2xl font-black ${t(theme, 'text-white', 'text-black')}`}>🏆 Competitive</h2>
           <div className="w-20"></div>
         </div>
 
         {/* Player Rank Card */}
-        <div className={`${t(theme, 'bg-gray-800/60 border-gray-700/50', 'bg-white border-gray-200')} rounded-2xl p-6 mb-6 border-2`}>
+        <div className={`${t(theme, 'bg-black border-white', 'bg-white border-black')} rounded-xl p-6 mb-6 border-2`}>
           <div className="flex items-center justify-between mb-4">
-            <div>
-              <div className={`text-sm ${t(theme, 'text-gray-400', 'text-gray-600')} mb-1`}>Your Rank</div>
-              <div className={`text-3xl font-black bg-gradient-to-r ${rankColor} bg-clip-text text-transparent`}>
+            <div className="text-left">
+              <div className={`text-xs ${t(theme, 'text-gray-400', 'text-gray-600')} mb-1 uppercase tracking-wider`}>Your Rank</div>
+              <div className={`text-2xl font-black ${t(theme, 'text-white', 'text-black')}`}>
                 {rankIcon} {currentRank.toUpperCase()}
               </div>
             </div>
             <div className="text-right">
-              <div className={`text-sm ${t(theme, 'text-gray-400', 'text-gray-600')} mb-1`}>ELO Rating</div>
-              <div className={`text-3xl font-black ${t(theme, 'text-white', 'text-gray-900')}`}>{player.elo}</div>
+              <div className={`text-xs ${t(theme, 'text-gray-400', 'text-gray-600')} mb-1 uppercase tracking-wider`}>ELO Rating</div>
+              <div className={`text-2xl font-black ${t(theme, 'text-white', 'text-black')}`}>{player.elo}</div>
             </div>
           </div>
           
           {/* Stats */}
-          <div className="grid grid-cols-3 gap-4 pt-4 border-t border-gray-700/30">
+          <div className="grid grid-cols-3 gap-4 pt-4 border-t-2 border-gray-700/30">
             <div className="text-center">
-              <div className={`text-2xl font-bold text-green-400`}>{player.rankedWins}</div>
-              <div className={`text-xs ${t(theme, 'text-gray-400', 'text-gray-600')}`}>Wins</div>
+              <div className={`text-xl font-bold ${t(theme, 'text-white', 'text-black')}`}>{player.rankedWins}</div>
+              <div className={`text-xs ${t(theme, 'text-gray-400', 'text-gray-600')} uppercase tracking-wider`}>Wins</div>
+            </div>
+            <div className="text-center border-x-2 border-gray-700/30">
+              <div className={`text-xl font-bold ${t(theme, 'text-white', 'text-black')}`}>{player.rankedLosses}</div>
+              <div className={`text-xs ${t(theme, 'text-gray-400', 'text-gray-600')} uppercase tracking-wider`}>Losses</div>
             </div>
             <div className="text-center">
-              <div className={`text-2xl font-bold text-red-400`}>{player.rankedLosses}</div>
-              <div className={`text-xs ${t(theme, 'text-gray-400', 'text-gray-600')}`}>Losses</div>
-            </div>
-            <div className="text-center">
-              <div className={`text-2xl font-bold ${t(theme, 'text-white', 'text-gray-900')}`}>
+              <div className={`text-xl font-bold ${t(theme, 'text-white', 'text-black')}`}>
                 {player.rankedWins + player.rankedLosses > 0 
                   ? Math.round((player.rankedWins / (player.rankedWins + player.rankedLosses)) * 100)
                   : 0}%
               </div>
-              <div className={`text-xs ${t(theme, 'text-gray-400', 'text-gray-600')}`}>Win Rate</div>
+              <div className={`text-xs ${t(theme, 'text-gray-400', 'text-gray-600')} uppercase tracking-wider`}>Win Rate</div>
             </div>
           </div>
         </div>
 
         {/* Match Type Selection */}
-        <div className={`${t(theme, 'bg-gray-800/60 border-gray-700/50', 'bg-white border-gray-200')} rounded-2xl p-6 mb-6 border-2`}>
-          <h3 className={`text-lg font-bold ${t(theme, 'text-white', 'text-gray-900')} mb-4`}>Select Match Type</h3>
+        <div className={`${t(theme, 'bg-black border-white', 'bg-white border-black')} rounded-xl p-6 mb-6 border-2`}>
+          <h3 className={`text-lg font-bold ${t(theme, 'text-white', 'text-black')} mb-4 text-center uppercase tracking-wider`}>Select Match Type</h3>
           
           <div className="grid grid-cols-2 gap-4">
             {/* Ranked Match */}
@@ -127,16 +127,16 @@ export function CompetitiveScreen({ player, setPlayer, onBack, onStartMatch, the
                 audioManager.playClickSound();
                 setSelectedMatchType('ranked');
               }}
-              className={`p-6 rounded-xl border-2 transition-all ${
+              className={`p-6 rounded-xl border-2 transition-all flex flex-col items-center justify-center min-h-[140px] ${
                 selectedMatchType === 'ranked'
-                  ? 'bg-gradient-to-br from-yellow-500/20 to-orange-500/20 border-yellow-500 scale-105'
-                  : t(theme, 'bg-gray-900/40 border-gray-700/50 hover:border-yellow-500/50', 'bg-gray-50 border-gray-300 hover:border-yellow-500/50')
+                  ? t(theme, 'bg-gray-900 border-yellow-400 scale-105', 'bg-gray-100 border-yellow-600 scale-105')
+                  : t(theme, 'bg-black border-white hover:border-yellow-400/50', 'bg-white border-black hover:border-yellow-600/50')
               }`}
             >
-              <div className="text-5xl mb-3">🏆</div>
-              <div className={`text-xl font-bold ${t(theme, 'text-white', 'text-gray-900')} mb-2`}>Ranked</div>
-              <div className={`text-xs ${t(theme, 'text-gray-400', 'text-gray-600')}`}>
-                Affects your ELO rating. Compete to climb the ranks!
+              <div className="text-4xl mb-2">🏆</div>
+              <div className={`text-lg font-bold ${t(theme, 'text-white', 'text-black')} mb-1`}>Ranked</div>
+              <div className={`text-xs ${t(theme, 'text-gray-400', 'text-gray-600')} text-center`}>
+                Affects ELO rating
               </div>
             </button>
 
@@ -146,16 +146,16 @@ export function CompetitiveScreen({ player, setPlayer, onBack, onStartMatch, the
                 audioManager.playClickSound();
                 setSelectedMatchType('unranked');
               }}
-              className={`p-6 rounded-xl border-2 transition-all ${
+              className={`p-6 rounded-xl border-2 transition-all flex flex-col items-center justify-center min-h-[140px] ${
                 selectedMatchType === 'unranked'
-                  ? 'bg-gradient-to-br from-blue-500/20 to-cyan-500/20 border-blue-500 scale-105'
-                  : t(theme, 'bg-gray-900/40 border-gray-700/50 hover:border-blue-500/50', 'bg-gray-50 border-gray-300 hover:border-blue-500/50')
+                  ? t(theme, 'bg-gray-900 border-blue-400 scale-105', 'bg-gray-100 border-blue-600 scale-105')
+                  : t(theme, 'bg-black border-white hover:border-blue-400/50', 'bg-white border-black hover:border-blue-600/50')
               }`}
             >
-              <div className="text-5xl mb-3">🎮</div>
-              <div className={`text-xl font-bold ${t(theme, 'text-white', 'text-gray-900')} mb-2`}>Unranked</div>
-              <div className={`text-xs ${t(theme, 'text-gray-400', 'text-gray-600')}`}>
-                Casual match. No ELO changes. Just for fun!
+              <div className="text-4xl mb-2">🎮</div>
+              <div className={`text-lg font-bold ${t(theme, 'text-white', 'text-black')} mb-1`}>Unranked</div>
+              <div className={`text-xs ${t(theme, 'text-gray-400', 'text-gray-600')} text-center`}>
+                No ELO changes
               </div>
             </button>
           </div>
@@ -165,28 +165,48 @@ export function CompetitiveScreen({ player, setPlayer, onBack, onStartMatch, the
         <button
           onClick={handleStartMatch}
           disabled={!selectedMatchType}
-          className={`w-full py-4 rounded-xl font-bold text-lg transition-all ${
+          className={`w-full py-4 rounded-xl font-bold text-lg transition-all border-2 mb-6 ${
             selectedMatchType
               ? selectedMatchType === 'ranked'
-                ? 'bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-400 hover:to-orange-400 text-white shadow-lg shadow-yellow-500/50'
-                : 'bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-400 hover:to-cyan-400 text-white shadow-lg shadow-blue-500/50'
-              : t(theme, 'bg-gray-700 text-gray-500 cursor-not-allowed', 'bg-gray-300 text-gray-500 cursor-not-allowed')
+                ? t(theme, 'bg-black text-yellow-400 border-yellow-400 hover:bg-gray-900', 'bg-white text-yellow-600 border-yellow-600 hover:bg-gray-100')
+                : t(theme, 'bg-black text-blue-400 border-blue-400 hover:bg-gray-900', 'bg-white text-blue-600 border-blue-600 hover:bg-gray-100')
+              : t(theme, 'bg-black text-gray-500 border-gray-700 cursor-not-allowed', 'bg-white text-gray-400 border-gray-300 cursor-not-allowed')
           }`}
         >
           {selectedMatchType ? `Start ${selectedMatchType === 'ranked' ? 'Ranked' : 'Unranked'} Match` : 'Select Match Type'}
         </button>
 
-        {/* Info Box */}
-        <div className={`${t(theme, 'bg-blue-900/20 border-blue-500/30', 'bg-blue-50 border-blue-300')} rounded-xl p-4 mt-6 border-2`}>
-          <div className="flex items-start gap-3">
-            <div className="text-2xl">ℹ️</div>
-            <div className="flex-1">
-              <div className={`text-sm font-bold ${t(theme, 'text-white', 'text-gray-900')} mb-1`}>How ELO Works</div>
-              <div className={`text-xs ${t(theme, 'text-gray-300', 'text-gray-700')}`}>
-                Win matches to increase your ELO rating. Lose matches to decrease it. Your rank is determined by your ELO:
-                <br />
-                <span className="font-bold">Bronze (0-399)</span> → <span className="font-bold">Silver (400-799)</span> → <span className="font-bold">Gold (800-1199)</span> → <span className="font-bold">Platinum (1200-1599)</span> → <span className="font-bold">Diamond (1600-1999)</span> → <span className="font-bold">Master (2000-2399)</span> → <span className="font-bold">Grandmaster (2400+)</span>
-              </div>
+        {/* Rank Tiers */}
+        <div className={`${t(theme, 'bg-black border-white', 'bg-white border-black')} rounded-xl p-6 border-2`}>
+          <h3 className={`text-lg font-bold ${t(theme, 'text-white', 'text-black')} mb-4 text-center uppercase tracking-wider`}>Rank Tiers</h3>
+          <div className="space-y-2">
+            <div className="flex justify-between items-center">
+              <span className={`text-sm font-bold ${t(theme, 'text-white', 'text-black')}`}>🥉 Bronze</span>
+              <span className={`text-xs ${t(theme, 'text-gray-400', 'text-gray-600')}`}>0 - 399 ELO</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className={`text-sm font-bold ${t(theme, 'text-white', 'text-black')}`}>🥈 Silver</span>
+              <span className={`text-xs ${t(theme, 'text-gray-400', 'text-gray-600')}`}>400 - 799 ELO</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className={`text-sm font-bold ${t(theme, 'text-white', 'text-black')}`}>🥇 Gold</span>
+              <span className={`text-xs ${t(theme, 'text-gray-400', 'text-gray-600')}`}>800 - 1199 ELO</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className={`text-sm font-bold ${t(theme, 'text-white', 'text-black')}`}>💎 Platinum</span>
+              <span className={`text-xs ${t(theme, 'text-gray-400', 'text-gray-600')}`}>1200 - 1599 ELO</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className={`text-sm font-bold ${t(theme, 'text-white', 'text-black')}`}>💠 Diamond</span>
+              <span className={`text-xs ${t(theme, 'text-gray-400', 'text-gray-600')}`}>1600 - 1999 ELO</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className={`text-sm font-bold ${t(theme, 'text-white', 'text-black')}`}>👑 Master</span>
+              <span className={`text-xs ${t(theme, 'text-gray-400', 'text-gray-600')}`}>2000 - 2399 ELO</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className={`text-sm font-bold ${t(theme, 'text-white', 'text-black')}`}>🏆 Grandmaster</span>
+              <span className={`text-xs ${t(theme, 'text-gray-400', 'text-gray-600')}`}>2400+ ELO</span>
             </div>
           </div>
         </div>
