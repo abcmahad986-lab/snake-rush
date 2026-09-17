@@ -118,6 +118,10 @@ function App() {
       // Show multiplayer choice modal
       setPendingDifficulty(difficulty);
       setShowMultiplayerChoice(true);
+    } else if (mode === 'competitive') {
+      // Navigate to competitive screen to choose ranked/unranked
+      setPendingDifficulty(difficulty);
+      setScreen('competitive');
     } else {
       setGameMode(mode);
       setGameDifficulty(difficulty);

@@ -686,12 +686,16 @@ export default function Game({ player, setPlayer, mode, difficulty, onBack, isMu
   const formatTime = (s: number) => `${Math.floor(s / 60)}:${(s % 60).toString().padStart(2, '0')}`;
 
   const getModeLabel = () => {
+    if (mode === 'competitive') {
+      return matchType === 'ranked' ? '🏆 Ranked' : '🎮 Unranked';
+    }
     if (isMultiplayer) {
       if (multiplayerType === 'zen') return '🌀 Zen Multiplayer';
       return multiplayerType === 'bot' ? '🤖 vs Bot' : '👥 vs Player';
     }
     if (mode === 'timed') return '⏱️ Timed';
     if (mode === 'zen') return '🧘 Zen';
+    if (mode === 'survival') return '💀 Survival';
     return '🐍 Classic';
   };
 
@@ -767,6 +771,12 @@ export default function Game({ player, setPlayer, mode, difficulty, onBack, isMu
               <div className={`text-lg font-bold ${survivalSpeed >= 5 ? 'text-red-400 animate-pulse' : survivalSpeed >= 3 ? 'text-orange-400' : theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>x{survivalSpeed}</div>
             </div>
           </>
+        )}
+        {mode === 'competitive' && (
+          <div className="text-center">
+            <div className={`text-[10px] ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>ELO</div>
+            <div className={`text-lg font-bold ${matchType === 'ranked' ? 'text-yellow-400' : 'text-blue-400'}`}>{player.elo}</div>
+          </div>
         )}
         {combo > 2 && (
           <div className="text-center">
@@ -935,15 +945,21 @@ export default function Game({ player, setPlayer, mode, difficulty, onBack, isMu
           {gameState === 'IDLE' && (
             <div className="absolute inset-0 bg-black/60 backdrop-blur-sm flex flex-col items-center justify-center rounded-2xl z-50 animate-fade-in">
               <div className="text-4xl mb-3">
-                {isMultiplayer 
+                {mode === 'competitive' 
+                  ? (matchType === 'ranked' ? '🏆' : '🎮')
+                  : isMultiplayer 
                   ? (multiplayerType === 'zen' ? '🌀' : multiplayerType === 'bot' ? '🤖' : '👥') 
-                  : mode === 'timed' ? '⏱️' : mode === 'zen' ? '🧘' : '🐍'}
+                  : mode === 'timed' ? '⏱️' : mode === 'zen' ? '🧘' : mode === 'survival' ? '💀' : '🐍'}
               </div>
               <h2 className="text-lg font-bold text-white mb-1">
-                {isMultiplayer 
+                {mode === 'competitive'
+                  ? (matchType === 'ranked' ? 'Ranked Match!' : 'Unranked Match!')
+                  : isMultiplayer 
                   ? (multiplayerType === 'zen' ? 'Zen Multiplayer!' : multiplayerType === 'bot' ? 'vs Bot!' : 'vs Player!') 
-                  : mode === 'timed' ? 'Timed Challenge' : mode === 'zen' ? 'Zen Mode' : 'Ready?'}
+                  : mode === 'timed' ? 'Timed Challenge' : mode === 'zen' ? 'Zen Mode' : mode === 'survival' ? 'Survival Mode' : 'Ready?'}
               </h2>
+              {mode === 'competitive' && matchType === 'ranked' && <p className="text-yellow-300 text-xs mb-2">ELO rating will be affected!</p>}
+              {mode === 'competitive' && matchType === 'unranked' && <p className="text-blue-300 text-xs mb-2">Casual match • No ELO changes</p>}
               {(mode === 'zen' || multiplayerType === 'zen') && <p className="text-purple-300 text-xs mb-2">Pass through walls freely!</p>}
               {isMultiplayer && multiplayerType === 'player' && <p className="text-gray-400 text-xs mb-2">P1: WASD/Arrows • P2: IJKL</p>}
               {isMultiplayer && multiplayerType === 'bot' && <p className="text-gray-400 text-xs mb-2">Use WASD/Arrows to compete!</p>}
@@ -971,7 +987,11 @@ export default function Game({ player, setPlayer, mode, difficulty, onBack, isMu
                 {isMultiplayer && score > score2 ? '🏆' : score >= (player.highScores[difficulty] || 0) ? '🎉' : '💀'}
               </div>
               <h2 className="text-xl font-bold text-red-400 mb-1">
-                {isMultiplayer ? (score > score2 ? 'You Win!' : score2 > score ? ((multiplayerType === 'bot' || multiplayerType === 'zen') ? 'Bot Wins!' : 'Player 2 Wins!') : 'Tie!') : 'Game Over!'}
+                {mode === 'competitive' 
+                  ? (score >= 50 ? '🏆 Match Complete!' : '💀 Match Lost')
+                  : isMultiplayer 
+                  ? (score > score2 ? 'You Win!' : score2 > score ? ((multiplayerType === 'bot' || multiplayerType === 'zen') ? 'Bot Wins!' : 'Player 2 Wins!') : 'Tie!') 
+                  : 'Game Over!'}
               </h2>
               <div className="flex items-center gap-1 mb-2">
                 <span className="text-xs text-gray-400">{player.avatar} {player.username}</span>
