@@ -142,6 +142,11 @@ export default function Game({ player, setPlayer, mode, difficulty, onBack, isMu
   const snake2Ref = useRef<Position[]>([{ x: 10, y: 15 }, { x: 9, y: 15 }, { x: 8, y: 15 }]);
   const foodRef = useRef<Position>(food);
 
+  // Keep foodRef in sync with food state
+  useEffect(() => {
+    foodRef.current = food;
+  }, [food]);
+
   useEffect(() => { stateRef.current = gameState; }, [gameState]);
   useEffect(() => { dirRef.current = direction; }, [direction]);
   useEffect(() => { dir2Ref.current = direction2; }, [direction2]);
@@ -382,7 +387,7 @@ export default function Game({ player, setPlayer, mode, difficulty, onBack, isMu
         const newSnake = [newHead, ...prev];
         let ate = false;
 
-        if (newHead.x === food.x && newHead.y === food.y) {
+        if (newHead.x === foodRef.current.x && newHead.y === foodRef.current.y) {
           ate = true;
           audioManager.playEatSound();
           let multiplier = activeEffects.includes('double') ? 2 : 1;
@@ -468,7 +473,7 @@ export default function Game({ player, setPlayer, mode, difficulty, onBack, isMu
           }
 
           const newSnake = [newHead, ...prev];
-          if (newHead.x === food.x && newHead.y === food.y) {
+          if (newHead.x === foodRef.current.x && newHead.y === foodRef.current.y) {
             setScore2(s => s + 10);
             const allSnakes = [...newSnake, ...snakeRef.current];
             setFood(getRandomFood(allSnakes));
