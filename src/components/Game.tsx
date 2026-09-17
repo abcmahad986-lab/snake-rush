@@ -105,10 +105,8 @@ function getBotDirection(snake: Position[], food: Position, currentDir: Directio
         score -= 1000;
       }
       
-      // Check other snake collision (bad)
-      if (otherSnake && otherSnake.some(s => s.x === newHead.x && s.y === newHead.y)) {
-        score -= 500;
-      }
+      // Check other snake collision - SNAKES CAN PASS THROUGH EACH OTHER
+      // Removed penalty for moving into other snake
       
       // Bonus for being adjacent to food
       if (newHead.x === food.x && newHead.y === food.y) {
@@ -435,15 +433,8 @@ export default function Game({ player, setPlayer, mode, difficulty, onBack, isMu
           }
         }
 
-        // Multiplayer collision
-        // In competitive mode, snakes collide with each other
-        // In other multiplayer modes, snakes can pass through each other
-        if (isMultiplayer && mode === 'competitive') {
-          if (snake2Ref.current.some(s => s.x === newHead.x && s.y === newHead.y)) {
-            setGameState('GAME_OVER');
-            return prev;
-          }
-        }
+        // Multiplayer collision - SNAKES CAN NOW PASS THROUGH EACH OTHER!
+        // Removed collision detection between player snakes in all modes
 
         const newSnake = [newHead, ...prev];
         let ate = false;
@@ -534,12 +525,8 @@ export default function Game({ player, setPlayer, mode, difficulty, onBack, isMu
             return prev;
           }
 
-          // Multiplayer collision - competitive mode
-          // Bot collides with player snake
-          if (mode === 'competitive' && snakeRef.current.some(s => s.x === newHead.x && s.y === newHead.y)) {
-            setGameState('GAME_OVER');
-            return prev;
-          }
+          // Multiplayer collision - SNAKES CAN NOW PASS THROUGH EACH OTHER!
+          // Removed collision detection between player and bot snakes
 
           const newSnake = [newHead, ...prev];
           if (newHead.x === foodRef.current.x && newHead.y === foodRef.current.y) {
@@ -563,7 +550,8 @@ export default function Game({ player, setPlayer, mode, difficulty, onBack, isMu
     if (gameState === 'GAME_OVER' && !showResult) {
       audioManager.playGameOverSound();
       // For survival mode, use survival time as score
-      const finalS = mode === 'survival' ? survivalTime : (isMultiplayer ? Math.max(score, score2) : score);
+      // For competitive mode, use player's score
+      const finalS = mode === 'survival' ? survivalTime : score;
       setFinalScore(finalS);
       
       const foodEaten = Math.floor(score / 10);
@@ -641,8 +629,8 @@ export default function Game({ player, setPlayer, mode, difficulty, onBack, isMu
           // Simulate opponent ELO (random between player's ELO - 200 and + 200)
           const opponentElo = Math.max(100, player.elo + Math.floor(Math.random() * 400) - 200);
           
-          // Determine if player won (score > score2 for multiplayer, or score > 50 for single player)
-          const playerWon = isMultiplayer ? score > score2 : finalS > 50;
+          // Determine if player won (higher score wins in competitive mode)
+          const playerWon = score > score2;
           
           // Calculate ELO change using simplified ELO formula
           const K = 32; // K-factor (determines how much ELO changes)
@@ -1025,7 +1013,7 @@ export default function Game({ player, setPlayer, mode, difficulty, onBack, isMu
               </div>
               <h2 className="text-xl font-bold text-red-400 mb-1">
                 {mode === 'competitive' 
-                  ? (score >= 50 ? '🏆 Match Complete!' : '💀 Match Lost')
+                  ? (score > score2 ? '🏆 You Win!' : score2 > score ? '💀 Bot Wins!' : '🤝 Tie!')
                   : isMultiplayer 
                   ? (score > score2 ? 'You Win!' : score2 > score ? ((multiplayerType === 'bot' || multiplayerType === 'zen') ? 'Bot Wins!' : 'Player 2 Wins!') : 'Tie!') 
                   : 'Game Over!'}
@@ -1059,11 +1047,11 @@ export default function Game({ player, setPlayer, mode, difficulty, onBack, isMu
                   <>
                     <div className="flex justify-between text-sm mb-1">
                       <span className="text-gray-400">Your Score</span>
-                      <span className="text-white font-bold">{finalScore}</span>
+                      <span className="text-white font-bold">{score}</span>
                     </div>
-                    {isMultiplayer && (
+                    {(isMultiplayer || mode === 'competitive') && (
                       <div className="flex justify-between text-sm mb-1">
-                        <span className="text-gray-400">{(multiplayerType === 'bot' || multiplayerType === 'zen') ? 'Bot' : 'P2'} Score</span>
+                        <span className="text-gray-400">{mode === 'competitive' ? 'Bot' : (multiplayerType === 'bot' || multiplayerType === 'zen') ? 'Bot' : 'P2'} Score</span>
                         <span className="text-blue-400 font-bold">{score2}</span>
                       </div>
                     )}
