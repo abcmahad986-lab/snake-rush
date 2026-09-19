@@ -82,31 +82,29 @@ export function CharactersScreen({ player, setPlayer, onBack, theme }: {
             const isEquipped = player.equippedCharacter === character.id;
 
             return (
-              <button
+              <div
                 key={character.id}
-                onClick={() => isUnlocked && setSelectedCharacter(character.id)}
-                disabled={!isUnlocked}
                 className={`${
                   isEquipped
                     ? t(theme, 'bg-gradient-to-br from-purple-900/60 to-blue-900/60 border-purple-500/50', 'bg-gradient-to-br from-purple-100 to-blue-100 border-purple-400')
                     : isUnlocked
                     ? t(theme, 'bg-gray-800/60 border-gray-700/50 hover:border-gray-600', 'bg-white border-gray-200 hover:border-gray-400 shadow-sm')
                     : t(theme, 'bg-gray-900/40 border-gray-800/30', 'bg-gray-100 border-gray-300')
-                } rounded-xl p-4 border transition-all ${isUnlocked ? 'hover:scale-105' : 'cursor-not-allowed opacity-60'} ${isEquipped ? 'ring-2 ring-purple-500' : ''}`}
+                } rounded-xl p-4 border transition-all ${isEquipped ? 'ring-2 ring-purple-500' : ''}`}
               >
-                <div className="text-5xl mb-2">{character.emoji}</div>
-                <div className={`font-bold ${t(theme, 'text-white', 'text-gray-900')} mb-1`}>{character.name}</div>
-                <div className={`text-xs ${t(theme, 'text-gray-400', 'text-gray-600')} mb-2`}>{character.description}</div>
+                <div className="text-5xl mb-2 text-center">{character.emoji}</div>
+                <div className={`font-bold ${t(theme, 'text-white', 'text-gray-900')} mb-1 text-center`}>{character.name}</div>
+                <div className={`text-xs ${t(theme, 'text-gray-400', 'text-gray-600')} mb-2 text-center`}>{character.description}</div>
                 
                 {!isUnlocked ? (
-                  <div className="text-xs text-red-400">🔒 Level {character.unlockLevel}</div>
+                  <div className="text-xs text-red-400 text-center mb-2">🔒 Level {character.unlockLevel}</div>
                 ) : isEquipped ? (
-                  <div className="text-xs text-purple-400 font-bold">✓ Equipped</div>
+                  <div className="text-xs text-purple-400 font-bold text-center mb-2">✓ Equipped</div>
                 ) : (
-                  <div className="text-xs text-green-400">✓ Unlocked</div>
+                  <div className="text-xs text-green-400 text-center mb-2">✓ Unlocked</div>
                 )}
 
-                <div className={`mt-2 text-xs px-2 py-1 rounded-full inline-block ${
+                <div className={`mb-3 text-xs px-2 py-1 rounded-full inline-block w-full text-center ${
                   character.rarity === 'common' ? 'bg-gray-600/30 text-gray-300' :
                   character.rarity === 'rare' ? 'bg-blue-600/30 text-blue-300' :
                   character.rarity === 'epic' ? 'bg-purple-600/30 text-purple-300' :
@@ -114,7 +112,34 @@ export function CharactersScreen({ player, setPlayer, onBack, theme }: {
                 }`}>
                   {character.rarity.toUpperCase()}
                 </div>
-              </button>
+
+                {/* Equip Button - Only show for unlocked characters that aren't equipped */}
+                {isUnlocked && !isEquipped && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      selectCharacter(character.id);
+                    }}
+                    className="w-full mt-2 px-3 py-2 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-400 hover:to-emerald-500 text-white font-bold text-sm rounded-lg transition-all transform hover:scale-105 active:scale-95"
+                  >
+                    ⚔️ Equip
+                  </button>
+                )}
+
+                {/* View Details Button - Show for unlocked characters */}
+                {isUnlocked && (
+                  <button
+                    onClick={() => setSelectedCharacter(character.id)}
+                    className={`w-full mt-2 px-3 py-2 ${
+                      isEquipped 
+                        ? 'bg-gradient-to-r from-purple-500 to-blue-600 hover:from-purple-400 hover:to-blue-500'
+                        : t(theme, 'bg-gray-700 hover:bg-gray-600', 'bg-gray-200 hover:bg-gray-300')
+                    } ${t(theme, 'text-white', 'text-gray-900')} font-bold text-sm rounded-lg transition-all transform hover:scale-105 active:scale-95`}
+                  >
+                    {isEquipped ? '✓ View Skins' : '👁️ View Details'}
+                  </button>
+                )}
+              </div>
             );
           })}
         </div>
