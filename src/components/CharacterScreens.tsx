@@ -12,18 +12,35 @@ export function CharactersScreen({ player, setPlayer, onBack, theme }: {
   theme: Theme;
 }) {
   const [selectedCharacter, setSelectedCharacter] = useState<string | null>(null);
+  const [previewSkin, setPreviewSkin] = useState<string | null>(null);
 
   const selectCharacter = (characterId: string) => {
-    if (!player.ownedCharacters.includes(characterId)) return;
+    const character = CHARACTERS.find(c => c.id === characterId);
+    if (!character || player.level < character.unlockLevel) return;
+    
+    // Get all skins for this character
+    const characterSkins = CHARACTER_SKINS.filter(s => s.characterId === characterId);
+    
+    if (characterSkins.length === 0) {
+      console.error(`No skins found for character: ${characterId}`);
+      return;
+    }
+    
+    // Find the first unlocked skin (check owned skins first, then level-based)
+    const unlockedSkin = characterSkins.find(s => 
+      player.ownedCharacterSkins.includes(s.id) ||
+      (s.unlockMethod === 'level' && player.level >= (s.unlockRequirement || 0))
+    );
+    
+    // Use unlocked skin, or first skin as default, or first skin in the list
+    const skinToEquip = unlockedSkin?.id || characterSkins[0].id;
+    
+    console.log(`Equipping character: ${characterId} with skin: ${skinToEquip}`);
     
     const updated = {
       ...player,
       equippedCharacter: characterId,
-      // Reset to first owned skin for this character
-      equippedCharacterSkin: player.ownedCharacterSkins.find(skinId => {
-        const skin = CHARACTER_SKINS.find(s => s.id === skinId);
-        return skin && skin.characterId === characterId;
-      }) || player.equippedCharacterSkin
+      equippedCharacterSkin: skinToEquip
     };
 
     setPlayer(updated);
@@ -31,7 +48,29 @@ export function CharactersScreen({ player, setPlayer, onBack, theme }: {
   };
 
   const selectSkin = (skinId: string) => {
-    if (!player.ownedCharacterSkins.includes(skinId)) return;
+    const skin = CHARACTER_SKINS.find(s => s.id === skinId);
+    if (!skin) {
+      console.error(`Skin not found: ${skinId}`);
+      return;
+    }
+    
+    // Verify skin belongs to the currently equipped character
+    if (skin.characterId !== player.equippedCharacter) {
+      console.error(`Skin ${skinId} does not belong to equipped character ${player.equippedCharacter}`);
+      return;
+    }
+    
+    // Check if skin is unlocked
+    const isUnlocked = 
+      (skin.unlockMethod === 'level' && player.level >= (skin.unlockRequirement || 0)) ||
+      player.ownedCharacterSkins.includes(skinId);
+    
+    if (!isUnlocked) {
+      console.error(`Skin ${skinId} is not unlocked`);
+      return;
+    }
+    
+    console.log(`Equipping skin: ${skinId} for character: ${player.equippedCharacter}`);
     
     const updated = {
       ...player,
@@ -66,36 +105,33 @@ export function CharactersScreen({ player, setPlayer, onBack, theme }: {
         {/* Character Grid */}
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-6">
           {CHARACTERS.map(character => {
-            const isOwned = player.ownedCharacters.includes(character.id);
+            const isUnlocked = player.level >= character.unlockLevel;
             const isEquipped = player.equippedCharacter === character.id;
-            const isLocked = player.level < character.unlockLevel;
 
             return (
-              <button
+              <div
                 key={character.id}
-                onClick={() => !isLocked && setSelectedCharacter(character.id)}
-                disabled={isLocked}
                 className={`${
                   isEquipped
                     ? t(theme, 'bg-gradient-to-br from-purple-900/60 to-blue-900/60 border-purple-500/50', 'bg-gradient-to-br from-purple-100 to-blue-100 border-purple-400')
-                    : isOwned
+                    : isUnlocked
                     ? t(theme, 'bg-gray-800/60 border-gray-700/50 hover:border-gray-600', 'bg-white border-gray-200 hover:border-gray-400 shadow-sm')
                     : t(theme, 'bg-gray-900/40 border-gray-800/30', 'bg-gray-100 border-gray-300')
-                } rounded-xl p-4 border transition-all ${!isLocked ? 'hover:scale-105' : 'cursor-not-allowed opacity-60'} ${isEquipped ? 'ring-2 ring-purple-500' : ''}`}
+                } rounded-xl p-4 border transition-all ${isEquipped ? 'ring-2 ring-purple-500' : ''}`}
               >
-                <div className="text-5xl mb-2">{character.emoji}</div>
-                <div className={`font-bold ${t(theme, 'text-white', 'text-gray-900')} mb-1`}>{character.name}</div>
-                <div className={`text-xs ${t(theme, 'text-gray-400', 'text-gray-600')} mb-2`}>{character.description}</div>
+                <div className="text-5xl mb-2 text-center">{character.emoji}</div>
+                <div className={`font-bold ${t(theme, 'text-white', 'text-gray-900')} mb-1 text-center`}>{character.name}</div>
+                <div className={`text-xs ${t(theme, 'text-gray-400', 'text-gray-600')} mb-2 text-center`}>{character.description}</div>
                 
-                {isLocked ? (
-                  <div className="text-xs text-red-400">🔒 Level {character.unlockLevel}</div>
+                {!isUnlocked ? (
+                  <div className="text-xs text-red-400 text-center mb-2">🔒 Level {character.unlockLevel}</div>
                 ) : isEquipped ? (
-                  <div className="text-xs text-purple-400 font-bold">✓ Equipped</div>
-                ) : isOwned ? (
-                  <div className="text-xs text-green-400">Owned</div>
-                ) : null}
+                  <div className="text-xs text-purple-400 font-bold text-center mb-2">✓ Equipped</div>
+                ) : (
+                  <div className="text-xs text-green-400 text-center mb-2">✓ Unlocked</div>
+                )}
 
-                <div className={`mt-2 text-xs px-2 py-1 rounded-full inline-block ${
+                <div className={`mb-3 text-xs px-2 py-1 rounded-full inline-block w-full text-center ${
                   character.rarity === 'common' ? 'bg-gray-600/30 text-gray-300' :
                   character.rarity === 'rare' ? 'bg-blue-600/30 text-blue-300' :
                   character.rarity === 'epic' ? 'bg-purple-600/30 text-purple-300' :
@@ -103,7 +139,34 @@ export function CharactersScreen({ player, setPlayer, onBack, theme }: {
                 }`}>
                   {character.rarity.toUpperCase()}
                 </div>
-              </button>
+
+                {/* Equip Button - Only show for unlocked characters that aren't equipped */}
+                {isUnlocked && !isEquipped && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      selectCharacter(character.id);
+                    }}
+                    className="w-full mt-2 px-3 py-2 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-400 hover:to-emerald-500 text-white font-bold text-sm rounded-lg transition-all transform hover:scale-105 active:scale-95"
+                  >
+                    ⚔️ Equip
+                  </button>
+                )}
+
+                {/* View Details Button - Show for unlocked characters */}
+                {isUnlocked && (
+                  <button
+                    onClick={() => setSelectedCharacter(character.id)}
+                    className={`w-full mt-2 px-3 py-2 ${
+                      isEquipped 
+                        ? 'bg-gradient-to-r from-purple-500 to-blue-600 hover:from-purple-400 hover:to-blue-500'
+                        : t(theme, 'bg-gray-700 hover:bg-gray-600', 'bg-gray-200 hover:bg-gray-300')
+                    } ${t(theme, 'text-white', 'text-gray-900')} font-bold text-sm rounded-lg transition-all transform hover:scale-105 active:scale-95`}
+                  >
+                    {isEquipped ? '✓ View Skins' : '👁️ View Details'}
+                  </button>
+                )}
+              </div>
             );
           })}
         </div>
@@ -125,52 +188,207 @@ export function CharactersScreen({ player, setPlayer, onBack, theme }: {
                   {selectedChar.rarity.toUpperCase()}
                 </div>
               </div>
+              <button
+                onClick={() => setSelectedCharacter(null)}
+                className={`px-3 py-1 ${t(theme, 'bg-gray-700 hover:bg-gray-600 text-white', 'bg-gray-200 hover:bg-gray-300 text-gray-900')} rounded-lg text-sm`}
+              >
+                ✕ Close
+              </button>
             </div>
 
             {/* Skins */}
             <div className="mb-4">
               <h4 className={`text-sm font-bold ${t(theme, 'text-white', 'text-gray-900')} mb-3`}>Skins</h4>
+              
+              {/* Skin Preview Panel */}
+              {previewSkin && (
+                <div className={`${t(theme, 'bg-blue-900/20 border-blue-500/50', 'bg-blue-50 border-blue-300')} rounded-xl p-4 mb-4 border-2 shadow-lg`}>
+                  <div className="flex items-center justify-between mb-3">
+                    <h5 className={`text-sm font-bold ${t(theme, 'text-blue-300', 'text-blue-700')}`}>👁️ Skin Preview</h5>
+                    <button 
+                      onClick={() => setPreviewSkin(null)}
+                      className={`text-xs px-3 py-1 ${t(theme, 'bg-blue-700 hover:bg-blue-600 text-white', 'bg-blue-300 hover:bg-blue-400 text-blue-900')} rounded font-bold`}
+                    >
+                      ✕ Close Preview
+                    </button>
+                  </div>
+                  
+                  {(() => {
+                    const skin = characterSkins.find(s => s.id === previewSkin);
+                    if (!skin) return null;
+                    
+                    return (
+                      <div className="space-y-3">
+                        {/* Large Color Preview */}
+                        <div className="flex gap-3">
+                          <div className="flex-1">
+                            <div className={`text-xs ${t(theme, 'text-gray-400', 'text-gray-600')} mb-1`}>Head Color</div>
+                            <div 
+                              className="w-full h-16 rounded-lg border-2 border-white/20"
+                              style={{
+                                backgroundColor: skin.colors.head,
+                                boxShadow: `0 0 30px ${skin.colors.glow}`
+                              }}
+                            />
+                            <div className={`text-xs ${t(theme, 'text-gray-400', 'text-gray-600')} mt-1 text-center font-mono`}>
+                              {skin.colors.head}
+                            </div>
+                          </div>
+                          <div className="flex-1">
+                            <div className={`text-xs ${t(theme, 'text-gray-400', 'text-gray-600')} mb-1`}>Body Color</div>
+                            <div 
+                              className="w-full h-16 rounded-lg border-2 border-white/20"
+                              style={{
+                                backgroundColor: skin.colors.body,
+                                boxShadow: `0 0 30px ${skin.colors.glow}`
+                              }}
+                            />
+                            <div className={`text-xs ${t(theme, 'text-gray-400', 'text-gray-600')} mt-1 text-center font-mono`}>
+                              {skin.colors.body}
+                            </div>
+                          </div>
+                        </div>
+                        
+                        {/* Snake Preview */}
+                        <div>
+                          <div className={`text-xs ${t(theme, 'text-gray-400', 'text-gray-600')} mb-2`}>Snake Preview</div>
+                          <div className={`${t(theme, 'bg-black/40', 'bg-white/60')} rounded-lg p-4 flex items-center justify-center`}>
+                            <div className="flex gap-1">
+                              {/* Head */}
+                              <div 
+                                className="w-12 h-12 rounded-lg flex items-center justify-center text-2xl"
+                                style={{
+                                  backgroundColor: skin.colors.head,
+                                  boxShadow: `0 0 25px ${skin.colors.glow}`
+                                }}
+                              >
+                                {selectedChar.emoji}
+                              </div>
+                              {/* Body segments */}
+                              {[0.9, 0.8, 0.7, 0.6, 0.5].map((opacity, i) => (
+                                <div 
+                                  key={i}
+                                  className="w-10 h-10 rounded-lg"
+                                  style={{
+                                    backgroundColor: skin.colors.body,
+                                    opacity: opacity,
+                                    boxShadow: `0 0 15px ${skin.colors.glow}`
+                                  }}
+                                />
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                        
+                        {/* Skin Info */}
+                        <div className={`${t(theme, 'bg-gray-800/40', 'bg-gray-200/40')} rounded-lg p-3`}>
+                          <div className={`text-sm font-bold ${t(theme, 'text-white', 'text-gray-900')} mb-1`}>
+                            {skin.name}
+                          </div>
+                          <div className={`text-xs ${t(theme, 'text-gray-400', 'text-gray-600')}`}>
+                            Glow: <span className="font-mono">{skin.colors.glow}</span>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })()}
+                </div>
+              )}
+              
+              {/* Skins Grid */}
               <div className="grid grid-cols-3 gap-2">
                 {characterSkins.map(skin => {
-                  const isOwned = player.ownedCharacterSkins.includes(skin.id);
+                  // Check if skin is unlocked based on unlock method
+                  const isUnlocked = 
+                    (skin.unlockMethod === 'level' && player.level >= (skin.unlockRequirement || 0)) ||
+                    player.ownedCharacterSkins.includes(skin.id);
                   const isEquipped = player.equippedCharacterSkin === skin.id;
+                  const isPreviewing = previewSkin === skin.id;
 
                   return (
-                    <button
+                    <div
                       key={skin.id}
-                      onClick={() => isOwned && selectSkin(skin.id)}
-                      disabled={!isOwned}
                       className={`${
                         isEquipped
                           ? 'ring-2 ring-purple-500'
-                          : isOwned
-                          ? t(theme, 'hover:border-gray-500', 'hover:border-gray-400')
-                          : 'opacity-50 cursor-not-allowed'
+                          : isPreviewing
+                          ? 'ring-2 ring-blue-500'
+                          : ''
                       } ${t(theme, 'bg-gray-900/40 border-gray-700/50', 'bg-gray-50 border-gray-200')} rounded-lg p-3 border transition-all`}
                     >
+                      {/* Color Preview */}
                       <div
-                        className="w-full h-12 rounded-lg mb-2"
+                        className={`w-full h-16 rounded-lg mb-2 cursor-pointer transition-all ${
+                          isPreviewing ? 'ring-2 ring-blue-500 scale-105' : 'hover:scale-105'
+                        }`}
                         style={{
                           background: `linear-gradient(135deg, ${skin.colors.head}, ${skin.colors.body})`,
                           boxShadow: `0 0 20px ${skin.colors.glow}`
                         }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (isUnlocked) {
+                            console.log('Color preview clicked for skin:', skin.id);
+                            setPreviewSkin(isPreviewing ? null : skin.id);
+                          }
+                        }}
                       />
-                      <div className={`text-xs font-bold ${t(theme, 'text-white', 'text-gray-900')}`}>{skin.name}</div>
-                      {isEquipped && <div className="text-xs text-purple-400 mt-1">✓ Equipped</div>}
-                      {!isOwned && (
-                        <div className="text-xs text-red-400 mt-1">
+                      
+                      {/* Skin Name */}
+                      <div className={`text-xs font-bold ${t(theme, 'text-white', 'text-gray-900')} mb-1 text-center`}>
+                        {skin.name}
+                      </div>
+                      
+                      {/* Status */}
+                      {isEquipped && (
+                        <div className="text-xs text-purple-400 text-center font-bold">✓ Equipped</div>
+                      )}
+                      
+                      {/* Actions */}
+                      {isUnlocked && !isEquipped && (
+                        <div className="flex gap-1 mt-1">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              console.log('View button clicked for skin:', skin.id);
+                              setPreviewSkin(isPreviewing ? null : skin.id);
+                            }}
+                            className={`flex-1 text-xs px-2 py-1.5 font-bold ${
+                              isPreviewing
+                                ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/50'
+                                : t(theme, 'bg-blue-700 hover:bg-blue-600 text-white', 'bg-blue-200 hover:bg-blue-300 text-blue-900')
+                            } rounded transition-all transform hover:scale-105`}
+                          >
+                            {isPreviewing ? '✓ Previewing' : '👁️ View'}
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              selectSkin(skin.id);
+                            }}
+                            className="flex-1 text-xs px-2 py-1.5 font-bold bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-400 hover:to-emerald-500 text-white rounded transition-all transform hover:scale-105"
+                          >
+                            ⚔️ Equip
+                          </button>
+                        </div>
+                      )}
+                      
+                      {/* Locked Status */}
+                      {!isUnlocked && (
+                        <div className="text-xs text-red-400 mt-1 text-center">
+                          {skin.unlockMethod === 'level' && `🔒 Level ${skin.unlockRequirement}`}
                           {skin.unlockMethod === 'chest' && '🎁 From Chest'}
                           {skin.unlockMethod === 'purchase' && `💰 ${skin.unlockRequirement} coins`}
                           {skin.unlockMethod === 'achievement' && '🏆 Achievement'}
                         </div>
                       )}
-                    </button>
+                    </div>
                   );
                 })}
               </div>
             </div>
 
-            {!player.ownedCharacters.includes(selectedChar.id) && (
+            {player.level < selectedChar.unlockLevel && (
               <div className={`${t(theme, 'bg-red-900/20 border-red-500/30', 'bg-red-50 border-red-300')} rounded-lg p-3 border`}>
                 <div className="text-sm text-red-400">🔒 Reach level {selectedChar.unlockLevel} to unlock this character</div>
               </div>

@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { Position, Direction, GameState, Difficulty, GameMode, GRID_SIZE, DIFFICULTY_SPEEDS, TIMED_DURATIONS, Player, PowerUp, TITLES, Theme, GAME_MAPS, MatchType } from '../types';
+import { Position, Direction, GameState, Difficulty, GameMode, GRID_SIZE, DIFFICULTY_SPEEDS, TIMED_DURATIONS, Player, PowerUp, TITLES, Theme, GAME_MAPS, MatchType, BOT_INTELLIGENCE, POWERUP_SPAWN_RATES, CHARACTERS } from '../types';
 import { savePlayer, addXp } from '../store';
 import { audioManager } from '../audio';
 import { getRankFromElo } from './CompetitiveScreen';
@@ -30,8 +30,8 @@ function getRandomFood(snake: Position[], obstacles?: Position[]): Position {
   return food;
 }
 
-function getRandomPowerUp(snake: Position[], obstacles?: Position[]): PowerUp | null {
-  if (Math.random() > 0.15) return null;
+function getRandomPowerUp(snake: Position[], obstacles?: Position[], spawnRate: number = 0.15): PowerUp | null {
+  if (Math.random() > spawnRate) return null;
   const types: PowerUp['type'][] = ['speed', 'slow', 'double', 'shrink', 'shield', 'time_slow', 'coin_magnet', 'ghost_pass', 'score_boost'];
   const icons = ['⚡', '🐌', '✖️2', '🔽', '🛡️', '⏱️', '🧲', '👻', '💫'];
   const idx = Math.floor(Math.random() * types.length);
@@ -56,7 +56,7 @@ function getRandomPowerUp(snake: Position[], obstacles?: Position[]): PowerUp | 
 }
 
 // Bot AI - moves toward food intelligently
-function getBotDirection(snake: Position[], food: Position, currentDir: Direction, otherSnake?: Position[], isZenMode?: boolean): Direction {
+function getBotDirection(snake: Position[], food: Position, currentDir: Direction, otherSnake?: Position[], isZenMode?: boolean, botIntelligence: number = 0.6): Direction {
   const head = snake[0];
   const possibleDirs: Direction[] = ['UP', 'DOWN', 'LEFT', 'RIGHT'];
   const opposites: Record<Direction, Direction> = { UP: 'DOWN', DOWN: 'UP', LEFT: 'RIGHT', RIGHT: 'LEFT' };
@@ -113,8 +113,10 @@ function getBotDirection(snake: Position[], food: Position, currentDir: Directio
         score += 100;
       }
       
-      // Small randomness to avoid predictable behavior
-      score += Math.random() * 5;
+      // Randomness based on bot intelligence
+      // Lower intelligence = more randomness
+      const randomnessFactor = (1 - botIntelligence) * 50;
+      score += Math.random() * randomnessFactor;
     }
     
     scores.push({ dir, score });
@@ -123,7 +125,13 @@ function getBotDirection(snake: Position[], food: Position, currentDir: Directio
   // Sort by score descending
   scores.sort((a, b) => b.score - a.score);
   
-  // Return best direction
+  // Return best direction (with intelligence-based chance of making suboptimal move)
+  if (Math.random() > botIntelligence && scores.length > 1) {
+    // Sometimes choose a suboptimal direction based on intelligence
+    const randomIndex = Math.floor(Math.random() * Math.min(3, scores.length));
+    return scores[randomIndex]?.dir || currentDir;
+  }
+  
   return scores[0]?.dir || currentDir;
 }
 
@@ -153,6 +161,12 @@ export default function Game({ player, setPlayer, mode, difficulty, onBack, isMu
   const [survivalTime, setSurvivalTime] = useState(0);
   const [survivalSpeed, setSurvivalSpeed] = useState(1);
   const [eloChange, setEloChange] = useState(0);
+  
+  // Swipe gesture state
+  const [touchStart, setTouchStart] = useState<{ x: number; y: number } | null>(null);
+  const [touchEnd, setTouchEnd] = useState<{ x: number; y: number } | null>(null);
+  const [swipeDirection, setSwipeDirection] = useState<string | null>(null);
+  const minSwipeDistance = 30; // Minimum pixels to register as a swipe
 
   const dirRef = useRef<Direction>('RIGHT');
   const dir2Ref = useRef<Direction>('LEFT');
@@ -226,13 +240,14 @@ export default function Game({ player, setPlayer, mode, difficulty, onBack, isMu
     const interval = setInterval(() => {
       const currentMap = GAME_MAPS.find(m => m.id === player.activeMap);
       const allSnakes = isMultiplayer ? [...snakeRef.current, ...snake2Ref.current] : snakeRef.current;
-      const pu = getRandomPowerUp(allSnakes, currentMap?.obstacles);
+      const spawnRate = POWERUP_SPAWN_RATES[difficulty];
+      const pu = getRandomPowerUp(allSnakes, currentMap?.obstacles, spawnRate);
       if (pu) {
         setPowerUps(prev => [...prev.filter(p => p.expiresAt > Date.now()), pu]);
       }
     }, 5000);
     return () => clearInterval(interval);
-  }, [gameState, isMultiplayer, player.activeMap]);
+  }, [gameState, isMultiplayer, player.activeMap, difficulty]);
 
   // Coin magnet effect - move food closer to snake
   useEffect(() => {
@@ -337,21 +352,71 @@ export default function Game({ player, setPlayer, mode, difficulty, onBack, isMu
     return () => window.removeEventListener('keydown', handleKey);
   }, [startGame, changeDir, isMultiplayer, multiplayerType]);
 
-  // Touch
+  // Touch swipe with visual feedback
   useEffect(() => {
-    const onStart = (e: TouchEvent) => { touchRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY }; };
+    const onStart = (e: TouchEvent) => {
+      const touch = e.touches[0];
+      touchRef.current = { x: touch.clientX, y: touch.clientY };
+      setTouchStart({ x: touch.clientX, y: touch.clientY });
+      setTouchEnd(null);
+      setSwipeDirection(null);
+    };
+    
+    const onMove = (e: TouchEvent) => {
+      if (!touchRef.current) return;
+      const touch = e.touches[0];
+      setTouchEnd({ x: touch.clientX, y: touch.clientY });
+      
+      // Calculate direction in real-time for visual feedback
+      const dx = touch.clientX - touchRef.current.x;
+      const dy = touch.clientY - touchRef.current.y;
+      
+      if (Math.abs(dx) > minSwipeDistance || Math.abs(dy) > minSwipeDistance) {
+        if (Math.abs(dx) > Math.abs(dy)) {
+          setSwipeDirection(dx > 0 ? 'RIGHT' : 'LEFT');
+        } else {
+          setSwipeDirection(dy > 0 ? 'DOWN' : 'UP');
+        }
+      }
+    };
+    
     const onEnd = (e: TouchEvent) => {
-      if (!touchRef.current || stateRef.current !== 'PLAYING') return;
+      if (!touchRef.current || stateRef.current !== 'PLAYING') {
+        setTouchStart(null);
+        setTouchEnd(null);
+        setSwipeDirection(null);
+        return;
+      }
       const dx = e.changedTouches[0].clientX - touchRef.current.x;
       const dy = e.changedTouches[0].clientY - touchRef.current.y;
-      if (Math.abs(dx) < 25 && Math.abs(dy) < 25) return;
-      if (Math.abs(dx) > Math.abs(dy)) changeDir(dx > 0 ? 'RIGHT' : 'LEFT');
-      else changeDir(dy > 0 ? 'DOWN' : 'UP');
+      
+      if (Math.abs(dx) < minSwipeDistance && Math.abs(dy) < minSwipeDistance) {
+        setTouchStart(null);
+        setTouchEnd(null);
+        setSwipeDirection(null);
+        return;
+      }
+      
+      if (Math.abs(dx) > Math.abs(dy)) {
+        changeDir(dx > 0 ? 'RIGHT' : 'LEFT');
+      } else {
+        changeDir(dy > 0 ? 'DOWN' : 'UP');
+      }
+      
       touchRef.current = null;
+      setTouchStart(null);
+      setTouchEnd(null);
+      setTimeout(() => setSwipeDirection(null), 300);
     };
+    
     window.addEventListener('touchstart', onStart, { passive: true });
+    window.addEventListener('touchmove', onMove, { passive: true });
     window.addEventListener('touchend', onEnd, { passive: true });
-    return () => { window.removeEventListener('touchstart', onStart); window.removeEventListener('touchend', onEnd); };
+    return () => {
+      window.removeEventListener('touchstart', onStart);
+      window.removeEventListener('touchmove', onMove);
+      window.removeEventListener('touchend', onEnd);
+    };
   }, [changeDir]);
 
   // Game loop
@@ -373,7 +438,8 @@ export default function Game({ player, setPlayer, mode, difficulty, onBack, isMu
 
       // Bot AI movement (if multiplayer with bot or zen multiplayer)
       if (isMultiplayer && (multiplayerType === 'bot' || multiplayerType === 'zen')) {
-        const botDir = getBotDirection(snake2Ref.current, foodRef.current, dir2Ref.current, snakeRef.current, multiplayerType === 'zen');
+        const botIntelligence = BOT_INTELLIGENCE[difficulty];
+        const botDir = getBotDirection(snake2Ref.current, foodRef.current, dir2Ref.current, snakeRef.current, multiplayerType === 'zen', botIntelligence);
         dir2Ref.current = botDir;
         setDirection2(botDir);
       }
@@ -689,22 +755,145 @@ export default function Game({ player, setPlayer, mode, difficulty, onBack, isMu
       return { bg: `rgba(59, 130, 246, ${opacity})`, shadow: 'none' };
     }
 
-    const skin = player.equippedSkin;
-    const colors: Record<string, [string, string]> = {
-      classic: ['74, 222, 128', '34, 197, 94'],
-      fire: ['251, 146, 60', '239, 68, 68'],
-      ice: ['147, 197, 253', '59, 130, 246'],
-      gold: ['253, 224, 71', '234, 179, 8'],
-      rainbow: ['248, 113, 113', '168, 85, 247'],
-      neon: ['192, 132, 252', '139, 92, 246'],
-      galaxy: ['129, 140, 248', '79, 70, 229'],
-      dragon: ['251, 113, 133', '220, 38, 38'],
-      phantom: ['209, 213, 219', '156, 163, 175'],
-      cosmic: ['167, 139, 250', '109, 40, 217'],
-    };
-    const [head, body] = colors[skin] || colors.classic;
+    // Get equipped character skin colors
+    const characterSkin = player.equippedCharacterSkin;
     
-    if (index === 0) return { bg: `rgba(${head}, ${opacity})`, shadow: `0 0 10px rgba(${head}, 0.7)` };
+    // Debug log to see what skin is being used
+    if (index === 0) {
+      console.log(`Rendering snake with skin: ${characterSkin}, character: ${player.equippedCharacter}`);
+    }
+    
+    const characterSkins: Record<string, { head: string; body: string; glow: string; pattern?: string }> = {
+      // Classic Snake - Vibrant greens
+      classic_green: { head: '34, 197, 94', body: '22, 163, 74', glow: 'rgba(34, 197, 94, 0.9)' },
+      classic_red: { head: '239, 68, 68', body: '220, 38, 38', glow: 'rgba(239, 68, 68, 0.9)' },
+      classic_blue: { head: '59, 130, 246', body: '37, 99, 235', glow: 'rgba(59, 130, 246, 0.9)' },
+      
+      // Dragon - Fiery oranges and blues
+      dragon_fire: { head: '249, 115, 22', body: '234, 88, 12', glow: 'rgba(249, 115, 22, 1.0)' },
+      dragon_ice: { head: '56, 189, 248', body: '14, 165, 233', glow: 'rgba(56, 189, 248, 1.0)' },
+      dragon_shadow: { head: '139, 92, 246', body: '124, 58, 237', glow: 'rgba(139, 92, 246, 1.0)' },
+      
+      // Phoenix - Golden and crimson
+      phoenix_gold: { head: '250, 204, 21', body: '234, 179, 8', glow: 'rgba(250, 204, 21, 1.0)' },
+      phoenix_crimson: { head: '244, 63, 94', body: '225, 29, 72', glow: 'rgba(244, 63, 94, 1.0)' },
+      phoenix_silver: { head: '203, 213, 225', body: '148, 163, 184', glow: 'rgba(203, 213, 225, 0.9)' },
+      
+      // Unicorn - Rainbow pastels
+      unicorn_rainbow: { head: '236, 72, 153', body: '219, 39, 119', glow: 'rgba(236, 72, 153, 1.0)' },
+      unicorn_moonlight: { head: '167, 139, 250', body: '139, 92, 246', glow: 'rgba(167, 139, 250, 1.0)' },
+      unicorn_starlight: { head: '253, 224, 71', body: '250, 204, 21', glow: 'rgba(253, 224, 71, 1.0)' },
+      
+      // Kraken - Deep ocean colors
+      kraken_abyss: { head: '99, 102, 241', body: '79, 70, 229', glow: 'rgba(99, 102, 241, 1.0)' },
+      kraken_storm: { head: '6, 182, 212', body: '8, 145, 178', glow: 'rgba(6, 182, 212, 1.0)' },
+      kraken_void: { head: '168, 85, 247', body: '147, 51, 234', glow: 'rgba(168, 85, 247, 1.0)' },
+      
+      // Cosmic - Space purples and blues
+      cosmic_nebula: { head: '192, 132, 252', body: '168, 85, 247', glow: 'rgba(192, 132, 252, 1.0)' },
+      cosmic_galaxy: { head: '129, 140, 248', body: '99, 102, 241', glow: 'rgba(129, 140, 248, 1.0)' },
+      cosmic_supernova: { head: '251, 146, 60', body: '249, 115, 22', glow: 'rgba(251, 146, 60, 1.0)' },
+      
+      // Turtle - Earthy greens and browns
+      turtle_green: { head: '132, 204, 22', body: '101, 163, 13', glow: 'rgba(132, 204, 22, 0.9)' },
+      turtle_blue: { head: '14, 116, 144', body: '15, 118, 110', glow: 'rgba(14, 116, 144, 0.9)' },
+      turtle_gold: { head: '217, 119, 6', body: '180, 83, 9', glow: 'rgba(217, 119, 6, 0.9)' },
+      
+      // Rabbit - Soft whites and browns
+      rabbit_white: { head: '241, 245, 249', body: '226, 232, 240', glow: 'rgba(241, 245, 249, 0.8)' },
+      rabbit_brown: { head: '180, 83, 9', body: '146, 64, 14', glow: 'rgba(180, 83, 9, 0.9)' },
+      rabbit_silver: { head: '148, 163, 184', body: '100, 116, 139', glow: 'rgba(148, 163, 184, 0.9)' },
+      
+      // Fox - Vibrant oranges and reds
+      fox_orange: { head: '251, 146, 60', body: '234, 88, 12', glow: 'rgba(251, 146, 60, 1.0)' },
+      fox_red: { head: '220, 38, 38', body: '185, 28, 28', glow: 'rgba(220, 38, 38, 1.0)' },
+      fox_arctic: { head: '186, 230, 253', body: '125, 211, 252', glow: 'rgba(186, 230, 253, 0.9)' },
+      
+      // Wolf - Dark grays and blacks
+      wolf_gray: { head: '100, 116, 139', body: '71, 85, 105', glow: 'rgba(100, 116, 139, 0.9)' },
+      wolf_black: { head: '30, 41, 59', body: '15, 23, 42', glow: 'rgba(30, 41, 59, 1.0)' },
+      wolf_white: { head: '241, 245, 249', body: '226, 232, 240', glow: 'rgba(241, 245, 249, 0.8)' },
+      
+      // Lion - Royal golds and browns
+      lion_gold: { head: '245, 158, 11', body: '217, 119, 6', glow: 'rgba(245, 158, 11, 1.0)' },
+      lion_mane: { head: '120, 53, 15', body: '88, 28, 135', glow: 'rgba(120, 53, 15, 1.0)' },
+      lion_white: { head: '254, 240, 138', body: '250, 204, 21', glow: 'rgba(254, 240, 138, 0.9)' },
+      
+      // Eagle - Sky browns and whites
+      eagle_brown: { head: '146, 64, 14', body: '120, 53, 15', glow: 'rgba(146, 64, 14, 1.0)' },
+      eagle_golden: { head: '234, 179, 8', body: '202, 138, 4', glow: 'rgba(234, 179, 8, 1.0)' },
+      eagle_bald: { head: '248, 250, 252', body: '241, 245, 249', glow: 'rgba(248, 250, 252, 0.9)' },
+      
+      // Panda - Black and white with red accents
+      panda_classic: { head: '23, 23, 23', body: '10, 10, 10', glow: 'rgba(23, 23, 23, 1.0)' },
+      panda_red: { head: '239, 68, 68', body: '220, 38, 38', glow: 'rgba(239, 68, 68, 1.0)' },
+      panda_golden: { head: '250, 204, 21', body: '234, 179, 8', glow: 'rgba(250, 204, 21, 1.0)' },
+      
+      // Tiger - Orange with black stripes effect
+      tiger_orange: { head: '249, 115, 22', body: '234, 88, 12', glow: 'rgba(249, 115, 22, 1.0)' },
+      tiger_white: { head: '250, 250, 250', body: '244, 244, 245', glow: 'rgba(250, 250, 250, 0.9)' },
+      tiger_golden: { head: '251, 191, 36', body: '245, 158, 11', glow: 'rgba(251, 191, 36, 1.0)' },
+      
+      // Bear - Rich browns and whites
+      bear_brown: { head: '133, 77, 14', body: '108, 52, 10', glow: 'rgba(133, 77, 14, 1.0)' },
+      bear_polar: { head: '250, 250, 250', body: '244, 244, 245', glow: 'rgba(250, 250, 250, 0.9)' },
+      bear_black: { head: '23, 23, 23', body: '10, 10, 10', glow: 'rgba(23, 23, 23, 1.0)' },
+      
+      // Shark - Ocean blues and grays
+      shark_gray: { head: '107, 114, 128', body: '75, 85, 99', glow: 'rgba(107, 114, 128, 0.9)' },
+      shark_blue: { head: '30, 64, 175', body: '29, 78, 216', glow: 'rgba(30, 64, 175, 1.0)' },
+      shark_hammerhead: { head: '71, 85, 105', body: '51, 65, 85', glow: 'rgba(71, 85, 105, 1.0)' },
+      
+      // Owl - Wise browns and whites
+      owl_brown: { head: '133, 77, 14', body: '108, 52, 10', glow: 'rgba(133, 77, 14, 1.0)' },
+      owl_snowy: { head: '250, 250, 250', body: '244, 244, 245', glow: 'rgba(250, 250, 250, 0.9)' },
+      owl_golden: { head: '234, 179, 8', body: '202, 138, 4', glow: 'rgba(234, 179, 8, 1.0)' },
+      
+      // Dolphin - Playful blues and pinks
+      dolphin_gray: { head: '148, 163, 184', body: '100, 116, 139', glow: 'rgba(148, 163, 184, 0.9)' },
+      dolphin_blue: { head: '59, 130, 246', body: '37, 99, 235', glow: 'rgba(59, 130, 246, 1.0)' },
+      dolphin_pink: { head: '236, 72, 153', body: '219, 39, 119', glow: 'rgba(236, 72, 153, 1.0)' },
+      
+      // Gorilla - Strong blacks and silvers
+      gorilla_black: { head: '30, 41, 59', body: '15, 23, 42', glow: 'rgba(30, 41, 59, 1.0)' },
+      gorilla_silver: { head: '168, 162, 158', body: '120, 113, 108', glow: 'rgba(168, 162, 158, 0.9)' },
+      gorilla_golden: { head: '217, 119, 6', body: '180, 83, 9', glow: 'rgba(217, 119, 6, 1.0)' },
+      
+      // Elephant - Majestic grays
+      elephant_gray: { head: '156, 163, 175', body: '107, 114, 128', glow: 'rgba(156, 163, 175, 0.9)' },
+      elephant_african: { head: '168, 162, 158', body: '120, 113, 108', glow: 'rgba(168, 162, 158, 0.9)' },
+      elephant_asian: { head: '163, 163, 163', body: '115, 115, 115', glow: 'rgba(163, 163, 163, 0.9)' },
+      
+      // Crocodile - Swampy greens and browns
+      crocodile_green: { head: '22, 101, 52', body: '20, 83, 45', glow: 'rgba(22, 101, 52, 1.0)' },
+      crocodile_nile: { head: '133, 77, 14', body: '108, 52, 10', glow: 'rgba(133, 77, 14, 1.0)' },
+      crocodile_golden: { head: '180, 83, 9', body: '146, 64, 14', glow: 'rgba(180, 83, 9, 1.0)' },
+      
+      // Whale - Deep ocean blues
+      whale_blue: { head: '30, 58, 138', body: '30, 64, 175', glow: 'rgba(30, 58, 138, 1.0)' },
+      whale_humpback: { head: '55, 65, 81', body: '31, 41, 55', glow: 'rgba(55, 65, 81, 1.0)' },
+      whale_golden: { head: '202, 138, 4', body: '161, 98, 7', glow: 'rgba(202, 138, 4, 1.0)' },
+      
+      // Octopus - Mysterious purples and blues
+      octopus_purple: { head: '147, 51, 234', body: '126, 34, 206', glow: 'rgba(147, 51, 234, 1.0)' },
+      octopus_blue: { head: '14, 165, 233', body: '2, 132, 199', glow: 'rgba(14, 165, 233, 1.0)' },
+      octopus_golden: { head: '217, 119, 6', body: '180, 83, 9', glow: 'rgba(217, 119, 6, 1.0)' },
+      
+      // Dinosaur - Prehistoric greens and reds
+      dinosaur_green: { head: '22, 101, 52', body: '21, 128, 61', glow: 'rgba(22, 101, 52, 1.0)' },
+      dinosaur_red: { head: '185, 28, 28', body: '153, 27, 27', glow: 'rgba(185, 28, 28, 1.0)' },
+      dinosaur_golden: { head: '202, 138, 4', body: '161, 98, 7', glow: 'rgba(202, 138, 4, 1.0)' },
+      
+      // Alien - Otherworldly greens and grays
+      alien_green: { head: '34, 197, 94', body: '22, 163, 74', glow: 'rgba(34, 197, 94, 1.0)' },
+      alien_gray: { head: '156, 163, 175', body: '107, 114, 128', glow: 'rgba(156, 163, 175, 0.9)' },
+      alien_golden: { head: '234, 179, 8', body: '202, 138, 4', glow: 'rgba(234, 179, 8, 1.0)' },
+    };
+    
+    const skinColors = characterSkins[characterSkin] || characterSkins.classic_green;
+    const { head, body, glow } = skinColors;
+    
+    if (index === 0) return { bg: `rgba(${head}, ${opacity})`, shadow: glow };
     return { bg: `rgba(${body}, ${opacity})`, shadow: 'none' };
   };
 
@@ -712,129 +901,168 @@ export default function Game({ player, setPlayer, mode, difficulty, onBack, isMu
 
   const getModeLabel = () => {
     if (mode === 'competitive') {
-      return matchType === 'ranked' ? '🏆 Ranked' : '🎮 Unranked';
+      return matchType === 'ranked' ? '🏆 Ranked Match' : '🎮 Casual Match';
     }
     if (isMultiplayer) {
-      if (multiplayerType === 'zen') return '🌀 Zen Multiplayer';
-      return multiplayerType === 'bot' ? '🤖 vs Bot' : '👥 vs Player';
+      if (multiplayerType === 'zen') return '🌀 Zen Battle';
+      return multiplayerType === 'bot' ? '🤖 vs AI' : '👥 2 Players';
     }
-    if (mode === 'timed') return '⏱️ Timed';
-    if (mode === 'zen') return '🧘 Zen';
+    if (mode === 'timed') return '⏱️ Time Attack';
+    if (mode === 'zen') return '🧘 Zen Mode';
     if (mode === 'survival') return '💀 Survival';
     return '🐍 Classic';
   };
 
+  const getDifficultyLabel = () => {
+    const labels = {
+      easy: { text: 'EASY', color: 'text-green-400', bg: 'bg-green-900/50' },
+      medium: { text: 'MEDIUM', color: 'text-yellow-400', bg: 'bg-yellow-900/50' },
+      hard: { text: 'HARD', color: 'text-red-400', bg: 'bg-red-900/50' },
+      insane: { text: 'INSANE', color: 'text-purple-400', bg: 'bg-purple-900/50' },
+    };
+    return labels[difficulty];
+  };
+
+  const getPlayerLabel = () => {
+    if (isMultiplayer && multiplayerType === 'player') {
+      return { p1: `${player.avatar} ${player.username}`, p2: 'Player 2' };
+    }
+    if (isMultiplayer && (multiplayerType === 'bot' || multiplayerType === 'zen')) {
+      return { p1: `${player.avatar} ${player.username}`, p2: '🤖 AI Bot' };
+    }
+    return { p1: `${player.avatar} ${player.username}`, p2: '' };
+  };
+
+  const playerLabels = getPlayerLabel();
+
   return (
-    <div className={`min-h-screen ${theme === 'dark' ? 'bg-gradient-to-br from-gray-900 via-slate-900 to-gray-800' : 'bg-gradient-to-br from-gray-50 via-slate-50 to-white'} flex flex-col items-center p-2 md:p-4 select-none`}>
-      {/* Top Bar */}
-      <div className="w-full max-w-lg flex items-center justify-between mb-2">
-        <button onClick={onBack} className={`px-3 py-1.5 ${theme === 'dark' ? 'bg-gray-800 hover:bg-gray-700 text-gray-300 border-gray-700/50' : 'bg-white hover:bg-gray-50 text-gray-700 border-gray-300'} rounded-lg text-sm border`}>
-          ← Back
-        </button>
-        <div className="flex items-center gap-2">
-          {player.equippedTitle && (
-            <span className={`text-[10px] ${theme === 'dark' ? 'text-indigo-300' : 'text-indigo-600'} hidden md:inline`}>
-              {TITLES.find(ti => ti.id === player.equippedTitle)?.icon} {TITLES.find(ti => ti.id === player.equippedTitle)?.name}
-            </span>
-          )}
-          <span className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'} uppercase`}>{getModeLabel()}</span>
-          <span className={`text-xs px-2 py-0.5 rounded-full ${
-            difficulty === 'easy' ? 'bg-green-900/50 text-green-400' :
-            difficulty === 'medium' ? 'bg-yellow-900/50 text-yellow-400' :
-            difficulty === 'hard' ? 'bg-red-900/50 text-red-400' :
-            'bg-purple-900/50 text-purple-400'
-          }`}>{difficulty}</span>
-          <button
-            onClick={() => {
-              audioManager.playClickSound();
-              const muted = audioManager.toggleMute();
-              setIsMuted(muted);
-            }}
-            className={`p-1.5 rounded-lg transition-all ${
-              theme === 'dark' 
-                ? 'bg-gray-800 hover:bg-gray-700 text-gray-300 border-gray-700/50' 
-                : 'bg-white hover:bg-gray-50 text-gray-700 border-gray-300'
-            } border`}
-            title={isMuted ? 'Unmute' : 'Mute'}
-          >
-            {isMuted ? '🔇' : '🔊'}
-          </button>
-          <button
-            onClick={toggleTheme}
-            className={`p-1.5 rounded-lg transition-all ${
-              theme === 'dark' 
-                ? 'bg-gray-800 hover:bg-gray-700 text-yellow-400 border-gray-700/50' 
-                : 'bg-white hover:bg-gray-50 text-gray-700 border-gray-300'
-            } border`}
-            title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
-          >
-            {theme === 'dark' ? '☀️' : '🌙'}
-          </button>
+    <div className={`h-screen ${theme === 'dark' ? 'bg-gradient-to-br from-gray-900 via-slate-900 to-gray-800' : 'bg-gradient-to-br from-gray-50 via-slate-50 to-white'} flex flex-col px-1 py-1 md:px-2 md:py-2 select-none overflow-hidden`}>
+      {/* Compact Scoreboard at Top */}
+      <div className="w-full flex-shrink-0 mb-1">
+        <div className={`w-full ${theme === 'dark' ? 'bg-gray-800/95 border-gray-700/50' : 'bg-white border-gray-200 shadow-md'} rounded-xl px-2 py-1.5 border-2`}>
+          {/* Single Row: All Info Horizontal */}
+          <div className="flex items-center justify-between gap-3">
+            {/* Player Info - Compact */}
+            <div className="flex items-center gap-2">
+              <div className="text-2xl">{player.avatar}</div>
+              <div>
+                <div className={`text-sm font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-900'} leading-tight`}>{player.username}</div>
+                {player.equippedTitle && (
+                  <div className={`text-[10px] ${theme === 'dark' ? 'text-indigo-300' : 'text-indigo-600'}`}>
+                    {TITLES.find(ti => ti.id === player.equippedTitle)?.icon} {TITLES.find(ti => ti.id === player.equippedTitle)?.name}
+                  </div>
+                )}
+              </div>
+            </div>
+            
+            {/* Game Mode & Difficulty - Compact */}
+            <div className="flex items-center gap-2">
+              <div className="text-right">
+                <div className={`text-xs font-bold ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>{getModeLabel()}</div>
+                <div className={`text-[10px] px-2 py-0.5 rounded-full inline-block ${getDifficultyLabel().bg} ${getDifficultyLabel().color} font-bold`}>
+                  {getDifficultyLabel().text}
+                </div>
+              </div>
+            </div>
+            
+            {/* Scores - Compact Horizontal */}
+            <div className="flex items-center gap-3">
+              <div className="text-center">
+                <div className={`text-[10px] ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'} font-medium`}>
+                  {isMultiplayer ? 'P1' : '🎯'}
+                </div>
+                <div className="text-xl font-black text-green-400">{score}</div>
+              </div>
+              
+              {mode === 'timed' && (
+                <div className="text-center">
+                  <div className={`text-[10px] ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'} font-medium`}>⏱️</div>
+                  <div className={`text-xl font-black ${timeLeft <= 10 ? 'text-red-400 animate-pulse' : theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>{formatTime(timeLeft)}</div>
+                </div>
+              )}
+              
+              {mode === 'survival' && (
+                <div className="text-center">
+                  <div className={`text-[10px] ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'} font-medium`}>⚡</div>
+                  <div className={`text-xl font-black ${survivalSpeed >= 5 ? 'text-red-400 animate-pulse' : survivalSpeed >= 3 ? 'text-orange-400' : theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>x{survivalSpeed}</div>
+                </div>
+              )}
+              
+              {mode === 'competitive' && (
+                <div className="text-center">
+                  <div className={`text-[10px] ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'} font-medium`}>🏆</div>
+                  <div className={`text-xl font-black ${matchType === 'ranked' ? 'text-yellow-400' : 'text-blue-400'}`}>{player.elo}</div>
+                </div>
+              )}
+              
+              {combo > 2 && (
+                <div className="text-center">
+                  <div className={`text-[10px] ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'} font-medium`}>🔥</div>
+                  <div className="text-xl font-black text-orange-400">x{combo}</div>
+                </div>
+              )}
+              
+              {isMultiplayer && (
+                <div className="text-center">
+                  <div className={`text-[10px] ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'} font-medium`}>P2</div>
+                  <div className="text-xl font-black text-blue-400">{score2}</div>
+                </div>
+              )}
+              
+              {!isMultiplayer && mode !== 'timed' && mode !== 'survival' && mode !== 'competitive' && (
+                <div className="text-center">
+                  <div className={`text-[10px] ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'} font-medium`}>📏</div>
+                  <div className="text-xl font-black text-green-400">{snake.length}</div>
+                </div>
+              )}
+            </div>
+            
+            {/* Power-ups & Controls - Compact */}
+            <div className="flex items-center gap-2">
+              {activeEffects.length > 0 && (
+                <div className="flex gap-1">
+                  {activeEffects.map(e => (
+                    <span key={e} className="text-sm animate-pulse" title={e}>
+                      {e === 'double' ? '✖️2' : e === 'speed' ? '⚡' : e === 'slow' ? '🐌' : e === 'time_slow' ? '⏱️' : e === 'coin_magnet' ? '🧲' : e === 'ghost_pass' ? '👻' : '💫'}
+                    </span>
+                  ))}
+                </div>
+              )}
+              
+              <button
+                onClick={() => {
+                  audioManager.playClickSound();
+                  const muted = audioManager.toggleMute();
+                  setIsMuted(muted);
+                }}
+                className={`p-1.5 rounded-lg transition-all ${
+                  theme === 'dark' 
+                    ? 'bg-gray-700 hover:bg-gray-600 text-gray-300' 
+                    : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
+                }`}
+                title={isMuted ? 'Unmute' : 'Mute'}
+              >
+                {isMuted ? '🔇' : '🔊'}
+              </button>
+              <button
+                onClick={toggleTheme}
+                className={`p-1.5 rounded-lg transition-all ${
+                  theme === 'dark' 
+                    ? 'bg-gray-700 hover:bg-gray-600 text-yellow-400' 
+                    : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
+                }`}
+                title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+              >
+                {theme === 'dark' ? '☀️' : '🌙'}
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Score Bar */}
-      <div className={`w-full max-w-lg flex justify-between items-center ${theme === 'dark' ? 'bg-gray-800/80 border-gray-700/50' : 'bg-white border-gray-200 shadow-sm'} rounded-xl px-3 py-2 mb-2 border`}>
-        <div className="text-center">
-          <div className={`text-[10px] ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>{isMultiplayer ? 'P1' : 'Score'}</div>
-          <div className="text-lg font-bold text-green-400">{score}</div>
-        </div>
-        {mode === 'timed' && (
-          <div className="text-center">
-            <div className={`text-[10px] ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Time</div>
-            <div className={`text-lg font-bold ${timeLeft <= 10 ? 'text-red-400 animate-pulse' : theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>{formatTime(timeLeft)}</div>
-          </div>
-        )}
-        {mode === 'survival' && (
-          <>
-            <div className="text-center">
-              <div className={`text-[10px] ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Survived</div>
-              <div className={`text-lg font-bold ${survivalTime >= 60 ? 'text-yellow-400' : theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>{formatTime(survivalTime)}</div>
-            </div>
-            <div className="text-center">
-              <div className={`text-[10px] ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Speed</div>
-              <div className={`text-lg font-bold ${survivalSpeed >= 5 ? 'text-red-400 animate-pulse' : survivalSpeed >= 3 ? 'text-orange-400' : theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>x{survivalSpeed}</div>
-            </div>
-          </>
-        )}
-        {mode === 'competitive' && (
-          <div className="text-center">
-            <div className={`text-[10px] ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>ELO</div>
-            <div className={`text-lg font-bold ${matchType === 'ranked' ? 'text-yellow-400' : 'text-blue-400'}`}>{player.elo}</div>
-          </div>
-        )}
-        {combo > 2 && (
-          <div className="text-center">
-            <div className={`text-[10px] ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Combo</div>
-            <div className="text-lg font-bold text-orange-400">x{combo}</div>
-          </div>
-        )}
-        {isMultiplayer && (
-          <div className="text-center">
-            <div className={`text-[10px] ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>{multiplayerType === 'bot' ? 'Bot' : 'P2'}</div>
-            <div className="text-lg font-bold text-blue-400">{score2}</div>
-          </div>
-        )}
-        {!isMultiplayer && mode !== 'timed' && (
-          <div className="text-center">
-            <div className={`text-[10px] ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Length</div>
-            <div className="text-lg font-bold text-green-400">{snake.length}</div>
-          </div>
-        )}
-        {activeEffects.length > 0 && (
-          <div className="flex gap-1">
-            {activeEffects.map(e => (
-              <span key={e} className="text-xs animate-pulse">
-                {e === 'double' ? '✖️2' : e === 'speed' ? '⚡' : e === 'slow' ? '🐌' : e === 'time_slow' ? '⏱️' : e === 'coin_magnet' ? '🧲' : e === 'ghost_pass' ? '👻' : '💫'}
-              </span>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* Game Board */}
-      <div className="relative w-full max-w-lg aspect-square">
-        <div className={`absolute inset-0 bg-gray-900/90 rounded-2xl border-2 overflow-hidden shadow-2xl ${mode === 'zen' || multiplayerType === 'zen' ? 'border-purple-500/40 shadow-purple-500/20' : 'border-gray-700/60'}`}>
+      {/* Game Board - Big & Centered */}
+      <div className="flex-1 w-full flex items-center justify-center">
+        <div className={`w-[min(85vh,95vw)] aspect-square bg-gray-900/90 rounded-2xl border-2 overflow-hidden shadow-2xl relative ${mode === 'zen' || multiplayerType === 'zen' ? 'border-purple-500/40 shadow-purple-500/20' : 'border-gray-700/60'}`}>
           {/* Grid */}
           <div className="absolute inset-0 grid grid-cols-20 grid-rows-20">
             {Array.from({ length: GRID_SIZE * GRID_SIZE }).map((_, i) => (
@@ -910,21 +1138,21 @@ export default function Game({ player, setPlayer, mode, difficulty, onBack, isMu
           {/* Player 1 Snake */}
           {snake.map((seg, i) => {
             const style = getSkinColor(i, snake.length);
+            const character = CHARACTERS.find(c => c.id === player.equippedCharacter);
             return (
               <div key={`p1-${i}`} className="absolute" style={{ left: `${(seg.x / GRID_SIZE) * 100}%`, top: `${(seg.y / GRID_SIZE) * 100}%`, width: `${100 / GRID_SIZE}%`, height: `${100 / GRID_SIZE}%`, padding: '1px', zIndex: snake.length - i }}>
-                <div className="w-full h-full rounded-sm transition-all duration-75" style={{ backgroundColor: style.bg, boxShadow: style.shadow, borderRadius: i === 0 ? '5px' : '3px', transform: i === 0 ? 'scale(1.05)' : `scale(${1 - (i / snake.length) * 0.15})` }}>
+                <div className="w-full h-full rounded-sm transition-all duration-75" style={{ backgroundColor: style.bg, boxShadow: i === 0 ? style.shadow : 'none', borderRadius: i === 0 ? '5px' : '3px', transform: i === 0 ? 'scale(1.15)' : `scale(${1 - (i / snake.length) * 0.1})` }}>
                   {i === 0 && (
                     <div className="w-full h-full flex items-center justify-center relative">
+                      {/* Character Emoji */}
+                      <div className="text-[8px] md:text-[10px] z-20" style={{ filter: 'drop-shadow(0 0 2px rgba(0,0,0,0.5))' }}>
+                        {character?.emoji || '🐍'}
+                      </div>
                       {/* Direction Arrow */}
-                      <div className="absolute inset-0 flex items-center justify-center text-white font-bold opacity-80" style={{
+                      <div className="absolute inset-0 flex items-center justify-center text-white font-bold opacity-60" style={{
                         transform: direction === 'UP' ? 'rotate(-90deg)' : direction === 'DOWN' ? 'rotate(90deg)' : direction === 'LEFT' ? 'rotate(180deg)' : 'rotate(0deg)'
                       }}>
-                        <div className="text-[10px] md:text-xs">▶</div>
-                      </div>
-                      {/* Eyes */}
-                      <div className="flex gap-[15%] z-10">
-                        <div className="w-[18%] h-[18%] bg-white rounded-full" />
-                        <div className="w-[18%] h-[18%] bg-white rounded-full" />
+                        <div className="text-[8px] md:text-[10px]">▶</div>
                       </div>
                     </div>
                   )}
@@ -938,19 +1166,18 @@ export default function Game({ player, setPlayer, mode, difficulty, onBack, isMu
             const style = getSkinColor(i, snake2.length, true);
             return (
               <div key={`p2-${i}`} className="absolute" style={{ left: `${(seg.x / GRID_SIZE) * 100}%`, top: `${(seg.y / GRID_SIZE) * 100}%`, width: `${100 / GRID_SIZE}%`, height: `${100 / GRID_SIZE}%`, padding: '1px', zIndex: snake2.length - i }}>
-                <div className="w-full h-full rounded-sm" style={{ backgroundColor: style.bg, boxShadow: style.shadow, borderRadius: i === 0 ? '5px' : '3px', transform: i === 0 ? 'scale(1.05)' : `scale(${1 - (i / snake2.length) * 0.15})` }}>
+                <div className="w-full h-full rounded-sm" style={{ backgroundColor: style.bg, boxShadow: i === 0 ? style.shadow : 'none', borderRadius: i === 0 ? '5px' : '3px', transform: i === 0 ? 'scale(1.15)' : `scale(${1 - (i / snake2.length) * 0.1})` }}>
                   {i === 0 && (
                     <div className="w-full h-full flex items-center justify-center relative">
+                      {/* Bot/Player 2 Emoji */}
+                      <div className="text-[8px] md:text-[10px] z-20" style={{ filter: 'drop-shadow(0 0 2px rgba(0,0,0,0.5))' }}>
+                        {multiplayerType === 'bot' || multiplayerType === 'zen' ? '🤖' : '🎮'}
+                      </div>
                       {/* Direction Arrow */}
-                      <div className="absolute inset-0 flex items-center justify-center text-white font-bold opacity-80" style={{
+                      <div className="absolute inset-0 flex items-center justify-center text-white font-bold opacity-60" style={{
                         transform: direction2 === 'UP' ? 'rotate(-90deg)' : direction2 === 'DOWN' ? 'rotate(90deg)' : direction2 === 'LEFT' ? 'rotate(180deg)' : 'rotate(0deg)'
                       }}>
-                        <div className="text-[10px] md:text-xs">▶</div>
-                      </div>
-                      {/* Eyes */}
-                      <div className="flex gap-[15%] z-10">
-                        <div className="w-[18%] h-[18%] bg-white rounded-full" />
-                        <div className="w-[18%] h-[18%] bg-white rounded-full" />
+                        <div className="text-[8px] md:text-[10px]">▶</div>
                       </div>
                     </div>
                   )}
@@ -966,93 +1193,208 @@ export default function Game({ player, setPlayer, mode, difficulty, onBack, isMu
             </div>
           ))}
 
-          {/* Overlays */}
+          {/* Overlays - Enhanced Start Screen */}
           {gameState === 'IDLE' && (
-            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm flex flex-col items-center justify-center rounded-2xl z-50 animate-fade-in">
-              <div className="text-4xl mb-3">
+            <div className="absolute inset-0 bg-black/70 backdrop-blur-sm flex flex-col items-center justify-center rounded-2xl z-50 animate-fade-in p-6">
+              {/* Mode Icon */}
+              <div className="text-6xl mb-4">
                 {mode === 'competitive' 
                   ? (matchType === 'ranked' ? '🏆' : '🎮')
                   : isMultiplayer 
                   ? (multiplayerType === 'zen' ? '🌀' : multiplayerType === 'bot' ? '🤖' : '👥') 
                   : mode === 'timed' ? '⏱️' : mode === 'zen' ? '🧘' : mode === 'survival' ? '💀' : '🐍'}
               </div>
-              <h2 className="text-lg font-bold text-white mb-1">
+              
+              {/* Mode Title */}
+              <h2 className="text-2xl font-black text-white mb-2 text-center">
                 {mode === 'competitive'
-                  ? (matchType === 'ranked' ? 'Ranked Match!' : 'Unranked Match!')
+                  ? (matchType === 'ranked' ? '🏆 Ranked Match' : '🎮 Casual Match')
                   : isMultiplayer 
-                  ? (multiplayerType === 'zen' ? 'Zen Multiplayer!' : multiplayerType === 'bot' ? 'vs Bot!' : 'vs Player!') 
-                  : mode === 'timed' ? 'Timed Challenge' : mode === 'zen' ? 'Zen Mode' : mode === 'survival' ? 'Survival Mode' : 'Ready?'}
+                  ? (multiplayerType === 'zen' ? '🌀 Zen Battle' : multiplayerType === 'bot' ? '🤖 vs AI Bot' : '👥 2 Player Battle') 
+                  : mode === 'timed' ? '⏱️ Time Attack' : mode === 'zen' ? '🧘 Zen Mode' : mode === 'survival' ? '💀 Survival Challenge' : '🐍 Classic Mode'}
               </h2>
-              {mode === 'competitive' && matchType === 'ranked' && <p className="text-yellow-300 text-xs mb-2">ELO rating will be affected!</p>}
-              {mode === 'competitive' && matchType === 'unranked' && <p className="text-blue-300 text-xs mb-2">Casual match • No ELO changes</p>}
-              {(mode === 'zen' || multiplayerType === 'zen') && <p className="text-purple-300 text-xs mb-2">Pass through walls freely!</p>}
-              {isMultiplayer && multiplayerType === 'player' && <p className="text-gray-400 text-xs mb-2">P1: WASD/Arrows • P2: IJKL</p>}
-              {isMultiplayer && multiplayerType === 'bot' && <p className="text-gray-400 text-xs mb-2">Use WASD/Arrows to compete!</p>}
-              {isMultiplayer && multiplayerType === 'zen' && <p className="text-gray-400 text-xs mb-2">vs Bot • No walls!</p>}
-              <button onClick={() => { audioManager.playClickSound(); startGame(); }} className="px-5 py-2.5 bg-green-500 hover:bg-green-400 text-white font-bold rounded-xl transition-all transform hover:scale-105 active:scale-95 shadow-lg shadow-green-500/30">
-                ▶ Start
+              
+              {/* Player Info */}
+              <div className={`flex items-center gap-2 mb-3 px-4 py-2 rounded-lg ${theme === 'dark' ? 'bg-gray-800/80' : 'bg-white/80'}`}>
+                <span className="text-2xl">{player.avatar}</span>
+                <div className="text-left">
+                  <div className={`text-sm font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>{player.username}</div>
+                  {player.equippedTitle && (
+                    <div className={`text-[10px] ${theme === 'dark' ? 'text-indigo-300' : 'text-indigo-600'}`}>
+                      {TITLES.find(t => t.id === player.equippedTitle)?.icon} {TITLES.find(t => t.id === player.equippedTitle)?.name}
+                    </div>
+                  )}
+                </div>
+              </div>
+              
+              {/* Mode Description */}
+              <div className={`text-center mb-4 px-4 py-2 rounded-lg ${theme === 'dark' ? 'bg-gray-800/60' : 'bg-white/60'} max-w-xs`}>
+                {mode === 'competitive' && matchType === 'ranked' && (
+                  <p className="text-yellow-300 text-xs font-bold">⚠️ ELO rating will be affected!</p>
+                )}
+                {mode === 'competitive' && matchType === 'unranked' && (
+                  <p className="text-blue-300 text-xs font-bold">✨ Casual match • No ELO changes</p>
+                )}
+                {(mode === 'zen' || multiplayerType === 'zen') && (
+                  <p className="text-purple-300 text-xs font-bold">🌀 Pass through walls freely!</p>
+                )}
+                {mode === 'survival' && (
+                  <p className="text-red-300 text-xs font-bold">⚡ Speed increases over time!</p>
+                )}
+                {mode === 'timed' && (
+                  <p className="text-cyan-300 text-xs font-bold">⏱️ Score as high as you can in 60 seconds!</p>
+                )}
+                {mode === 'classic' && !isMultiplayer && (
+                  <p className="text-green-300 text-xs font-bold">🎯 Eat food, grow longer, avoid walls!</p>
+                )}
+              </div>
+              
+              {/* Controls Info */}
+              {isMultiplayer && (
+                <div className={`text-center mb-4 px-4 py-2 rounded-lg ${theme === 'dark' ? 'bg-gray-800/60' : 'bg-white/60'} max-w-xs`}>
+                  {multiplayerType === 'player' && (
+                    <>
+                      <p className={`text-xs font-bold mb-1 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>🎮 Controls</p>
+                      <p className="text-gray-400 text-xs">
+                        <span className="text-green-400 font-bold">{playerLabels.p1}:</span> WASD/Arrows<br/>
+                        <span className="text-blue-400 font-bold">{playerLabels.p2}:</span> IJKL
+                      </p>
+                    </>
+                  )}
+                  {(multiplayerType === 'bot' || multiplayerType === 'zen') && (
+                    <p className="text-gray-400 text-xs">
+                      <span className="text-green-400 font-bold">{playerLabels.p1}:</span> WASD/Arrows<br/>
+                      <span className="text-blue-400 font-bold">{playerLabels.p2}:</span> AI Controlled
+                    </p>
+                  )}
+                </div>
+              )}
+              
+              {/* Start Button */}
+              <button 
+                onClick={() => { audioManager.playClickSound(); startGame(); }} 
+                className="px-8 py-3 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-400 hover:to-emerald-500 text-white font-black text-lg rounded-xl transition-all transform hover:scale-105 active:scale-95 shadow-lg shadow-green-500/50"
+              >
+                ▶ START GAME
               </button>
             </div>
           )}
 
           {gameState === 'PAUSED' && (
-            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm flex flex-col items-center justify-center rounded-2xl z-50 animate-fade-in">
-              <div className="text-4xl mb-3">⏸️</div>
-              <h2 className="text-xl font-bold text-white mb-3">Paused</h2>
-              <div className="flex gap-2">
-                <button onClick={() => setGameState('PLAYING')} className="px-4 py-2 bg-green-500 hover:bg-green-400 text-white font-bold rounded-xl transition-all">▶ Resume</button>
-                <button onClick={onBack} className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-xl transition-all">← Quit</button>
+            <div className="absolute inset-0 bg-black/70 backdrop-blur-sm flex flex-col items-center justify-center rounded-2xl z-50 animate-fade-in p-6">
+              <div className="text-6xl mb-4">⏸️</div>
+              <h2 className="text-2xl font-black text-white mb-2">Game Paused</h2>
+              
+              {/* Player Info */}
+              <div className={`flex items-center gap-2 mb-4 px-4 py-2 rounded-lg ${theme === 'dark' ? 'bg-gray-800/80' : 'bg-white/80'}`}>
+                <span className="text-2xl">{player.avatar}</span>
+                <div className="text-left">
+                  <div className={`text-sm font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>{player.username}</div>
+                  <div className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
+                    {getModeLabel()} • {getDifficultyLabel().text}
+                  </div>
+                </div>
+              </div>
+              
+              {/* Current Stats */}
+              <div className={`grid grid-cols-2 gap-3 mb-4 w-full max-w-xs`}>
+                <div className={`${theme === 'dark' ? 'bg-gray-800/80' : 'bg-white/80'} rounded-lg p-3 text-center`}>
+                  <div className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'} mb-1`}>Score</div>
+                  <div className="text-xl font-black text-green-400">{score}</div>
+                </div>
+                <div className={`${theme === 'dark' ? 'bg-gray-800/80' : 'bg-white/80'} rounded-lg p-3 text-center`}>
+                  <div className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'} mb-1`}>Length</div>
+                  <div className="text-xl font-black text-green-400">{snake.length}</div>
+                </div>
+              </div>
+              
+              {/* Action Buttons */}
+              <div className="flex gap-3">
+                <button 
+                  onClick={() => { audioManager.playClickSound(); setGameState('PLAYING'); }} 
+                  className="px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-400 hover:to-emerald-500 text-white font-bold rounded-xl transition-all transform hover:scale-105 active:scale-95"
+                >
+                  ▶ Resume
+                </button>
+                <button 
+                  onClick={() => { audioManager.playClickSound(); onBack(); }} 
+                  className={`px-6 py-3 ${theme === 'dark' ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-200 hover:bg-gray-300'} ${theme === 'dark' ? 'text-white' : 'text-gray-900'} font-bold rounded-xl transition-all transform hover:scale-105 active:scale-95`}
+                >
+                  ← Quit
+                </button>
               </div>
             </div>
           )}
 
           {gameState === 'GAME_OVER' && showResult && (
             <div className="absolute inset-0 bg-black/70 backdrop-blur-sm flex flex-col items-center justify-center rounded-2xl z-50 animate-fade-in overflow-y-auto p-4">
-              <div className="text-3xl mb-2">
-                {isMultiplayer && score > score2 ? '🏆' : score >= (player.highScores[difficulty] || 0) ? '🎉' : '💀'}
-              </div>
-              <h2 className="text-xl font-bold text-red-400 mb-1">
+              {/* Result Icon */}
+              <div className="text-5xl mb-3">
                 {mode === 'competitive' 
-                  ? (score > score2 ? '🏆 You Win!' : score2 > score ? '💀 Bot Wins!' : '🤝 Tie!')
+                  ? (score > score2 ? '🏆' : score2 > score ? '💀' : '🤝')
                   : isMultiplayer 
-                  ? (score > score2 ? 'You Win!' : score2 > score ? ((multiplayerType === 'bot' || multiplayerType === 'zen') ? 'Bot Wins!' : 'Player 2 Wins!') : 'Tie!') 
-                  : 'Game Over!'}
-              </h2>
-              <div className="flex items-center gap-1 mb-2">
-                <span className="text-xs text-gray-400">{player.avatar} {player.username}</span>
-                {player.equippedTitle && (
-                  <span className="text-[10px] text-indigo-300">
-                    {TITLES.find(t => t.id === player.equippedTitle)?.icon} {TITLES.find(t => t.id === player.equippedTitle)?.name}
-                  </span>
-                )}
+                  ? (score > score2 ? '🏆' : score2 > score ? '💀' : '🤝')
+                  : score >= (player.highScores[difficulty] || 0) ? '🎉' : '💀'}
               </div>
               
-              <div className="bg-gray-800/80 rounded-xl p-3 mb-3 w-full max-w-[250px] border border-gray-700/50">
+              {/* Result Title */}
+              <h2 className={`text-2xl font-black mb-2 ${
+                mode === 'competitive' || isMultiplayer
+                  ? (score > score2 ? 'text-green-400' : score2 > score ? 'text-red-400' : 'text-yellow-400')
+                  : score >= (player.highScores[difficulty] || 0) ? 'text-green-400' : 'text-red-400'
+              }`}>
+                {mode === 'competitive' 
+                  ? (score > score2 ? '🏆 Victory!' : score2 > score ? '💀 Defeat!' : '🤝 Draw!')
+                  : isMultiplayer 
+                  ? (score > score2 ? '🏆 You Win!' : score2 > score ? ((multiplayerType === 'bot' || multiplayerType === 'zen') ? '💀 Bot Wins!' : '💀 Player 2 Wins!') : '🤝 Tie Game!') 
+                  : score >= (player.highScores[difficulty] || 0) ? '🎉 New High Score!' : '💀 Game Over!'}
+              </h2>
+              
+              {/* Player Info */}
+              <div className={`flex items-center gap-2 mb-3 px-4 py-2 rounded-lg ${theme === 'dark' ? 'bg-gray-800/80' : 'bg-white/80'}`}>
+                <span className="text-2xl">{player.avatar}</span>
+                <div className="text-left">
+                  <div className={`text-sm font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>{player.username}</div>
+                  {player.equippedTitle && (
+                    <div className={`text-[10px] ${theme === 'dark' ? 'text-indigo-300' : 'text-indigo-600'}`}>
+                      {TITLES.find(t => t.id === player.equippedTitle)?.icon} {TITLES.find(t => t.id === player.equippedTitle)?.name}
+                    </div>
+                  )}
+                </div>
+              </div>
+              
+              <div className={`${theme === 'dark' ? 'bg-gray-800/80 border-gray-700/50' : 'bg-white/80 border-gray-200'} rounded-xl p-4 mb-3 w-full max-w-[280px] border-2`}>
                 {mode === 'survival' ? (
                   <>
-                    <div className="flex justify-between text-sm mb-1">
-                      <span className="text-gray-400">Survived</span>
-                      <span className="text-white font-bold">{formatTime(finalScore)}</span>
+                    <div className="flex justify-between items-center mb-2">
+                      <span className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>⏱️ Survived</span>
+                      <span className={`text-lg font-black ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>{formatTime(finalScore)}</span>
                     </div>
-                    <div className="flex justify-between text-sm mb-1">
-                      <span className="text-gray-400">Max Speed</span>
-                      <span className="text-orange-400 font-bold">x{survivalSpeed}</span>
+                    <div className="flex justify-between items-center mb-2">
+                      <span className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>⚡ Max Speed</span>
+                      <span className="text-lg font-black text-orange-400">x{survivalSpeed}</span>
                     </div>
-                    <div className="flex justify-between text-sm mb-1">
-                      <span className="text-gray-400">Score</span>
-                      <span className="text-green-400 font-bold">{score}</span>
+                    <div className="flex justify-between items-center">
+                      <span className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>🏆 Final Score</span>
+                      <span className="text-lg font-black text-green-400">{score}</span>
                     </div>
                   </>
                 ) : (
                   <>
-                    <div className="flex justify-between text-sm mb-1">
-                      <span className="text-gray-400">Your Score</span>
-                      <span className="text-white font-bold">{score}</span>
+                    <div className="flex justify-between items-center mb-2">
+                      <span className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>{playerLabels.p1}</span>
+                      <span className={`text-lg font-black ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>{score}</span>
                     </div>
                     {(isMultiplayer || mode === 'competitive') && (
-                      <div className="flex justify-between text-sm mb-1">
-                        <span className="text-gray-400">{mode === 'competitive' ? 'Bot' : (multiplayerType === 'bot' || multiplayerType === 'zen') ? 'Bot' : 'P2'} Score</span>
-                        <span className="text-blue-400 font-bold">{score2}</span>
+                      <div className="flex justify-between items-center mb-2">
+                        <span className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>{playerLabels.p2}</span>
+                        <span className="text-lg font-black text-blue-400">{score2}</span>
+                      </div>
+                    )}
+                    {!isMultiplayer && mode !== 'competitive' && (
+                      <div className="flex justify-between items-center">
+                        <span className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>📏 Length</span>
+                        <span className="text-lg font-black text-green-400">{snake.length}</span>
                       </div>
                     )}
                   </>
@@ -1116,85 +1458,6 @@ export default function Game({ player, setPlayer, mode, difficulty, onBack, isMu
               </div>
             </div>
           )}
-        </div>
-      </div>
-
-      {/* Touch Controls - Responsive D-Pad */}
-      <div className="mt-4 w-full max-w-lg">
-        {/* D-Pad Container */}
-        <div className={`${theme === 'dark' ? 'bg-gray-800/60 border-gray-700/50' : 'bg-white/80 border-gray-200'} rounded-2xl p-4 border backdrop-blur-sm shadow-lg`}>
-          {/* D-Pad Grid */}
-          <div className="grid grid-cols-3 grid-rows-3 gap-2 w-48 h-48 mx-auto">
-            {/* Up Button */}
-            <div />
-            <button
-              onTouchStart={(e) => { e.preventDefault(); changeDir('UP'); }}
-              onClick={() => changeDir('UP')}
-              className={`${theme === 'dark' ? 'bg-gradient-to-br from-gray-700 to-gray-800 hover:from-gray-600 hover:to-gray-700 active:from-green-600 active:to-green-700 border-gray-600/50 text-white' : 'bg-gradient-to-br from-gray-100 to-gray-200 hover:from-gray-50 hover:to-gray-100 active:from-green-500 active:to-green-600 border-gray-300 text-gray-700'} rounded-xl flex items-center justify-center text-2xl font-bold border-2 transition-all duration-150 transform active:scale-95 shadow-md`}
-              aria-label="Move Up"
-            >
-              ▲
-            </button>
-            <div />
-
-            {/* Left Button */}
-            <button
-              onTouchStart={(e) => { e.preventDefault(); changeDir('LEFT'); }}
-              onClick={() => changeDir('LEFT')}
-              className={`${theme === 'dark' ? 'bg-gradient-to-br from-gray-700 to-gray-800 hover:from-gray-600 hover:to-gray-700 active:from-green-600 active:to-green-700 border-gray-600/50 text-white' : 'bg-gradient-to-br from-gray-100 to-gray-200 hover:from-gray-50 hover:to-gray-100 active:from-green-500 active:to-green-600 border-gray-300 text-gray-700'} rounded-xl flex items-center justify-center text-2xl font-bold border-2 transition-all duration-150 transform active:scale-95 shadow-md`}
-              aria-label="Move Left"
-            >
-              ◀
-            </button>
-
-            {/* Center - Pause Button */}
-            <button
-              onClick={() => {
-                audioManager.playClickSound();
-                if (gameState === 'PLAYING') setGameState('PAUSED');
-                else if (gameState === 'PAUSED') setGameState('PLAYING');
-              }}
-              className={`${theme === 'dark' ? 'bg-gradient-to-br from-purple-700 to-purple-800 hover:from-purple-600 hover:to-purple-700 border-purple-600/50 text-white' : 'bg-gradient-to-br from-purple-100 to-purple-200 hover:from-purple-50 hover:to-purple-100 border-purple-300 text-purple-700'} rounded-xl flex items-center justify-center text-xl font-bold border-2 transition-all duration-150 transform active:scale-95 shadow-md`}
-              aria-label="Pause/Resume"
-            >
-              {gameState === 'PAUSED' ? '▶' : '⏸'}
-            </button>
-
-            {/* Right Button */}
-            <button
-              onTouchStart={(e) => { e.preventDefault(); changeDir('RIGHT'); }}
-              onClick={() => changeDir('RIGHT')}
-              className={`${theme === 'dark' ? 'bg-gradient-to-br from-gray-700 to-gray-800 hover:from-gray-600 hover:to-gray-700 active:from-green-600 active:to-green-700 border-gray-600/50 text-white' : 'bg-gradient-to-br from-gray-100 to-gray-200 hover:from-gray-50 hover:to-gray-100 active:from-green-500 active:to-green-600 border-gray-300 text-gray-700'} rounded-xl flex items-center justify-center text-2xl font-bold border-2 transition-all duration-150 transform active:scale-95 shadow-md`}
-              aria-label="Move Right"
-            >
-              ▶
-            </button>
-
-            {/* Down Button */}
-            <div />
-            <button
-              onTouchStart={(e) => { e.preventDefault(); changeDir('DOWN'); }}
-              onClick={() => changeDir('DOWN')}
-              className={`${theme === 'dark' ? 'bg-gradient-to-br from-gray-700 to-gray-800 hover:from-gray-600 hover:to-gray-700 active:from-green-600 active:to-green-700 border-gray-600/50 text-white' : 'bg-gradient-to-br from-gray-100 to-gray-200 hover:from-gray-50 hover:to-gray-100 active:from-green-500 active:to-green-600 border-gray-300 text-gray-700'} rounded-xl flex items-center justify-center text-2xl font-bold border-2 transition-all duration-150 transform active:scale-95 shadow-md`}
-              aria-label="Move Down"
-            >
-              ▼
-            </button>
-            <div />
-          </div>
-
-          {/* Control Info */}
-          <div className={`mt-3 text-center text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
-            {isMultiplayer && multiplayerType === 'player' ? (
-              <span>
-                <span className="font-semibold">P1:</span> Touch controls or WASD • <span className="font-semibold">P2:</span> IJKL keys
-              </span>
-            ) : (
-              <span>
-                Touch controls or <kbd className={`px-1.5 py-0.5 ${theme === 'dark' ? 'bg-gray-700 text-gray-300' : 'bg-gray-200 text-gray-700'} rounded text-[10px] font-mono`}>↑↓←→</kbd> / <kbd className={`px-1.5 py-0.5 ${theme === 'dark' ? 'bg-gray-700 text-gray-300' : 'bg-gray-200 text-gray-700'} rounded text-[10px] font-mono`}>WASD</kbd> to move
-              </span>
-            )}
-          </div>
         </div>
       </div>
     </div>

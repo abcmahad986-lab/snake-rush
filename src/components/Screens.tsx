@@ -341,6 +341,8 @@ export function MainMenu({ player, onSelectMode, onNavigate, theme, toggleTheme 
             { screen: 'visualthemes' as Screen, icon: '🎨', label: 'Themes' },
             { screen: 'realmoney' as Screen, icon: '💎', label: 'Premium' },
             { screen: 'maps' as Screen, icon: '🗺️', label: 'Maps' },
+            { screen: 'dailyreward' as Screen, icon: '🎁', label: 'Daily' },
+            { screen: 'share' as Screen, icon: '📤', label: 'Share' },
             { screen: 'settings' as Screen, icon: '⚙️', label: 'Settings' },
           ].map(item => (
             <button
@@ -463,138 +465,335 @@ export function ProfileScreen({ player, setPlayer, onBack, onNavigate, theme, to
     setShowAvatarPicker(false);
   };
 
+  // Calculate player stats
+  const xpProgress = (player.xp / player.xpToNext) * 100;
+  const trophyProgress = (player.trophies.length / TROPHIES.length) * 100;
+  const titleProgress = (player.titles.length / TITLES.length) * 100;
+  const avgScore = player.gamesPlayed > 0 ? Math.round(player.totalScore / player.gamesPlayed) : 0;
+  const winRate = player.gamesPlayed > 0 ? Math.round((player.gamesWonVsBot / player.gamesPlayed) * 100) : 0;
+
   return (
     <div className={`min-h-screen ${t(theme, 'bg-black', 'bg-white')} p-4`}>
-      <div className="max-w-md mx-auto">
-        <div className="flex items-center justify-between mb-3">
-          <button onClick={onBack} className={`px-3 py-1.5 ${t(theme, 'bg-black hover:bg-gray-900 text-white border-white', 'bg-white hover:bg-gray-100 text-black border-black')} rounded-lg text-sm border-2`}>← Back</button>
+      <div className="max-w-2xl mx-auto">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-6">
+          <button onClick={onBack} className={`px-4 py-2 ${t(theme, 'bg-black hover:bg-gray-900 text-white border-white', 'bg-white hover:bg-gray-100 text-black border-black')} rounded-lg text-sm border-2 font-bold transition-all`}>
+            ← Back
+          </button>
+          <h2 className={`text-2xl font-black ${t(theme, 'text-white', 'text-black')}`}>👤 Profile</h2>
           <ThemeToggle theme={theme} toggleTheme={toggleTheme} />
         </div>
         
-        {/* Profile Card */}
-        <div className={`${t(theme, 'bg-black border-white', 'bg-white border-black')} rounded-2xl p-5 border-2 mb-4 text-center`}>
-          <button onClick={() => setShowAvatarPicker(!showAvatarPicker)} className={`w-20 h-20 ${t(theme, 'bg-black border-white', 'bg-white border-black')} rounded-full flex items-center justify-center text-4xl border-2 mx-auto mb-3 hover:scale-105 transition-all`}>
-            {player.avatar}
-          </button>
+        {/* Profile Card - Enhanced */}
+        <div className={`${t(theme, 'bg-black border-white', 'bg-white border-black')} rounded-2xl p-6 border-2 mb-6`}>
+          <div className="flex items-center gap-4 mb-4">
+            {/* Avatar with Level Badge */}
+            <div className="relative">
+              <button 
+                onClick={() => setShowAvatarPicker(!showAvatarPicker)} 
+                className={`w-24 h-24 ${t(theme, 'bg-black border-white', 'bg-white border-black')} rounded-full flex items-center justify-center text-5xl border-4 hover:scale-105 transition-all`}
+              >
+                {player.avatar}
+              </button>
+              {/* Level Badge */}
+              <div className={`absolute -bottom-2 -right-2 w-10 h-10 ${t(theme, 'bg-white text-black', 'bg-black text-white')} rounded-full flex items-center justify-center text-sm font-black border-2 ${t(theme, 'border-black', 'border-white')}`}>
+                {player.level}
+              </div>
+            </div>
+            
+            {/* Player Info */}
+            <div className="flex-1">
+              {editing ? (
+                <div className="flex gap-2 items-center">
+                  <input 
+                    value={newUsername} 
+                    onChange={e => setNewUsername(e.target.value)} 
+                    className={`flex-1 px-3 py-2 ${t(theme, 'bg-black border-white text-white', 'bg-white border-black text-black')} border-2 rounded-lg text-center text-lg font-bold`}
+                    maxLength={16}
+                    autoFocus
+                  />
+                  <button onClick={handleSave} className={`px-4 py-2 ${t(theme, 'bg-white text-black', 'bg-black text-white')} rounded-lg font-bold`}>✓</button>
+                  <button onClick={() => setEditing(false)} className={`px-4 py-2 ${t(theme, 'bg-gray-800 text-gray-400', 'bg-gray-200 text-gray-600')} rounded-lg font-bold`}>✕</button>
+                </div>
+              ) : (
+                <div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <h2 className={`text-2xl font-black ${t(theme, 'text-white', 'text-black')}`}>{player.username}</h2>
+                    <button onClick={() => setEditing(true)} className={`text-xs ${t(theme, 'text-gray-400 hover:text-white', 'text-gray-600 hover:text-black')} underline`}>Edit</button>
+                  </div>
+                  {player.equippedTitle && (
+                    <div className={`text-sm ${t(theme, 'text-gray-400', 'text-gray-600')} flex items-center gap-1`}>
+                      {TITLES.find(t => t.id === player.equippedTitle)?.icon} {TITLES.find(t => t.id === player.equippedTitle)?.name}
+                    </div>
+                  )}
+                  <div className={`text-xs ${t(theme, 'text-gray-500', 'text-gray-500')} mt-1`}>
+                    Player ID: {player.id.slice(0, 8)}...
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
           
+          {/* Avatar Picker */}
           {showAvatarPicker && (
-            <div className={`grid grid-cols-8 gap-1 mb-3 ${t(theme, 'bg-black', 'bg-white')} rounded-xl p-2 border-2 ${t(theme, 'border-white', 'border-black')}`}>
+            <div className={`grid grid-cols-8 gap-2 mb-4 ${t(theme, 'bg-black', 'bg-white')} rounded-xl p-3 border-2 ${t(theme, 'border-white', 'border-black')}`}>
               {AVATARS.map(a => (
-                <button key={a} onClick={() => changeAvatar(a)} className={`text-lg p-0.5 rounded ${player.avatar === a ? t(theme, 'bg-white text-black', 'bg-black text-white') : t(theme, 'hover:bg-gray-900', 'hover:bg-gray-100')}`}>{a}</button>
+                <button 
+                  key={a} 
+                  onClick={() => changeAvatar(a)} 
+                  className={`text-2xl p-2 rounded-lg transition-all ${player.avatar === a ? t(theme, 'bg-white text-black scale-110', 'bg-black text-white scale-110') : t(theme, 'hover:bg-gray-900', 'hover:bg-gray-100')}`}
+                >
+                  {a}
+                </button>
               ))}
             </div>
           )}
 
-          {editing ? (
-            <div className="flex gap-2 justify-center">
-              <input value={newUsername} onChange={e => setNewUsername(e.target.value)} className={`px-3 py-1 ${t(theme, 'bg-black border-white text-white', 'bg-white border-black text-black')} border-2 rounded-lg text-center text-sm`} maxLength={16} />
-              <button onClick={handleSave} className={`px-3 py-1 ${t(theme, 'bg-white text-black', 'bg-black text-white')} rounded-lg text-sm font-bold`}>✓</button>
+          {/* XP Progress Bar - Enhanced */}
+          <div className="mb-4">
+            <div className={`flex justify-between text-xs ${t(theme, 'text-gray-400', 'text-gray-600')} mb-2`}>
+              <span className="font-bold">Level {player.level}</span>
+              <span>{player.xp} / {player.xpToNext} XP</span>
             </div>
-          ) : (
-            <div>
-              <h2 className={`text-xl font-bold ${t(theme, 'text-white', 'text-black')}`}>{player.username}</h2>
-              <button onClick={() => setEditing(true)} className={`text-xs ${t(theme, 'text-gray-400 hover:text-white', 'text-gray-600 hover:text-black')}`}>Edit</button>
+            <div className={`h-4 ${t(theme, 'bg-gray-900', 'bg-gray-200')} rounded-full overflow-hidden border-2 ${t(theme, 'border-gray-700', 'border-gray-300')}`}>
+              <div 
+                className={`h-full ${t(theme, 'bg-white', 'bg-black')} rounded-full transition-all duration-500 relative`}
+                style={{ width: `${xpProgress}%` }}
+              >
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer"></div>
+              </div>
             </div>
-          )}
-          
-          <div className="mt-2 flex flex-wrap gap-2 justify-center">
-            <span className={`px-3 py-1 ${t(theme, 'bg-white text-black', 'bg-black text-white')} rounded-full text-sm font-bold`}>Level {player.level}</span>
-            {player.equippedTitle && onNavigate && (
-              <button onClick={() => onNavigate('titles')} className={`px-3 py-1 ${t(theme, 'bg-white text-black hover:bg-gray-200', 'bg-black text-white hover:bg-gray-800')} rounded-full text-sm font-bold flex items-center gap-1 transition-all`}>
-                {TITLES.find(t => t.id === player.equippedTitle)?.icon} {TITLES.find(t => t.id === player.equippedTitle)?.name} →
-              </button>
-            )}
-            {player.equippedTitle && !onNavigate && (
-              <span className={`px-3 py-1 ${t(theme, 'bg-white text-black', 'bg-black text-white')} rounded-full text-sm font-bold flex items-center gap-1`}>
-                {TITLES.find(t => t.id === player.equippedTitle)?.icon} {TITLES.find(t => t.id === player.equippedTitle)?.name}
-              </span>
-            )}
+            <div className={`text-xs ${t(theme, 'text-gray-500', 'text-gray-500')} mt-1 text-center`}>
+              {Math.round(xpProgress)}% to Level {player.level + 1}
+            </div>
           </div>
-        </div>
 
-        {/* XP Bar */}
-        <div className={`${t(theme, 'bg-black border-white', 'bg-white border-black')} rounded-xl p-3 mb-4 border-2`}>
-          <div className={`flex justify-between text-xs ${t(theme, 'text-white', 'text-black')} mb-1`}>
-            <span>Experience</span>
-            <span>{player.xp} / {player.xpToNext} XP</span>
-          </div>
-          <div className={`h-3 ${t(theme, 'bg-gray-900', 'bg-gray-200')} rounded-full overflow-hidden`}>
-            <div className={`h-full ${t(theme, 'bg-white', 'bg-black')} rounded-full transition-all`} style={{ width: `${(player.xp / player.xpToNext) * 100}%` }} />
-          </div>
-        </div>
-
-        {/* Currency */}
-        <div className="grid grid-cols-2 gap-3 mb-4">
-          <div className={`${t(theme, 'bg-black border-white', 'bg-white border-black')} rounded-xl p-3 border-2 text-center`}>
-            <div className="text-2xl mb-1">🪙</div>
-            <div className={`text-xl font-bold ${t(theme, 'text-white', 'text-black')}`}>{player.coins}</div>
-            <div className={`text-[10px] ${t(theme, 'text-gray-400', 'text-gray-600')}`}>Coins</div>
-          </div>
-          <div className={`${t(theme, 'bg-black border-white', 'bg-white border-black')} rounded-xl p-3 border-2 text-center`}>
-            <div className="text-2xl mb-1">💎</div>
-            <div className={`text-xl font-bold ${t(theme, 'text-white', 'text-black')}`}>{player.gems}</div>
-            <div className={`text-[10px] ${t(theme, 'text-gray-400', 'text-gray-600')}`}>Gems</div>
-          </div>
-        </div>
-
-        {/* Stats */}
-        <div className={`${t(theme, 'bg-black border-white', 'bg-white border-black')} rounded-xl p-4 border-2 mb-4`}>
-          <h3 className={`text-sm font-bold ${t(theme, 'text-white', 'text-black')} mb-3`}>📊 Statistics</h3>
-          <div className="space-y-2">
-            <div className="flex justify-between items-center">
-              <span className={`text-sm ${t(theme, 'text-gray-400', 'text-gray-600')}`}>Games Played</span>
-              <span className={`text-sm font-bold ${t(theme, 'text-white', 'text-black')}`}>{player.gamesPlayed}</span>
+          {/* Quick Stats Row */}
+          <div className="grid grid-cols-3 gap-3">
+            <div className={`${t(theme, 'bg-gray-900', 'bg-gray-100')} rounded-lg p-3 text-center`}>
+              <div className={`text-2xl font-black ${t(theme, 'text-white', 'text-black')}`}>{player.gamesPlayed}</div>
+              <div className={`text-xs ${t(theme, 'text-gray-400', 'text-gray-600')}`}>Games</div>
             </div>
-            <div className="flex justify-between items-center">
-              <span className={`text-sm ${t(theme, 'text-gray-400', 'text-gray-600')}`}>Total Score</span>
-              <span className={`text-sm font-bold ${t(theme, 'text-white', 'text-black')}`}>{player.totalScore}</span>
+            <div className={`${t(theme, 'bg-gray-900', 'bg-gray-100')} rounded-lg p-3 text-center`}>
+              <div className={`text-2xl font-black ${t(theme, 'text-white', 'text-black')}`}>{avgScore}</div>
+              <div className={`text-xs ${t(theme, 'text-gray-400', 'text-gray-600')}`}>Avg Score</div>
             </div>
-            <div className="flex justify-between items-center">
-              <span className={`text-sm ${t(theme, 'text-gray-400', 'text-gray-600')}`}>Food Eaten</span>
-              <span className={`text-sm font-bold ${t(theme, 'text-white', 'text-black')}`}>{player.totalFoodEaten}</span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className={`text-sm ${t(theme, 'text-gray-400', 'text-gray-600')}`}>Longest Snake</span>
-              <span className={`text-sm font-bold ${t(theme, 'text-white', 'text-black')}`}>{player.longestSnake}</span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className={`text-sm ${t(theme, 'text-gray-400', 'text-gray-600')}`}>Daily Streak</span>
-              <span className={`text-sm font-bold ${t(theme, 'text-white', 'text-black')}`}>{player.dailyStreak} 🔥</span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className={`text-sm ${t(theme, 'text-gray-400', 'text-gray-600')}`}>Trophies</span>
-              <span className={`text-sm font-bold ${t(theme, 'text-white', 'text-black')}`}>{player.trophies.length}/{TROPHIES.length}</span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className={`text-sm ${t(theme, 'text-gray-400', 'text-gray-600')}`}>Titles</span>
-              <span className={`text-sm font-bold ${t(theme, 'text-white', 'text-black')}`}>{player.titles.length}/{TITLES.length}</span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className={`text-sm ${t(theme, 'text-gray-400', 'text-gray-600')}`}>Bot Wins</span>
-              <span className={`text-sm font-bold ${t(theme, 'text-white', 'text-black')}`}>{player.gamesWonVsBot}</span>
+            <div className={`${t(theme, 'bg-gray-900', 'bg-gray-100')} rounded-lg p-3 text-center`}>
+              <div className={`text-2xl font-black ${t(theme, 'text-white', 'text-black')}`}>{winRate}%</div>
+              <div className={`text-xs ${t(theme, 'text-gray-400', 'text-gray-600')}`}>Win Rate</div>
             </div>
           </div>
         </div>
 
-        {/* High Scores */}
-        <div className={`${t(theme, 'bg-black border-white', 'bg-white border-black')} rounded-xl p-4 border-2`}>
-          <h3 className={`text-sm font-bold ${t(theme, 'text-white', 'text-black')} mb-3`}>🏅 High Scores</h3>
+        {/* Currency Cards - Enhanced */}
+        <div className="grid grid-cols-2 gap-4 mb-6">
+          <div className={`${t(theme, 'bg-black border-white', 'bg-white border-black')} rounded-xl p-4 border-2`}>
+            <div className="flex items-center justify-between mb-2">
+              <div className="text-3xl">🪙</div>
+              <div className={`text-xs ${t(theme, 'text-gray-400', 'text-gray-600')} font-bold`}>COINS</div>
+            </div>
+            <div className={`text-3xl font-black ${t(theme, 'text-white', 'text-black')}`}>{player.coins.toLocaleString()}</div>
+          </div>
+          <div className={`${t(theme, 'bg-black border-white', 'bg-white border-black')} rounded-xl p-4 border-2`}>
+            <div className="flex items-center justify-between mb-2">
+              <div className="text-3xl">💎</div>
+              <div className={`text-xs ${t(theme, 'text-gray-400', 'text-gray-600')} font-bold`}>GEMS</div>
+            </div>
+            <div className={`text-3xl font-black ${t(theme, 'text-white', 'text-black')}`}>{player.gems.toLocaleString()}</div>
+          </div>
+        </div>
+
+        {/* Statistics - Enhanced with Icons */}
+        <div className={`${t(theme, 'bg-black border-white', 'bg-white border-black')} rounded-xl p-5 border-2 mb-6`}>
+          <h3 className={`text-lg font-black ${t(theme, 'text-white', 'text-black')} mb-4 flex items-center gap-2`}>
+            📊 Statistics
+          </h3>
           <div className="space-y-3">
-            {(['easy', 'medium', 'hard', 'insane'] as Difficulty[]).map(d => (
-              <div key={d} className="flex justify-between items-center">
-                <span className={`text-sm ${t(theme, 'text-gray-400', 'text-gray-600')} font-medium`}>{DIFFICULTY_LABELS[d]}</span>
-                <div className="flex gap-4">
-                  <div className="text-right">
-                    <div className={`text-xs ${t(theme, 'text-gray-500', 'text-gray-500')}`}>Classic</div>
-                    <div className={`text-sm font-bold ${t(theme, 'text-white', 'text-black')}`}>{player.highScores[d]}</div>
+            <div className={`flex justify-between items-center p-3 ${t(theme, 'bg-gray-900', 'bg-gray-100')} rounded-lg`}>
+              <div className="flex items-center gap-3">
+                <span className="text-2xl">🎮</span>
+                <span className={`text-sm font-bold ${t(theme, 'text-white', 'text-black')}`}>Games Played</span>
+              </div>
+              <span className={`text-lg font-black ${t(theme, 'text-white', 'text-black')}`}>{player.gamesPlayed}</span>
+            </div>
+            <div className={`flex justify-between items-center p-3 ${t(theme, 'bg-gray-900', 'bg-gray-100')} rounded-lg`}>
+              <div className="flex items-center gap-3">
+                <span className="text-2xl">🏆</span>
+                <span className={`text-sm font-bold ${t(theme, 'text-white', 'text-black')}`}>Total Score</span>
+              </div>
+              <span className={`text-lg font-black ${t(theme, 'text-white', 'text-black')}`}>{player.totalScore.toLocaleString()}</span>
+            </div>
+            <div className={`flex justify-between items-center p-3 ${t(theme, 'bg-gray-900', 'bg-gray-100')} rounded-lg`}>
+              <div className="flex items-center gap-3">
+                <span className="text-2xl">🍎</span>
+                <span className={`text-sm font-bold ${t(theme, 'text-white', 'text-black')}`}>Food Eaten</span>
+              </div>
+              <span className={`text-lg font-black ${t(theme, 'text-white', 'text-black')}`}>{player.totalFoodEaten.toLocaleString()}</span>
+            </div>
+            <div className={`flex justify-between items-center p-3 ${t(theme, 'bg-gray-900', 'bg-gray-100')} rounded-lg`}>
+              <div className="flex items-center gap-3">
+                <span className="text-2xl">🐍</span>
+                <span className={`text-sm font-bold ${t(theme, 'text-white', 'text-black')}`}>Longest Snake</span>
+              </div>
+              <span className={`text-lg font-black ${t(theme, 'text-white', 'text-black')}`}>{player.longestSnake}</span>
+            </div>
+            <div className={`flex justify-between items-center p-3 ${t(theme, 'bg-gray-900', 'bg-gray-100')} rounded-lg`}>
+              <div className="flex items-center gap-3">
+                <span className="text-2xl">🔥</span>
+                <span className={`text-sm font-bold ${t(theme, 'text-white', 'text-black')}`}>Daily Streak</span>
+              </div>
+              <span className={`text-lg font-black ${t(theme, 'text-white', 'text-black')}`}>{player.dailyStreak} days</span>
+            </div>
+            <div className={`flex justify-between items-center p-3 ${t(theme, 'bg-gray-900', 'bg-gray-100')} rounded-lg`}>
+              <div className="flex items-center gap-3">
+                <span className="text-2xl">🤖</span>
+                <span className={`text-sm font-bold ${t(theme, 'text-white', 'text-black')}`}>Bot Wins</span>
+              </div>
+              <span className={`text-lg font-black ${t(theme, 'text-white', 'text-black')}`}>{player.gamesWonVsBot}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Collections Progress - New Section */}
+        <div className={`${t(theme, 'bg-black border-white', 'bg-white border-black')} rounded-xl p-5 border-2 mb-6`}>
+          <h3 className={`text-lg font-black ${t(theme, 'text-white', 'text-black')} mb-4 flex items-center gap-2`}>
+            🎯 Collections
+          </h3>
+          <div className="space-y-4">
+            {/* Trophies Progress */}
+            <div>
+              <div className="flex justify-between items-center mb-2">
+                <div className="flex items-center gap-2">
+                  <span className="text-xl">🏆</span>
+                  <span className={`text-sm font-bold ${t(theme, 'text-white', 'text-black')}`}>Trophies</span>
+                </div>
+                <span className={`text-sm font-bold ${t(theme, 'text-white', 'text-black')}`}>{player.trophies.length}/{TROPHIES.length}</span>
+              </div>
+              <div className={`h-3 ${t(theme, 'bg-gray-900', 'bg-gray-200')} rounded-full overflow-hidden`}>
+                <div className={`h-full ${t(theme, 'bg-white', 'bg-black')} rounded-full transition-all`} style={{ width: `${trophyProgress}%` }} />
+              </div>
+              <div className={`text-xs ${t(theme, 'text-gray-500', 'text-gray-500')} mt-1`}>{Math.round(trophyProgress)}% Complete</div>
+            </div>
+
+            {/* Titles Progress */}
+            <div>
+              <div className="flex justify-between items-center mb-2">
+                <div className="flex items-center gap-2">
+                  <span className="text-xl">🎖️</span>
+                  <span className={`text-sm font-bold ${t(theme, 'text-white', 'text-black')}`}>Titles</span>
+                </div>
+                <span className={`text-sm font-bold ${t(theme, 'text-white', 'text-black')}`}>{player.titles.length}/{TITLES.length}</span>
+              </div>
+              <div className={`h-3 ${t(theme, 'bg-gray-900', 'bg-gray-200')} rounded-full overflow-hidden`}>
+                <div className={`h-full ${t(theme, 'bg-white', 'bg-black')} rounded-full transition-all`} style={{ width: `${titleProgress}%` }} />
+              </div>
+              <div className={`text-xs ${t(theme, 'text-gray-500', 'text-gray-500')} mt-1`}>{Math.round(titleProgress)}% Complete</div>
+            </div>
+
+            {/* Characters Progress */}
+            <div>
+              <div className="flex justify-between items-center mb-2">
+                <div className="flex items-center gap-2">
+                  <span className="text-xl">🎭</span>
+                  <span className={`text-sm font-bold ${t(theme, 'text-white', 'text-black')}`}>Characters</span>
+                </div>
+                <span className={`text-sm font-bold ${t(theme, 'text-white', 'text-black')}`}>{player.ownedCharacters.length}/6</span>
+              </div>
+              <div className={`h-3 ${t(theme, 'bg-gray-900', 'bg-gray-200')} rounded-full overflow-hidden`}>
+                <div className={`h-full ${t(theme, 'bg-white', 'bg-black')} rounded-full transition-all`} style={{ width: `${(player.ownedCharacters.length / 6) * 100}%` }} />
+              </div>
+              <div className={`text-xs ${t(theme, 'text-gray-500', 'text-gray-500')} mt-1`}>{Math.round((player.ownedCharacters.length / 6) * 100)}% Complete</div>
+            </div>
+          </div>
+        </div>
+
+        {/* High Scores - Enhanced */}
+        <div className={`${t(theme, 'bg-black border-white', 'bg-white border-black')} rounded-xl p-5 border-2 mb-6`}>
+          <h3 className={`text-lg font-black ${t(theme, 'text-white', 'text-black')} mb-4 flex items-center gap-2`}>
+            🏅 High Scores
+          </h3>
+          <div className="space-y-4">
+            {(['easy', 'medium', 'hard', 'insane'] as Difficulty[]).map(d => {
+              const maxScore = Math.max(player.highScores[d], player.timedHighScores[d]);
+              return (
+                <div key={d} className={`${t(theme, 'bg-gray-900', 'bg-gray-100')} rounded-lg p-4`}>
+                  <div className="flex justify-between items-center mb-3">
+                    <span className={`text-sm font-bold ${t(theme, 'text-white', 'text-black')}`}>{DIFFICULTY_LABELS[d]}</span>
+                    {maxScore > 0 && <span className="text-xs">⭐ Best: {maxScore}</span>}
                   </div>
-                  <div className="text-right">
-                    <div className={`text-xs ${t(theme, 'text-gray-500', 'text-gray-500')}`}>Timed</div>
-                    <div className={`text-sm font-bold ${t(theme, 'text-white', 'text-black')}`}>{player.timedHighScores[d]}</div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className={`${t(theme, 'bg-black', 'bg-white')} rounded-lg p-3 text-center`}>
+                      <div className={`text-xs ${t(theme, 'text-gray-400', 'text-gray-600')} mb-1`}>🐍 Classic</div>
+                      <div className={`text-xl font-black ${t(theme, 'text-white', 'text-black')}`}>{player.highScores[d]}</div>
+                    </div>
+                    <div className={`${t(theme, 'bg-black', 'bg-white')} rounded-lg p-3 text-center`}>
+                      <div className={`text-xs ${t(theme, 'text-gray-400', 'text-gray-600')} mb-1`}>⏱️ Timed</div>
+                      <div className={`text-xl font-black ${t(theme, 'text-white', 'text-black')}`}>{player.timedHighScores[d]}</div>
+                    </div>
                   </div>
                 </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Competitive Stats - New Section */}
+        {(player.rankedWins > 0 || player.rankedLosses > 0) && (
+          <div className={`${t(theme, 'bg-black border-white', 'bg-white border-black')} rounded-xl p-5 border-2 mb-6`}>
+            <h3 className={`text-lg font-black ${t(theme, 'text-white', 'text-black')} mb-4 flex items-center gap-2`}>
+              🏆 Competitive Stats
+            </h3>
+            <div className="grid grid-cols-3 gap-3 mb-4">
+              <div className={`${t(theme, 'bg-gray-900', 'bg-gray-100')} rounded-lg p-3 text-center`}>
+                <div className={`text-2xl font-black ${t(theme, 'text-white', 'text-black')}`}>{player.elo}</div>
+                <div className={`text-xs ${t(theme, 'text-gray-400', 'text-gray-600')}`}>ELO Rating</div>
               </div>
-            ))}
+              <div className={`${t(theme, 'bg-gray-900', 'bg-gray-100')} rounded-lg p-3 text-center`}>
+                <div className={`text-2xl font-black text-green-400`}>{player.rankedWins}</div>
+                <div className={`text-xs ${t(theme, 'text-gray-400', 'text-gray-600')}`}>Wins</div>
+              </div>
+              <div className={`${t(theme, 'bg-gray-900', 'bg-gray-100')} rounded-lg p-3 text-center`}>
+                <div className={`text-2xl font-black text-red-400`}>{player.rankedLosses}</div>
+                <div className={`text-xs ${t(theme, 'text-gray-400', 'text-gray-600')}`}>Losses</div>
+              </div>
+            </div>
+            <div className={`${t(theme, 'bg-gray-900', 'bg-gray-100')} rounded-lg p-3 text-center`}>
+              <div className={`text-sm font-bold ${t(theme, 'text-white', 'text-black')} mb-1`}>Current Rank</div>
+              <div className={`text-lg font-black ${t(theme, 'text-white', 'text-black')}`}>
+                {player.rank === 'bronze' ? '🥉' : player.rank === 'silver' ? '🥈' : player.rank === 'gold' ? '🥇' : player.rank === 'platinum' ? '💎' : player.rank === 'diamond' ? '💠' : player.rank === 'master' ? '👑' : '🏆'} {player.rank.toUpperCase()}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Account Info - New Section */}
+        <div className={`${t(theme, 'bg-black border-white', 'bg-white border-black')} rounded-xl p-5 border-2`}>
+          <h3 className={`text-lg font-black ${t(theme, 'text-white', 'text-black')} mb-4 flex items-center gap-2`}>
+            ℹ️ Account Info
+          </h3>
+          <div className="space-y-2">
+            <div className="flex justify-between items-center">
+              <span className={`text-sm ${t(theme, 'text-gray-400', 'text-gray-600')}`}>Player ID</span>
+              <span className={`text-xs font-mono ${t(theme, 'text-white', 'text-black')}`}>{player.id}</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className={`text-sm ${t(theme, 'text-gray-400', 'text-gray-600')}`}>Joined</span>
+              <span className={`text-sm ${t(theme, 'text-white', 'text-black')}`}>
+                {new Date(player.createdAt).toLocaleDateString()}
+              </span>
+            </div>
+            {player.googleAccount && (
+              <div className="flex justify-between items-center">
+                <span className={`text-sm ${t(theme, 'text-gray-400', 'text-gray-600')}`}>Google Account</span>
+                <span className={`text-sm ${t(theme, 'text-white', 'text-black')}`}>✓ Connected</span>
+              </div>
+            )}
+            <div className="flex justify-between items-center">
+              <span className={`text-sm ${t(theme, 'text-gray-400', 'text-gray-600')}`}>Subscription</span>
+              <span className={`text-sm font-bold ${player.isPremium ? 'text-purple-400' : t(theme, 'text-white', 'text-black')}`}>
+                {player.isPremium ? `⭐ ${player.subscription.tier.toUpperCase()}` : 'FREE'}
+              </span>
+            </div>
           </div>
         </div>
       </div>

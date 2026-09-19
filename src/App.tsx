@@ -12,12 +12,13 @@ import { RealFriendsScreen } from './components/RealFriends';
 import { HomeScreen, GamesScreen, PrivacyScreen, TermsScreen, AboutScreen, EnhancedSettingsScreen } from './components/NewScreens';
 import { SnakeLeaderGame, LudoMasterGame, SnakePuzzleGame, SnakeRunnerGame, SnakeBattleGame, SnakeMazeGame } from './components/MiniGames';
 import { CompetitiveScreen, getRankFromElo } from './components/CompetitiveScreen';
+import { SplashScreen, OnboardingScreen, DailyRewardCalendar, ShareScreen } from './components/ProfessionalUI';
 
 type MultiplayerType = 'bot' | 'player' | 'zen';
 
 function App() {
   const [player, setPlayer] = useState<Player | null>(null);
-  const [screen, setScreen] = useState<Screen>('login');
+  const [screen, setScreen] = useState<Screen>('splash');
   const [gameMode, setGameMode] = useState<GameMode>('classic');
   const [gameDifficulty, setGameDifficulty] = useState<Difficulty>('medium');
   const [multiplayerType, setMultiplayerType] = useState<MultiplayerType>('player');
@@ -29,19 +30,55 @@ function App() {
     const saved = localStorage.getItem('snake-theme');
     return (saved as Theme) || 'dark';
   });
+  const [showOnboarding, setShowOnboarding] = useState(() => {
+    return !localStorage.getItem('snake-onboarding-completed');
+  });
 
   // Load player on mount
   useEffect(() => {
     const saved = loadPlayer();
     if (saved) {
       setPlayer(saved);
-      setScreen('home');
       
       // Check for new trophies
       checkTrophies(saved);
+      
+      // Show onboarding if first time, otherwise go to menu
+      if (showOnboarding) {
+        setScreen('onboarding');
+      } else {
+        setScreen('menu');
+      }
+    } else {
+      // No player data, show onboarding then login
+      if (showOnboarding) {
+        setScreen('onboarding');
+      } else {
+        setScreen('login');
+      }
     }
     setLoading(false);
   }, []);
+
+  const handleSplashFinish = () => {
+    if (showOnboarding) {
+      setScreen('onboarding');
+    } else if (player) {
+      setScreen('menu');
+    } else {
+      setScreen('login');
+    }
+  };
+
+  const handleOnboardingComplete = () => {
+    localStorage.setItem('snake-onboarding-completed', 'true');
+    setShowOnboarding(false);
+    if (player) {
+      setScreen('menu');
+    } else {
+      setScreen('login');
+    }
+  };
 
   // Apply theme to document
   useEffect(() => {
@@ -197,6 +234,16 @@ function App() {
         <div className="text-4xl animate-bounce">🐍</div>
       </div>
     );
+  }
+
+  // Splash screen
+  if (screen === 'splash') {
+    return <SplashScreen onFinish={handleSplashFinish} theme={theme} />;
+  }
+
+  // Onboarding
+  if (screen === 'onboarding') {
+    return <OnboardingScreen onComplete={handleOnboardingComplete} theme={theme} />;
   }
 
   if (!player || screen === 'login') {
@@ -373,6 +420,10 @@ function App() {
       return <TermsScreen onBack={() => setScreen('settings')} theme={theme} />;
     case 'about':
       return <AboutScreen onBack={() => setScreen('settings')} theme={theme} />;
+    case 'dailyreward':
+      return <DailyRewardCalendar player={player} setPlayer={handleUpdatePlayer} onBack={() => setScreen('menu')} theme={theme} />;
+    case 'share':
+      return <ShareScreen player={player} onBack={() => setScreen('menu')} theme={theme} />;
     default:
       return <MainMenu player={player} onSelectMode={handleSelectMode} onNavigate={setScreen} theme={theme} toggleTheme={toggleTheme} />;
   }
