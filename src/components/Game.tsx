@@ -757,6 +757,12 @@ export default function Game({ player, setPlayer, mode, difficulty, onBack, isMu
 
     // Get equipped character skin colors
     const characterSkin = player.equippedCharacterSkin;
+    
+    // Debug log to see what skin is being used
+    if (index === 0) {
+      console.log(`Rendering snake with skin: ${characterSkin}, character: ${player.equippedCharacter}`);
+    }
+    
     const characterSkins: Record<string, { head: string; body: string; glow: string }> = {
       // Classic Snake skins
       classic_green: { head: '74, 222, 128', body: '34, 197, 94', glow: 'rgba(74, 222, 128, 0.7)' },

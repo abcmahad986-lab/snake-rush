@@ -17,17 +17,29 @@ export function CharactersScreen({ player, setPlayer, onBack, theme }: {
     const character = CHARACTERS.find(c => c.id === characterId);
     if (!character || player.level < character.unlockLevel) return;
     
-    // Get the first available skin for this character (level-based skin)
-    const firstSkin = CHARACTER_SKINS.find(s => 
-      s.characterId === characterId && 
-      s.unlockMethod === 'level' && 
-      player.level >= (s.unlockRequirement || 0)
+    // Get all skins for this character
+    const characterSkins = CHARACTER_SKINS.filter(s => s.characterId === characterId);
+    
+    if (characterSkins.length === 0) {
+      console.error(`No skins found for character: ${characterId}`);
+      return;
+    }
+    
+    // Find the first unlocked skin (check owned skins first, then level-based)
+    const unlockedSkin = characterSkins.find(s => 
+      player.ownedCharacterSkins.includes(s.id) ||
+      (s.unlockMethod === 'level' && player.level >= (s.unlockRequirement || 0))
     );
+    
+    // Use unlocked skin, or first skin as default, or first skin in the list
+    const skinToEquip = unlockedSkin?.id || characterSkins[0].id;
+    
+    console.log(`Equipping character: ${characterId} with skin: ${skinToEquip}`);
     
     const updated = {
       ...player,
       equippedCharacter: characterId,
-      equippedCharacterSkin: firstSkin?.id || player.equippedCharacterSkin
+      equippedCharacterSkin: skinToEquip
     };
 
     setPlayer(updated);
@@ -36,14 +48,28 @@ export function CharactersScreen({ player, setPlayer, onBack, theme }: {
 
   const selectSkin = (skinId: string) => {
     const skin = CHARACTER_SKINS.find(s => s.id === skinId);
-    if (!skin) return;
+    if (!skin) {
+      console.error(`Skin not found: ${skinId}`);
+      return;
+    }
+    
+    // Verify skin belongs to the currently equipped character
+    if (skin.characterId !== player.equippedCharacter) {
+      console.error(`Skin ${skinId} does not belong to equipped character ${player.equippedCharacter}`);
+      return;
+    }
     
     // Check if skin is unlocked
     const isUnlocked = 
       (skin.unlockMethod === 'level' && player.level >= (skin.unlockRequirement || 0)) ||
       player.ownedCharacterSkins.includes(skinId);
     
-    if (!isUnlocked) return;
+    if (!isUnlocked) {
+      console.error(`Skin ${skinId} is not unlocked`);
+      return;
+    }
+    
+    console.log(`Equipping skin: ${skinId} for character: ${player.equippedCharacter}`);
     
     const updated = {
       ...player,
