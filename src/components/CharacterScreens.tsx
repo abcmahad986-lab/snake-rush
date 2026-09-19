@@ -12,6 +12,7 @@ export function CharactersScreen({ player, setPlayer, onBack, theme }: {
   theme: Theme;
 }) {
   const [selectedCharacter, setSelectedCharacter] = useState<string | null>(null);
+  const [previewSkin, setPreviewSkin] = useState<string | null>(null);
 
   const selectCharacter = (characterId: string) => {
     const character = CHARACTERS.find(c => c.id === characterId);
@@ -192,6 +193,103 @@ export function CharactersScreen({ player, setPlayer, onBack, theme }: {
             {/* Skins */}
             <div className="mb-4">
               <h4 className={`text-sm font-bold ${t(theme, 'text-white', 'text-gray-900')} mb-3`}>Skins</h4>
+              
+              {/* Skin Preview Panel */}
+              {previewSkin && (
+                <div className={`${t(theme, 'bg-gray-900/60 border-gray-700', 'bg-gray-100 border-gray-300')} rounded-xl p-4 mb-4 border-2`}>
+                  <div className="flex items-center justify-between mb-3">
+                    <h5 className={`text-sm font-bold ${t(theme, 'text-white', 'text-gray-900')}`}>Skin Preview</h5>
+                    <button 
+                      onClick={() => setPreviewSkin(null)}
+                      className={`text-xs px-2 py-1 ${t(theme, 'bg-gray-700 hover:bg-gray-600 text-white', 'bg-gray-300 hover:bg-gray-400 text-gray-900')} rounded`}
+                    >
+                      ✕ Close
+                    </button>
+                  </div>
+                  
+                  {(() => {
+                    const skin = characterSkins.find(s => s.id === previewSkin);
+                    if (!skin) return null;
+                    
+                    return (
+                      <div className="space-y-3">
+                        {/* Large Color Preview */}
+                        <div className="flex gap-3">
+                          <div className="flex-1">
+                            <div className={`text-xs ${t(theme, 'text-gray-400', 'text-gray-600')} mb-1`}>Head Color</div>
+                            <div 
+                              className="w-full h-16 rounded-lg border-2 border-white/20"
+                              style={{
+                                backgroundColor: skin.colors.head,
+                                boxShadow: `0 0 30px ${skin.colors.glow}`
+                              }}
+                            />
+                            <div className={`text-xs ${t(theme, 'text-gray-400', 'text-gray-600')} mt-1 text-center font-mono`}>
+                              {skin.colors.head}
+                            </div>
+                          </div>
+                          <div className="flex-1">
+                            <div className={`text-xs ${t(theme, 'text-gray-400', 'text-gray-600')} mb-1`}>Body Color</div>
+                            <div 
+                              className="w-full h-16 rounded-lg border-2 border-white/20"
+                              style={{
+                                backgroundColor: skin.colors.body,
+                                boxShadow: `0 0 30px ${skin.colors.glow}`
+                              }}
+                            />
+                            <div className={`text-xs ${t(theme, 'text-gray-400', 'text-gray-600')} mt-1 text-center font-mono`}>
+                              {skin.colors.body}
+                            </div>
+                          </div>
+                        </div>
+                        
+                        {/* Snake Preview */}
+                        <div>
+                          <div className={`text-xs ${t(theme, 'text-gray-400', 'text-gray-600')} mb-2`}>Snake Preview</div>
+                          <div className={`${t(theme, 'bg-black/40', 'bg-white/60')} rounded-lg p-4 flex items-center justify-center`}>
+                            <div className="flex gap-1">
+                              {/* Head */}
+                              <div 
+                                className="w-12 h-12 rounded-lg flex items-center justify-center text-2xl"
+                                style={{
+                                  backgroundColor: skin.colors.head,
+                                  boxShadow: `0 0 25px ${skin.colors.glow}`
+                                }}
+                              >
+                                {selectedChar.emoji}
+                              </div>
+                              {/* Body segments */}
+                              {[0.9, 0.8, 0.7, 0.6, 0.5].map((opacity, i) => (
+                                <div 
+                                  key={i}
+                                  className="w-10 h-10 rounded-lg"
+                                  style={{
+                                    backgroundColor: skin.colors.body,
+                                    opacity: opacity,
+                                    boxShadow: `0 0 15px ${skin.colors.glow}`
+                                  }}
+                                />
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                        
+                        {/* Skin Info */}
+                        <div className={`${t(theme, 'bg-gray-800/40', 'bg-gray-200/40')} rounded-lg p-3`}>
+                          <div className={`text-sm font-bold ${t(theme, 'text-white', 'text-gray-900')} mb-1`}>
+                            {skin.name}
+                          </div>
+                          <div className={`text-xs ${t(theme, 'text-gray-400', 'text-gray-600')}`}>
+                            Glow: <span className="font-mono">{skin.colors.glow}</span>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })()}
+                </div>
+              )}
+              
+              {/* Skins Grid */}
               <div className="grid grid-cols-3 gap-2">
                 {characterSkins.map(skin => {
                   // Check if skin is unlocked based on unlock method
@@ -199,38 +297,71 @@ export function CharactersScreen({ player, setPlayer, onBack, theme }: {
                     (skin.unlockMethod === 'level' && player.level >= (skin.unlockRequirement || 0)) ||
                     player.ownedCharacterSkins.includes(skin.id);
                   const isEquipped = player.equippedCharacterSkin === skin.id;
+                  const isPreviewing = previewSkin === skin.id;
 
                   return (
-                    <button
+                    <div
                       key={skin.id}
-                      onClick={() => isUnlocked && selectSkin(skin.id)}
-                      disabled={!isUnlocked}
                       className={`${
                         isEquipped
                           ? 'ring-2 ring-purple-500'
-                          : isUnlocked
-                          ? t(theme, 'hover:border-gray-500', 'hover:border-gray-400')
-                          : 'opacity-50 cursor-not-allowed'
+                          : isPreviewing
+                          ? 'ring-2 ring-blue-500'
+                          : ''
                       } ${t(theme, 'bg-gray-900/40 border-gray-700/50', 'bg-gray-50 border-gray-200')} rounded-lg p-3 border transition-all`}
                     >
+                      {/* Color Preview */}
                       <div
-                        className="w-full h-12 rounded-lg mb-2"
+                        className="w-full h-16 rounded-lg mb-2 cursor-pointer hover:scale-105 transition-transform"
                         style={{
                           background: `linear-gradient(135deg, ${skin.colors.head}, ${skin.colors.body})`,
                           boxShadow: `0 0 20px ${skin.colors.glow}`
                         }}
+                        onClick={() => isUnlocked && setPreviewSkin(isPreviewing ? null : skin.id)}
                       />
-                      <div className={`text-xs font-bold ${t(theme, 'text-white', 'text-gray-900')}`}>{skin.name}</div>
-                      {isEquipped && <div className="text-xs text-purple-400 mt-1">✓ Equipped</div>}
+                      
+                      {/* Skin Name */}
+                      <div className={`text-xs font-bold ${t(theme, 'text-white', 'text-gray-900')} mb-1 text-center`}>
+                        {skin.name}
+                      </div>
+                      
+                      {/* Status */}
+                      {isEquipped && (
+                        <div className="text-xs text-purple-400 text-center font-bold">✓ Equipped</div>
+                      )}
+                      
+                      {/* Actions */}
+                      {isUnlocked && !isEquipped && (
+                        <div className="flex gap-1 mt-1">
+                          <button
+                            onClick={() => setPreviewSkin(isPreviewing ? null : skin.id)}
+                            className={`flex-1 text-xs px-2 py-1 ${
+                              isPreviewing
+                                ? 'bg-blue-600 text-white'
+                                : t(theme, 'bg-gray-700 hover:bg-gray-600 text-white', 'bg-gray-200 hover:bg-gray-300 text-gray-900')
+                            } rounded transition-all`}
+                          >
+                            {isPreviewing ? '👁️ Preview' : '👁️ View'}
+                          </button>
+                          <button
+                            onClick={() => selectSkin(skin.id)}
+                            className="flex-1 text-xs px-2 py-1 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-400 hover:to-emerald-500 text-white rounded transition-all"
+                          >
+                            ⚔️ Equip
+                          </button>
+                        </div>
+                      )}
+                      
+                      {/* Locked Status */}
                       {!isUnlocked && (
-                        <div className="text-xs text-red-400 mt-1">
+                        <div className="text-xs text-red-400 mt-1 text-center">
                           {skin.unlockMethod === 'level' && `🔒 Level ${skin.unlockRequirement}`}
                           {skin.unlockMethod === 'chest' && '🎁 From Chest'}
                           {skin.unlockMethod === 'purchase' && `💰 ${skin.unlockRequirement} coins`}
                           {skin.unlockMethod === 'achievement' && '🏆 Achievement'}
                         </div>
                       )}
-                    </button>
+                    </div>
                   );
                 })}
               </div>
