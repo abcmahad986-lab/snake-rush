@@ -722,119 +722,165 @@ export default function Game({ player, setPlayer, mode, difficulty, onBack, isMu
 
   const getModeLabel = () => {
     if (mode === 'competitive') {
-      return matchType === 'ranked' ? '🏆 Ranked' : '🎮 Unranked';
+      return matchType === 'ranked' ? '🏆 Ranked Match' : '🎮 Casual Match';
     }
     if (isMultiplayer) {
-      if (multiplayerType === 'zen') return '🌀 Zen Multiplayer';
-      return multiplayerType === 'bot' ? '🤖 vs Bot' : '👥 vs Player';
+      if (multiplayerType === 'zen') return '🌀 Zen Battle';
+      return multiplayerType === 'bot' ? '🤖 vs AI' : '👥 2 Players';
     }
-    if (mode === 'timed') return '⏱️ Timed';
-    if (mode === 'zen') return '🧘 Zen';
+    if (mode === 'timed') return '⏱️ Time Attack';
+    if (mode === 'zen') return '🧘 Zen Mode';
     if (mode === 'survival') return '💀 Survival';
     return '🐍 Classic';
   };
 
+  const getDifficultyLabel = () => {
+    const labels = {
+      easy: { text: 'EASY', color: 'text-green-400', bg: 'bg-green-900/50' },
+      medium: { text: 'MEDIUM', color: 'text-yellow-400', bg: 'bg-yellow-900/50' },
+      hard: { text: 'HARD', color: 'text-red-400', bg: 'bg-red-900/50' },
+      insane: { text: 'INSANE', color: 'text-purple-400', bg: 'bg-purple-900/50' },
+    };
+    return labels[difficulty];
+  };
+
+  const getPlayerLabel = () => {
+    if (isMultiplayer && multiplayerType === 'player') {
+      return { p1: `${player.avatar} ${player.username}`, p2: 'Player 2' };
+    }
+    if (isMultiplayer && (multiplayerType === 'bot' || multiplayerType === 'zen')) {
+      return { p1: `${player.avatar} ${player.username}`, p2: '🤖 AI Bot' };
+    }
+    return { p1: `${player.avatar} ${player.username}`, p2: '' };
+  };
+
+  const playerLabels = getPlayerLabel();
+
   return (
     <div className={`min-h-screen ${theme === 'dark' ? 'bg-gradient-to-br from-gray-900 via-slate-900 to-gray-800' : 'bg-gradient-to-br from-gray-50 via-slate-50 to-white'} flex flex-col items-center p-2 md:p-4 select-none`}>
-      {/* Top Bar */}
-      <div className="w-full max-w-lg flex items-center justify-between mb-2">
-        <button onClick={onBack} className={`px-3 py-1.5 ${theme === 'dark' ? 'bg-gray-800 hover:bg-gray-700 text-gray-300 border-gray-700/50' : 'bg-white hover:bg-gray-50 text-gray-700 border-gray-300'} rounded-lg text-sm border`}>
-          ← Back
-        </button>
-        <div className="flex items-center gap-2">
-          {player.equippedTitle && (
-            <span className={`text-[10px] ${theme === 'dark' ? 'text-indigo-300' : 'text-indigo-600'} hidden md:inline`}>
-              {TITLES.find(ti => ti.id === player.equippedTitle)?.icon} {TITLES.find(ti => ti.id === player.equippedTitle)?.name}
-            </span>
-          )}
-          <span className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'} uppercase`}>{getModeLabel()}</span>
-          <span className={`text-xs px-2 py-0.5 rounded-full ${
-            difficulty === 'easy' ? 'bg-green-900/50 text-green-400' :
-            difficulty === 'medium' ? 'bg-yellow-900/50 text-yellow-400' :
-            difficulty === 'hard' ? 'bg-red-900/50 text-red-400' :
-            'bg-purple-900/50 text-purple-400'
-          }`}>{difficulty}</span>
-          <button
-            onClick={() => {
-              audioManager.playClickSound();
-              const muted = audioManager.toggleMute();
-              setIsMuted(muted);
-            }}
-            className={`p-1.5 rounded-lg transition-all ${
-              theme === 'dark' 
-                ? 'bg-gray-800 hover:bg-gray-700 text-gray-300 border-gray-700/50' 
-                : 'bg-white hover:bg-gray-50 text-gray-700 border-gray-300'
-            } border`}
-            title={isMuted ? 'Unmute' : 'Mute'}
-          >
-            {isMuted ? '🔇' : '🔊'}
-          </button>
-          <button
-            onClick={toggleTheme}
-            className={`p-1.5 rounded-lg transition-all ${
-              theme === 'dark' 
-                ? 'bg-gray-800 hover:bg-gray-700 text-yellow-400 border-gray-700/50' 
-                : 'bg-white hover:bg-gray-50 text-gray-700 border-gray-300'
-            } border`}
-            title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
-          >
-            {theme === 'dark' ? '☀️' : '🌙'}
-          </button>
+      {/* Top Bar - Enhanced with Player Info */}
+      <div className="w-full max-w-lg mb-2">
+        <div className={`flex items-center justify-between ${theme === 'dark' ? 'bg-gray-800/80 border-gray-700/50' : 'bg-white border-gray-200 shadow-sm'} rounded-xl px-3 py-2 border`}>
+          {/* Player Info */}
+          <div className="flex items-center gap-2">
+            <div className="text-2xl">{player.avatar}</div>
+            <div>
+              <div className={`text-sm font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-900'} leading-tight`}>{player.username}</div>
+              {player.equippedTitle && (
+                <div className={`text-[10px] ${theme === 'dark' ? 'text-indigo-300' : 'text-indigo-600'}`}>
+                  {TITLES.find(ti => ti.id === player.equippedTitle)?.icon} {TITLES.find(ti => ti.id === player.equippedTitle)?.name}
+                </div>
+              )}
+            </div>
+          </div>
+          
+          {/* Game Info */}
+          <div className="flex items-center gap-2">
+            <div className="text-right">
+              <div className={`text-xs font-bold ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>{getModeLabel()}</div>
+              <div className={`text-[10px] px-2 py-0.5 rounded-full inline-block ${getDifficultyLabel().bg} ${getDifficultyLabel().color} font-bold`}>
+                {getDifficultyLabel().text}
+              </div>
+            </div>
+            
+            {/* Control Buttons */}
+            <div className="flex gap-1">
+              <button
+                onClick={() => {
+                  audioManager.playClickSound();
+                  const muted = audioManager.toggleMute();
+                  setIsMuted(muted);
+                }}
+                className={`p-1.5 rounded-lg transition-all ${
+                  theme === 'dark' 
+                    ? 'bg-gray-700 hover:bg-gray-600 text-gray-300' 
+                    : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
+                }`}
+                title={isMuted ? 'Unmute' : 'Mute'}
+              >
+                {isMuted ? '🔇' : '🔊'}
+              </button>
+              <button
+                onClick={toggleTheme}
+                className={`p-1.5 rounded-lg transition-all ${
+                  theme === 'dark' 
+                    ? 'bg-gray-700 hover:bg-gray-600 text-yellow-400' 
+                    : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
+                }`}
+                title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+              >
+                {theme === 'dark' ? '☀️' : '🌙'}
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Score Bar */}
+      {/* Score Bar - Enhanced with Player Names */}
       <div className={`w-full max-w-lg flex justify-between items-center ${theme === 'dark' ? 'bg-gray-800/80 border-gray-700/50' : 'bg-white border-gray-200 shadow-sm'} rounded-xl px-3 py-2 mb-2 border`}>
+        {/* Player 1 Score */}
         <div className="text-center">
-          <div className={`text-[10px] ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>{isMultiplayer ? 'P1' : 'Score'}</div>
+          <div className={`text-[10px] ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'} font-medium`}>
+            {isMultiplayer ? playerLabels.p1 : 'Score'}
+          </div>
           <div className="text-lg font-bold text-green-400">{score}</div>
         </div>
+        
+        {/* Mode-specific displays */}
         {mode === 'timed' && (
           <div className="text-center">
-            <div className={`text-[10px] ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Time</div>
+            <div className={`text-[10px] ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'} font-medium`}>⏱️ Time Left</div>
             <div className={`text-lg font-bold ${timeLeft <= 10 ? 'text-red-400 animate-pulse' : theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>{formatTime(timeLeft)}</div>
           </div>
         )}
         {mode === 'survival' && (
           <>
             <div className="text-center">
-              <div className={`text-[10px] ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Survived</div>
+              <div className={`text-[10px] ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'} font-medium`}>⏱️ Survived</div>
               <div className={`text-lg font-bold ${survivalTime >= 60 ? 'text-yellow-400' : theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>{formatTime(survivalTime)}</div>
             </div>
             <div className="text-center">
-              <div className={`text-[10px] ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Speed</div>
+              <div className={`text-[10px] ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'} font-medium`}>⚡ Speed</div>
               <div className={`text-lg font-bold ${survivalSpeed >= 5 ? 'text-red-400 animate-pulse' : survivalSpeed >= 3 ? 'text-orange-400' : theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>x{survivalSpeed}</div>
             </div>
           </>
         )}
         {mode === 'competitive' && (
           <div className="text-center">
-            <div className={`text-[10px] ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>ELO</div>
+            <div className={`text-[10px] ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'} font-medium`}>🏆 ELO Rating</div>
             <div className={`text-lg font-bold ${matchType === 'ranked' ? 'text-yellow-400' : 'text-blue-400'}`}>{player.elo}</div>
           </div>
         )}
         {combo > 2 && (
           <div className="text-center">
-            <div className={`text-[10px] ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Combo</div>
+            <div className={`text-[10px] ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'} font-medium`}>🔥 Combo</div>
             <div className="text-lg font-bold text-orange-400">x{combo}</div>
           </div>
         )}
+        
+        {/* Player 2 / Bot Score */}
         {isMultiplayer && (
           <div className="text-center">
-            <div className={`text-[10px] ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>{multiplayerType === 'bot' ? 'Bot' : 'P2'}</div>
+            <div className={`text-[10px] ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'} font-medium`}>
+              {playerLabels.p2}
+            </div>
             <div className="text-lg font-bold text-blue-400">{score2}</div>
           </div>
         )}
-        {!isMultiplayer && mode !== 'timed' && (
+        
+        {/* Snake Length (single player) */}
+        {!isMultiplayer && mode !== 'timed' && mode !== 'survival' && mode !== 'competitive' && (
           <div className="text-center">
-            <div className={`text-[10px] ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Length</div>
+            <div className={`text-[10px] ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'} font-medium`}>📏 Length</div>
             <div className="text-lg font-bold text-green-400">{snake.length}</div>
           </div>
         )}
+        
+        {/* Active Power-ups */}
         {activeEffects.length > 0 && (
           <div className="flex gap-1">
             {activeEffects.map(e => (
-              <span key={e} className="text-xs animate-pulse">
+              <span key={e} className="text-xs animate-pulse" title={e}>
                 {e === 'double' ? '✖️2' : e === 'speed' ? '⚡' : e === 'slow' ? '🐌' : e === 'time_slow' ? '⏱️' : e === 'coin_magnet' ? '🧲' : e === 'ghost_pass' ? '👻' : '💫'}
               </span>
             ))}
@@ -976,93 +1022,208 @@ export default function Game({ player, setPlayer, mode, difficulty, onBack, isMu
             </div>
           ))}
 
-          {/* Overlays */}
+          {/* Overlays - Enhanced Start Screen */}
           {gameState === 'IDLE' && (
-            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm flex flex-col items-center justify-center rounded-2xl z-50 animate-fade-in">
-              <div className="text-4xl mb-3">
+            <div className="absolute inset-0 bg-black/70 backdrop-blur-sm flex flex-col items-center justify-center rounded-2xl z-50 animate-fade-in p-6">
+              {/* Mode Icon */}
+              <div className="text-6xl mb-4">
                 {mode === 'competitive' 
                   ? (matchType === 'ranked' ? '🏆' : '🎮')
                   : isMultiplayer 
                   ? (multiplayerType === 'zen' ? '🌀' : multiplayerType === 'bot' ? '🤖' : '👥') 
                   : mode === 'timed' ? '⏱️' : mode === 'zen' ? '🧘' : mode === 'survival' ? '💀' : '🐍'}
               </div>
-              <h2 className="text-lg font-bold text-white mb-1">
+              
+              {/* Mode Title */}
+              <h2 className="text-2xl font-black text-white mb-2 text-center">
                 {mode === 'competitive'
-                  ? (matchType === 'ranked' ? 'Ranked Match!' : 'Unranked Match!')
+                  ? (matchType === 'ranked' ? '🏆 Ranked Match' : '🎮 Casual Match')
                   : isMultiplayer 
-                  ? (multiplayerType === 'zen' ? 'Zen Multiplayer!' : multiplayerType === 'bot' ? 'vs Bot!' : 'vs Player!') 
-                  : mode === 'timed' ? 'Timed Challenge' : mode === 'zen' ? 'Zen Mode' : mode === 'survival' ? 'Survival Mode' : 'Ready?'}
+                  ? (multiplayerType === 'zen' ? '🌀 Zen Battle' : multiplayerType === 'bot' ? '🤖 vs AI Bot' : '👥 2 Player Battle') 
+                  : mode === 'timed' ? '⏱️ Time Attack' : mode === 'zen' ? '🧘 Zen Mode' : mode === 'survival' ? '💀 Survival Challenge' : '🐍 Classic Mode'}
               </h2>
-              {mode === 'competitive' && matchType === 'ranked' && <p className="text-yellow-300 text-xs mb-2">ELO rating will be affected!</p>}
-              {mode === 'competitive' && matchType === 'unranked' && <p className="text-blue-300 text-xs mb-2">Casual match • No ELO changes</p>}
-              {(mode === 'zen' || multiplayerType === 'zen') && <p className="text-purple-300 text-xs mb-2">Pass through walls freely!</p>}
-              {isMultiplayer && multiplayerType === 'player' && <p className="text-gray-400 text-xs mb-2">P1: WASD/Arrows • P2: IJKL</p>}
-              {isMultiplayer && multiplayerType === 'bot' && <p className="text-gray-400 text-xs mb-2">Use WASD/Arrows to compete!</p>}
-              {isMultiplayer && multiplayerType === 'zen' && <p className="text-gray-400 text-xs mb-2">vs Bot • No walls!</p>}
-              <button onClick={() => { audioManager.playClickSound(); startGame(); }} className="px-5 py-2.5 bg-green-500 hover:bg-green-400 text-white font-bold rounded-xl transition-all transform hover:scale-105 active:scale-95 shadow-lg shadow-green-500/30">
-                ▶ Start
+              
+              {/* Player Info */}
+              <div className={`flex items-center gap-2 mb-3 px-4 py-2 rounded-lg ${theme === 'dark' ? 'bg-gray-800/80' : 'bg-white/80'}`}>
+                <span className="text-2xl">{player.avatar}</span>
+                <div className="text-left">
+                  <div className={`text-sm font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>{player.username}</div>
+                  {player.equippedTitle && (
+                    <div className={`text-[10px] ${theme === 'dark' ? 'text-indigo-300' : 'text-indigo-600'}`}>
+                      {TITLES.find(t => t.id === player.equippedTitle)?.icon} {TITLES.find(t => t.id === player.equippedTitle)?.name}
+                    </div>
+                  )}
+                </div>
+              </div>
+              
+              {/* Mode Description */}
+              <div className={`text-center mb-4 px-4 py-2 rounded-lg ${theme === 'dark' ? 'bg-gray-800/60' : 'bg-white/60'} max-w-xs`}>
+                {mode === 'competitive' && matchType === 'ranked' && (
+                  <p className="text-yellow-300 text-xs font-bold">⚠️ ELO rating will be affected!</p>
+                )}
+                {mode === 'competitive' && matchType === 'unranked' && (
+                  <p className="text-blue-300 text-xs font-bold">✨ Casual match • No ELO changes</p>
+                )}
+                {(mode === 'zen' || multiplayerType === 'zen') && (
+                  <p className="text-purple-300 text-xs font-bold">🌀 Pass through walls freely!</p>
+                )}
+                {mode === 'survival' && (
+                  <p className="text-red-300 text-xs font-bold">⚡ Speed increases over time!</p>
+                )}
+                {mode === 'timed' && (
+                  <p className="text-cyan-300 text-xs font-bold">⏱️ Score as high as you can in 60 seconds!</p>
+                )}
+                {mode === 'classic' && !isMultiplayer && (
+                  <p className="text-green-300 text-xs font-bold">🎯 Eat food, grow longer, avoid walls!</p>
+                )}
+              </div>
+              
+              {/* Controls Info */}
+              {isMultiplayer && (
+                <div className={`text-center mb-4 px-4 py-2 rounded-lg ${theme === 'dark' ? 'bg-gray-800/60' : 'bg-white/60'} max-w-xs`}>
+                  {multiplayerType === 'player' && (
+                    <>
+                      <p className={`text-xs font-bold mb-1 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>🎮 Controls</p>
+                      <p className="text-gray-400 text-xs">
+                        <span className="text-green-400 font-bold">{playerLabels.p1}:</span> WASD/Arrows<br/>
+                        <span className="text-blue-400 font-bold">{playerLabels.p2}:</span> IJKL
+                      </p>
+                    </>
+                  )}
+                  {(multiplayerType === 'bot' || multiplayerType === 'zen') && (
+                    <p className="text-gray-400 text-xs">
+                      <span className="text-green-400 font-bold">{playerLabels.p1}:</span> WASD/Arrows<br/>
+                      <span className="text-blue-400 font-bold">{playerLabels.p2}:</span> AI Controlled
+                    </p>
+                  )}
+                </div>
+              )}
+              
+              {/* Start Button */}
+              <button 
+                onClick={() => { audioManager.playClickSound(); startGame(); }} 
+                className="px-8 py-3 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-400 hover:to-emerald-500 text-white font-black text-lg rounded-xl transition-all transform hover:scale-105 active:scale-95 shadow-lg shadow-green-500/50"
+              >
+                ▶ START GAME
               </button>
             </div>
           )}
 
           {gameState === 'PAUSED' && (
-            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm flex flex-col items-center justify-center rounded-2xl z-50 animate-fade-in">
-              <div className="text-4xl mb-3">⏸️</div>
-              <h2 className="text-xl font-bold text-white mb-3">Paused</h2>
-              <div className="flex gap-2">
-                <button onClick={() => setGameState('PLAYING')} className="px-4 py-2 bg-green-500 hover:bg-green-400 text-white font-bold rounded-xl transition-all">▶ Resume</button>
-                <button onClick={onBack} className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-xl transition-all">← Quit</button>
+            <div className="absolute inset-0 bg-black/70 backdrop-blur-sm flex flex-col items-center justify-center rounded-2xl z-50 animate-fade-in p-6">
+              <div className="text-6xl mb-4">⏸️</div>
+              <h2 className="text-2xl font-black text-white mb-2">Game Paused</h2>
+              
+              {/* Player Info */}
+              <div className={`flex items-center gap-2 mb-4 px-4 py-2 rounded-lg ${theme === 'dark' ? 'bg-gray-800/80' : 'bg-white/80'}`}>
+                <span className="text-2xl">{player.avatar}</span>
+                <div className="text-left">
+                  <div className={`text-sm font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>{player.username}</div>
+                  <div className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
+                    {getModeLabel()} • {getDifficultyLabel().text}
+                  </div>
+                </div>
+              </div>
+              
+              {/* Current Stats */}
+              <div className={`grid grid-cols-2 gap-3 mb-4 w-full max-w-xs`}>
+                <div className={`${theme === 'dark' ? 'bg-gray-800/80' : 'bg-white/80'} rounded-lg p-3 text-center`}>
+                  <div className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'} mb-1`}>Score</div>
+                  <div className="text-xl font-black text-green-400">{score}</div>
+                </div>
+                <div className={`${theme === 'dark' ? 'bg-gray-800/80' : 'bg-white/80'} rounded-lg p-3 text-center`}>
+                  <div className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'} mb-1`}>Length</div>
+                  <div className="text-xl font-black text-green-400">{snake.length}</div>
+                </div>
+              </div>
+              
+              {/* Action Buttons */}
+              <div className="flex gap-3">
+                <button 
+                  onClick={() => { audioManager.playClickSound(); setGameState('PLAYING'); }} 
+                  className="px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-400 hover:to-emerald-500 text-white font-bold rounded-xl transition-all transform hover:scale-105 active:scale-95"
+                >
+                  ▶ Resume
+                </button>
+                <button 
+                  onClick={() => { audioManager.playClickSound(); onBack(); }} 
+                  className={`px-6 py-3 ${theme === 'dark' ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-200 hover:bg-gray-300'} ${theme === 'dark' ? 'text-white' : 'text-gray-900'} font-bold rounded-xl transition-all transform hover:scale-105 active:scale-95`}
+                >
+                  ← Quit
+                </button>
               </div>
             </div>
           )}
 
           {gameState === 'GAME_OVER' && showResult && (
             <div className="absolute inset-0 bg-black/70 backdrop-blur-sm flex flex-col items-center justify-center rounded-2xl z-50 animate-fade-in overflow-y-auto p-4">
-              <div className="text-3xl mb-2">
-                {isMultiplayer && score > score2 ? '🏆' : score >= (player.highScores[difficulty] || 0) ? '🎉' : '💀'}
-              </div>
-              <h2 className="text-xl font-bold text-red-400 mb-1">
+              {/* Result Icon */}
+              <div className="text-5xl mb-3">
                 {mode === 'competitive' 
-                  ? (score > score2 ? '🏆 You Win!' : score2 > score ? '💀 Bot Wins!' : '🤝 Tie!')
+                  ? (score > score2 ? '🏆' : score2 > score ? '💀' : '🤝')
                   : isMultiplayer 
-                  ? (score > score2 ? 'You Win!' : score2 > score ? ((multiplayerType === 'bot' || multiplayerType === 'zen') ? 'Bot Wins!' : 'Player 2 Wins!') : 'Tie!') 
-                  : 'Game Over!'}
-              </h2>
-              <div className="flex items-center gap-1 mb-2">
-                <span className="text-xs text-gray-400">{player.avatar} {player.username}</span>
-                {player.equippedTitle && (
-                  <span className="text-[10px] text-indigo-300">
-                    {TITLES.find(t => t.id === player.equippedTitle)?.icon} {TITLES.find(t => t.id === player.equippedTitle)?.name}
-                  </span>
-                )}
+                  ? (score > score2 ? '🏆' : score2 > score ? '💀' : '🤝')
+                  : score >= (player.highScores[difficulty] || 0) ? '🎉' : '💀'}
               </div>
               
-              <div className="bg-gray-800/80 rounded-xl p-3 mb-3 w-full max-w-[250px] border border-gray-700/50">
+              {/* Result Title */}
+              <h2 className={`text-2xl font-black mb-2 ${
+                mode === 'competitive' || isMultiplayer
+                  ? (score > score2 ? 'text-green-400' : score2 > score ? 'text-red-400' : 'text-yellow-400')
+                  : score >= (player.highScores[difficulty] || 0) ? 'text-green-400' : 'text-red-400'
+              }`}>
+                {mode === 'competitive' 
+                  ? (score > score2 ? '🏆 Victory!' : score2 > score ? '💀 Defeat!' : '🤝 Draw!')
+                  : isMultiplayer 
+                  ? (score > score2 ? '🏆 You Win!' : score2 > score ? ((multiplayerType === 'bot' || multiplayerType === 'zen') ? '💀 Bot Wins!' : '💀 Player 2 Wins!') : '🤝 Tie Game!') 
+                  : score >= (player.highScores[difficulty] || 0) ? '🎉 New High Score!' : '💀 Game Over!'}
+              </h2>
+              
+              {/* Player Info */}
+              <div className={`flex items-center gap-2 mb-3 px-4 py-2 rounded-lg ${theme === 'dark' ? 'bg-gray-800/80' : 'bg-white/80'}`}>
+                <span className="text-2xl">{player.avatar}</span>
+                <div className="text-left">
+                  <div className={`text-sm font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>{player.username}</div>
+                  {player.equippedTitle && (
+                    <div className={`text-[10px] ${theme === 'dark' ? 'text-indigo-300' : 'text-indigo-600'}`}>
+                      {TITLES.find(t => t.id === player.equippedTitle)?.icon} {TITLES.find(t => t.id === player.equippedTitle)?.name}
+                    </div>
+                  )}
+                </div>
+              </div>
+              
+              <div className={`${theme === 'dark' ? 'bg-gray-800/80 border-gray-700/50' : 'bg-white/80 border-gray-200'} rounded-xl p-4 mb-3 w-full max-w-[280px] border-2`}>
                 {mode === 'survival' ? (
                   <>
-                    <div className="flex justify-between text-sm mb-1">
-                      <span className="text-gray-400">Survived</span>
-                      <span className="text-white font-bold">{formatTime(finalScore)}</span>
+                    <div className="flex justify-between items-center mb-2">
+                      <span className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>⏱️ Survived</span>
+                      <span className={`text-lg font-black ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>{formatTime(finalScore)}</span>
                     </div>
-                    <div className="flex justify-between text-sm mb-1">
-                      <span className="text-gray-400">Max Speed</span>
-                      <span className="text-orange-400 font-bold">x{survivalSpeed}</span>
+                    <div className="flex justify-between items-center mb-2">
+                      <span className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>⚡ Max Speed</span>
+                      <span className="text-lg font-black text-orange-400">x{survivalSpeed}</span>
                     </div>
-                    <div className="flex justify-between text-sm mb-1">
-                      <span className="text-gray-400">Score</span>
-                      <span className="text-green-400 font-bold">{score}</span>
+                    <div className="flex justify-between items-center">
+                      <span className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>🏆 Final Score</span>
+                      <span className="text-lg font-black text-green-400">{score}</span>
                     </div>
                   </>
                 ) : (
                   <>
-                    <div className="flex justify-between text-sm mb-1">
-                      <span className="text-gray-400">Your Score</span>
-                      <span className="text-white font-bold">{score}</span>
+                    <div className="flex justify-between items-center mb-2">
+                      <span className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>{playerLabels.p1}</span>
+                      <span className={`text-lg font-black ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>{score}</span>
                     </div>
                     {(isMultiplayer || mode === 'competitive') && (
-                      <div className="flex justify-between text-sm mb-1">
-                        <span className="text-gray-400">{mode === 'competitive' ? 'Bot' : (multiplayerType === 'bot' || multiplayerType === 'zen') ? 'Bot' : 'P2'} Score</span>
-                        <span className="text-blue-400 font-bold">{score2}</span>
+                      <div className="flex justify-between items-center mb-2">
+                        <span className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>{playerLabels.p2}</span>
+                        <span className="text-lg font-black text-blue-400">{score2}</span>
+                      </div>
+                    )}
+                    {!isMultiplayer && mode !== 'competitive' && (
+                      <div className="flex justify-between items-center">
+                        <span className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>📏 Length</span>
+                        <span className="text-lg font-black text-green-400">{snake.length}</span>
                       </div>
                     )}
                   </>
