@@ -161,6 +161,12 @@ export default function Game({ player, setPlayer, mode, difficulty, onBack, isMu
   const [survivalTime, setSurvivalTime] = useState(0);
   const [survivalSpeed, setSurvivalSpeed] = useState(1);
   const [eloChange, setEloChange] = useState(0);
+  
+  // Swipe gesture state
+  const [touchStart, setTouchStart] = useState<{ x: number; y: number } | null>(null);
+  const [touchEnd, setTouchEnd] = useState<{ x: number; y: number } | null>(null);
+  const [swipeDirection, setSwipeDirection] = useState<string | null>(null);
+  const minSwipeDistance = 30; // Minimum pixels to register as a swipe
 
   const dirRef = useRef<Direction>('RIGHT');
   const dir2Ref = useRef<Direction>('LEFT');
@@ -346,21 +352,71 @@ export default function Game({ player, setPlayer, mode, difficulty, onBack, isMu
     return () => window.removeEventListener('keydown', handleKey);
   }, [startGame, changeDir, isMultiplayer, multiplayerType]);
 
-  // Touch
+  // Touch swipe with visual feedback
   useEffect(() => {
-    const onStart = (e: TouchEvent) => { touchRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY }; };
+    const onStart = (e: TouchEvent) => {
+      const touch = e.touches[0];
+      touchRef.current = { x: touch.clientX, y: touch.clientY };
+      setTouchStart({ x: touch.clientX, y: touch.clientY });
+      setTouchEnd(null);
+      setSwipeDirection(null);
+    };
+    
+    const onMove = (e: TouchEvent) => {
+      if (!touchRef.current) return;
+      const touch = e.touches[0];
+      setTouchEnd({ x: touch.clientX, y: touch.clientY });
+      
+      // Calculate direction in real-time for visual feedback
+      const dx = touch.clientX - touchRef.current.x;
+      const dy = touch.clientY - touchRef.current.y;
+      
+      if (Math.abs(dx) > minSwipeDistance || Math.abs(dy) > minSwipeDistance) {
+        if (Math.abs(dx) > Math.abs(dy)) {
+          setSwipeDirection(dx > 0 ? 'RIGHT' : 'LEFT');
+        } else {
+          setSwipeDirection(dy > 0 ? 'DOWN' : 'UP');
+        }
+      }
+    };
+    
     const onEnd = (e: TouchEvent) => {
-      if (!touchRef.current || stateRef.current !== 'PLAYING') return;
+      if (!touchRef.current || stateRef.current !== 'PLAYING') {
+        setTouchStart(null);
+        setTouchEnd(null);
+        setSwipeDirection(null);
+        return;
+      }
       const dx = e.changedTouches[0].clientX - touchRef.current.x;
       const dy = e.changedTouches[0].clientY - touchRef.current.y;
-      if (Math.abs(dx) < 25 && Math.abs(dy) < 25) return;
-      if (Math.abs(dx) > Math.abs(dy)) changeDir(dx > 0 ? 'RIGHT' : 'LEFT');
-      else changeDir(dy > 0 ? 'DOWN' : 'UP');
+      
+      if (Math.abs(dx) < minSwipeDistance && Math.abs(dy) < minSwipeDistance) {
+        setTouchStart(null);
+        setTouchEnd(null);
+        setSwipeDirection(null);
+        return;
+      }
+      
+      if (Math.abs(dx) > Math.abs(dy)) {
+        changeDir(dx > 0 ? 'RIGHT' : 'LEFT');
+      } else {
+        changeDir(dy > 0 ? 'DOWN' : 'UP');
+      }
+      
       touchRef.current = null;
+      setTouchStart(null);
+      setTouchEnd(null);
+      setTimeout(() => setSwipeDirection(null), 300);
     };
+    
     window.addEventListener('touchstart', onStart, { passive: true });
+    window.addEventListener('touchmove', onMove, { passive: true });
     window.addEventListener('touchend', onEnd, { passive: true });
-    return () => { window.removeEventListener('touchstart', onStart); window.removeEventListener('touchend', onEnd); };
+    return () => {
+      window.removeEventListener('touchstart', onStart);
+      window.removeEventListener('touchmove', onMove);
+      window.removeEventListener('touchend', onEnd);
+    };
   }, [changeDir]);
 
   // Game loop
@@ -1290,80 +1346,77 @@ export default function Game({ player, setPlayer, mode, difficulty, onBack, isMu
         </div>
       </div>
 
-      {/* Touch Controls - Responsive D-Pad */}
+      {/* Touch Controls - Swipe Gesture Area */}
       <div className="mt-4 w-full max-w-lg">
-        {/* D-Pad Container */}
-        <div className={`${theme === 'dark' ? 'bg-gray-800/60 border-gray-700/50' : 'bg-white/80 border-gray-200'} rounded-2xl p-4 border backdrop-blur-sm shadow-lg`}>
-          {/* D-Pad Grid */}
-          <div className="grid grid-cols-3 grid-rows-3 gap-2 w-48 h-48 mx-auto">
-            {/* Up Button */}
-            <div />
-            <button
-              onTouchStart={(e) => { e.preventDefault(); changeDir('UP'); }}
-              onClick={() => changeDir('UP')}
-              className={`${theme === 'dark' ? 'bg-gradient-to-br from-gray-700 to-gray-800 hover:from-gray-600 hover:to-gray-700 active:from-green-600 active:to-green-700 border-gray-600/50 text-white' : 'bg-gradient-to-br from-gray-100 to-gray-200 hover:from-gray-50 hover:to-gray-100 active:from-green-500 active:to-green-600 border-gray-300 text-gray-700'} rounded-xl flex items-center justify-center text-2xl font-bold border-2 transition-all duration-150 transform active:scale-95 shadow-md`}
-              aria-label="Move Up"
-            >
-              ▲
-            </button>
-            <div />
+        {/* Swipe Area Container */}
+        <div className={`${theme === 'dark' ? 'bg-gray-800/60 border-gray-700/50' : 'bg-white/80 border-gray-200'} rounded-2xl p-6 border backdrop-blur-sm shadow-lg relative overflow-hidden`}>
+          {/* Swipe Direction Indicator */}
+          {swipeDirection && (
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
+              <div className={`text-8xl font-black animate-pulse ${
+                swipeDirection === 'UP' ? 'text-green-400' :
+                swipeDirection === 'DOWN' ? 'text-green-400' :
+                swipeDirection === 'LEFT' ? 'text-green-400' :
+                'text-green-400'
+              }`}>
+                {swipeDirection === 'UP' && '↑'}
+                {swipeDirection === 'DOWN' && '↓'}
+                {swipeDirection === 'LEFT' && '←'}
+                {swipeDirection === 'RIGHT' && '→'}
+              </div>
+            </div>
+          )}
+          
+          {/* Swipe Area */}
+          <div 
+            className={`w-full h-48 ${theme === 'dark' ? 'bg-gray-900/50' : 'bg-gray-100/50'} rounded-xl border-2 ${theme === 'dark' ? 'border-gray-700' : 'border-gray-300'} flex items-center justify-center relative`}
+            style={{ touchAction: 'none' }}
+          >
+            {/* Center Icon */}
+            <div className={`text-center ${swipeDirection ? 'opacity-30' : 'opacity-100'} transition-opacity`}>
+              <div className="text-6xl mb-2">👆</div>
+              <div className={`text-sm font-bold ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
+                Swipe to Move
+              </div>
+              <div className={`text-xs ${theme === 'dark' ? 'text-gray-500' : 'text-gray-500'} mt-1`}>
+                Swipe in any direction
+              </div>
+            </div>
+            
+            {/* Direction Arrows (subtle) */}
+            <div className={`absolute top-4 left-1/2 -translate-x-1/2 text-2xl ${theme === 'dark' ? 'text-gray-600' : 'text-gray-400'} ${swipeDirection === 'UP' ? 'text-green-400 scale-125' : ''} transition-all`}>↑</div>
+            <div className={`absolute bottom-4 left-1/2 -translate-x-1/2 text-2xl ${theme === 'dark' ? 'text-gray-600' : 'text-gray-400'} ${swipeDirection === 'DOWN' ? 'text-green-400 scale-125' : ''} transition-all`}>↓</div>
+            <div className={`absolute left-4 top-1/2 -translate-y-1/2 text-2xl ${theme === 'dark' ? 'text-gray-600' : 'text-gray-400'} ${swipeDirection === 'LEFT' ? 'text-green-400 scale-125' : ''} transition-all`}>←</div>
+            <div className={`absolute right-4 top-1/2 -translate-y-1/2 text-2xl ${theme === 'dark' ? 'text-gray-600' : 'text-gray-400'} ${swipeDirection === 'RIGHT' ? 'text-green-400 scale-125' : ''} transition-all`}>→</div>
+          </div>
 
-            {/* Left Button */}
-            <button
-              onTouchStart={(e) => { e.preventDefault(); changeDir('LEFT'); }}
-              onClick={() => changeDir('LEFT')}
-              className={`${theme === 'dark' ? 'bg-gradient-to-br from-gray-700 to-gray-800 hover:from-gray-600 hover:to-gray-700 active:from-green-600 active:to-green-700 border-gray-600/50 text-white' : 'bg-gradient-to-br from-gray-100 to-gray-200 hover:from-gray-50 hover:to-gray-100 active:from-green-500 active:to-green-600 border-gray-300 text-gray-700'} rounded-xl flex items-center justify-center text-2xl font-bold border-2 transition-all duration-150 transform active:scale-95 shadow-md`}
-              aria-label="Move Left"
-            >
-              ◀
-            </button>
-
-            {/* Center - Pause Button */}
+          {/* Pause Button */}
+          <div className="mt-4 flex justify-center">
             <button
               onClick={() => {
                 audioManager.playClickSound();
                 if (gameState === 'PLAYING') setGameState('PAUSED');
                 else if (gameState === 'PAUSED') setGameState('PLAYING');
               }}
-              className={`${theme === 'dark' ? 'bg-gradient-to-br from-purple-700 to-purple-800 hover:from-purple-600 hover:to-purple-700 border-purple-600/50 text-white' : 'bg-gradient-to-br from-purple-100 to-purple-200 hover:from-purple-50 hover:to-purple-100 border-purple-300 text-purple-700'} rounded-xl flex items-center justify-center text-xl font-bold border-2 transition-all duration-150 transform active:scale-95 shadow-md`}
+              className={`px-6 py-3 ${theme === 'dark' ? 'bg-purple-700 hover:bg-purple-600 border-purple-600' : 'bg-purple-100 hover:bg-purple-200 border-purple-300'} ${theme === 'dark' ? 'text-white' : 'text-purple-700'} font-bold rounded-xl border-2 transition-all transform hover:scale-105 active:scale-95 shadow-md`}
               aria-label="Pause/Resume"
             >
-              {gameState === 'PAUSED' ? '▶' : '⏸'}
+              {gameState === 'PAUSED' ? '▶ Resume' : '⏸ Pause'}
             </button>
-
-            {/* Right Button */}
-            <button
-              onTouchStart={(e) => { e.preventDefault(); changeDir('RIGHT'); }}
-              onClick={() => changeDir('RIGHT')}
-              className={`${theme === 'dark' ? 'bg-gradient-to-br from-gray-700 to-gray-800 hover:from-gray-600 hover:to-gray-700 active:from-green-600 active:to-green-700 border-gray-600/50 text-white' : 'bg-gradient-to-br from-gray-100 to-gray-200 hover:from-gray-50 hover:to-gray-100 active:from-green-500 active:to-green-600 border-gray-300 text-gray-700'} rounded-xl flex items-center justify-center text-2xl font-bold border-2 transition-all duration-150 transform active:scale-95 shadow-md`}
-              aria-label="Move Right"
-            >
-              ▶
-            </button>
-
-            {/* Down Button */}
-            <div />
-            <button
-              onTouchStart={(e) => { e.preventDefault(); changeDir('DOWN'); }}
-              onClick={() => changeDir('DOWN')}
-              className={`${theme === 'dark' ? 'bg-gradient-to-br from-gray-700 to-gray-800 hover:from-gray-600 hover:to-gray-700 active:from-green-600 active:to-green-700 border-gray-600/50 text-white' : 'bg-gradient-to-br from-gray-100 to-gray-200 hover:from-gray-50 hover:to-gray-100 active:from-green-500 active:to-green-600 border-gray-300 text-gray-700'} rounded-xl flex items-center justify-center text-2xl font-bold border-2 transition-all duration-150 transform active:scale-95 shadow-md`}
-              aria-label="Move Down"
-            >
-              ▼
-            </button>
-            <div />
           </div>
 
           {/* Control Info */}
-          <div className={`mt-3 text-center text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
+          <div className={`mt-4 text-center text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
             {isMultiplayer && multiplayerType === 'player' ? (
-              <span>
-                <span className="font-semibold">P1:</span> Touch controls or WASD • <span className="font-semibold">P2:</span> IJKL keys
-              </span>
+              <div>
+                <div className="font-semibold mb-1">Touch Controls</div>
+                <div><span className="text-green-400 font-bold">P1:</span> Swipe anywhere • <span className="text-blue-400 font-bold">P2:</span> IJKL keys</div>
+              </div>
             ) : (
-              <span>
-                Touch controls or <kbd className={`px-1.5 py-0.5 ${theme === 'dark' ? 'bg-gray-700 text-gray-300' : 'bg-gray-200 text-gray-700'} rounded text-[10px] font-mono`}>↑↓←→</kbd> / <kbd className={`px-1.5 py-0.5 ${theme === 'dark' ? 'bg-gray-700 text-gray-300' : 'bg-gray-200 text-gray-700'} rounded text-[10px] font-mono`}>WASD</kbd> to move
-              </span>
+              <div>
+                <div className="font-semibold mb-1">Swipe Gesture Controls</div>
+                <div>Swipe ↑↓←→ or use <kbd className={`px-1.5 py-0.5 ${theme === 'dark' ? 'bg-gray-700 text-gray-300' : 'bg-gray-200 text-gray-700'} rounded text-[10px] font-mono`}>↑↓←→</kbd> / <kbd className={`px-1.5 py-0.5 ${theme === 'dark' ? 'bg-gray-700 text-gray-300' : 'bg-gray-200 text-gray-700'} rounded text-[10px] font-mono`}>WASD</kbd></div>
+              </div>
             )}
           </div>
         </div>
