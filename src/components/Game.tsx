@@ -755,22 +755,115 @@ export default function Game({ player, setPlayer, mode, difficulty, onBack, isMu
       return { bg: `rgba(59, 130, 246, ${opacity})`, shadow: 'none' };
     }
 
-    const skin = player.equippedSkin;
-    const colors: Record<string, [string, string]> = {
-      classic: ['74, 222, 128', '34, 197, 94'],
-      fire: ['251, 146, 60', '239, 68, 68'],
-      ice: ['147, 197, 253', '59, 130, 246'],
-      gold: ['253, 224, 71', '234, 179, 8'],
-      rainbow: ['248, 113, 113', '168, 85, 247'],
-      neon: ['192, 132, 252', '139, 92, 246'],
-      galaxy: ['129, 140, 248', '79, 70, 229'],
-      dragon: ['251, 113, 133', '220, 38, 38'],
-      phantom: ['209, 213, 219', '156, 163, 175'],
-      cosmic: ['167, 139, 250', '109, 40, 217'],
+    // Get equipped character skin colors
+    const characterSkin = player.equippedCharacterSkin;
+    const characterSkins: Record<string, { head: string; body: string; glow: string }> = {
+      // Classic Snake skins
+      classic_green: { head: '74, 222, 128', body: '34, 197, 94', glow: 'rgba(74, 222, 128, 0.7)' },
+      classic_red: { head: '248, 113, 113', body: '239, 68, 68', glow: 'rgba(248, 113, 113, 0.7)' },
+      classic_blue: { head: '96, 165, 250', body: '59, 130, 246', glow: 'rgba(96, 165, 250, 0.7)' },
+      // Dragon skins
+      dragon_fire: { head: '251, 146, 60', body: '234, 88, 12', glow: 'rgba(251, 146, 60, 0.7)' },
+      dragon_ice: { head: '147, 197, 253', body: '59, 130, 246', glow: 'rgba(147, 197, 253, 0.7)' },
+      dragon_shadow: { head: '161, 161, 170', body: '82, 82, 91', glow: 'rgba(161, 161, 170, 0.7)' },
+      // Phoenix skins
+      phoenix_gold: { head: '253, 224, 71', body: '234, 179, 8', glow: 'rgba(253, 224, 71, 0.7)' },
+      phoenix_crimson: { head: '248, 113, 113', body: '220, 38, 38', glow: 'rgba(248, 113, 113, 0.7)' },
+      phoenix_silver: { head: '209, 213, 219', body: '156, 163, 175', glow: 'rgba(209, 213, 219, 0.7)' },
+      // Unicorn skins
+      unicorn_rainbow: { head: '248, 113, 113', body: '168, 85, 247', glow: 'rgba(248, 113, 113, 0.7)' },
+      unicorn_moonlight: { head: '196, 181, 253', body: '139, 92, 246', glow: 'rgba(196, 181, 253, 0.7)' },
+      unicorn_starlight: { head: '253, 224, 71', body: '245, 158, 11', glow: 'rgba(253, 224, 71, 0.7)' },
+      // Kraken skins
+      kraken_abyss: { head: '129, 140, 248', body: '79, 70, 229', glow: 'rgba(129, 140, 248, 0.7)' },
+      kraken_storm: { head: '103, 232, 249', body: '6, 182, 212', glow: 'rgba(103, 232, 249, 0.7)' },
+      kraken_void: { head: '167, 139, 250', body: '109, 40, 217', glow: 'rgba(167, 139, 250, 0.7)' },
+      // Cosmic skins
+      cosmic_nebula: { head: '129, 140, 248', body: '79, 70, 229', glow: 'rgba(129, 140, 248, 0.7)' },
+      cosmic_galaxy: { head: '192, 132, 252', body: '139, 92, 246', glow: 'rgba(192, 132, 252, 0.7)' },
+      cosmic_supernova: { head: '251, 146, 60', body: '234, 88, 12', glow: 'rgba(251, 146, 60, 0.7)' },
+      // New character skins - Turtle
+      turtle_green: { head: '74, 222, 128', body: '34, 197, 94', glow: 'rgba(74, 222, 128, 0.7)' },
+      turtle_blue: { head: '96, 165, 250', body: '59, 130, 246', glow: 'rgba(96, 165, 250, 0.7)' },
+      turtle_gold: { head: '251, 191, 36', body: '245, 158, 11', glow: 'rgba(251, 191, 36, 0.7)' },
+      // Rabbit
+      rabbit_white: { head: '248, 250, 252', body: '226, 232, 240', glow: 'rgba(248, 250, 252, 0.7)' },
+      rabbit_brown: { head: '161, 98, 7', body: '133, 77, 14', glow: 'rgba(161, 98, 7, 0.7)' },
+      rabbit_silver: { head: '203, 213, 225', body: '148, 163, 184', glow: 'rgba(203, 213, 225, 0.7)' },
+      // Fox
+      fox_orange: { head: '251, 146, 60', body: '234, 88, 12', glow: 'rgba(251, 146, 60, 0.7)' },
+      fox_red: { head: '239, 68, 68', body: '220, 38, 38', glow: 'rgba(239, 68, 68, 0.7)' },
+      fox_arctic: { head: '241, 245, 249', body: '226, 232, 240', glow: 'rgba(241, 245, 249, 0.7)' },
+      // Wolf
+      wolf_gray: { head: '107, 114, 128', body: '75, 85, 99', glow: 'rgba(107, 114, 128, 0.7)' },
+      wolf_black: { head: '31, 41, 55', body: '17, 24, 39', glow: 'rgba(31, 41, 55, 0.7)' },
+      wolf_white: { head: '249, 250, 251', body: '243, 244, 246', glow: 'rgba(249, 250, 251, 0.7)' },
+      // Lion
+      lion_gold: { head: '251, 191, 36', body: '245, 158, 11', glow: 'rgba(251, 191, 36, 0.7)' },
+      lion_mane: { head: '146, 64, 14', body: '120, 53, 15', glow: 'rgba(146, 64, 14, 0.7)' },
+      lion_white: { head: '254, 243, 199', body: '253, 230, 138', glow: 'rgba(254, 243, 199, 0.7)' },
+      // Eagle
+      eagle_brown: { head: '146, 64, 14', body: '120, 53, 15', glow: 'rgba(146, 64, 14, 0.7)' },
+      eagle_golden: { head: '251, 191, 36', body: '245, 158, 11', glow: 'rgba(251, 191, 36, 0.7)' },
+      eagle_bald: { head: '249, 250, 251', body: '31, 41, 55', glow: 'rgba(249, 250, 251, 0.7)' },
+      // Panda
+      panda_classic: { head: '249, 250, 251', body: '31, 41, 55', glow: 'rgba(249, 250, 251, 0.7)' },
+      panda_red: { head: '220, 38, 38', body: '153, 27, 27', glow: 'rgba(220, 38, 38, 0.7)' },
+      panda_golden: { head: '251, 191, 36', body: '245, 158, 11', glow: 'rgba(251, 191, 36, 0.7)' },
+      // Tiger
+      tiger_orange: { head: '251, 146, 60', body: '234, 88, 12', glow: 'rgba(251, 146, 60, 0.7)' },
+      tiger_white: { head: '249, 250, 251', body: '229, 231, 235', glow: 'rgba(249, 250, 251, 0.7)' },
+      tiger_golden: { head: '251, 191, 36', body: '245, 158, 11', glow: 'rgba(251, 191, 36, 0.7)' },
+      // Bear
+      bear_brown: { head: '146, 64, 14', body: '120, 53, 15', glow: 'rgba(146, 64, 14, 0.7)' },
+      bear_polar: { head: '249, 250, 251', body: '243, 244, 246', glow: 'rgba(249, 250, 251, 0.7)' },
+      bear_black: { head: '31, 41, 55', body: '17, 24, 39', glow: 'rgba(31, 41, 55, 0.7)' },
+      // Shark
+      shark_gray: { head: '107, 114, 128', body: '75, 85, 99', glow: 'rgba(107, 114, 128, 0.7)' },
+      shark_blue: { head: '30, 64, 175', body: '30, 58, 138', glow: 'rgba(30, 64, 175, 0.7)' },
+      shark_hammerhead: { head: '55, 65, 81', body: '31, 41, 55', glow: 'rgba(55, 65, 81, 0.7)' },
+      // Owl
+      owl_brown: { head: '146, 64, 14', body: '120, 53, 15', glow: 'rgba(146, 64, 14, 0.7)' },
+      owl_snowy: { head: '249, 250, 251', body: '229, 231, 235', glow: 'rgba(249, 250, 251, 0.7)' },
+      owl_golden: { head: '251, 191, 36', body: '245, 158, 11', glow: 'rgba(251, 191, 36, 0.7)' },
+      // Dolphin
+      dolphin_gray: { head: '107, 114, 128', body: '75, 85, 99', glow: 'rgba(107, 114, 128, 0.7)' },
+      dolphin_blue: { head: '59, 130, 246', body: '37, 99, 235', glow: 'rgba(59, 130, 246, 0.7)' },
+      dolphin_pink: { head: '236, 72, 153', body: '219, 39, 119', glow: 'rgba(236, 72, 153, 0.7)' },
+      // Gorilla
+      gorilla_black: { head: '55, 65, 81', body: '31, 41, 55', glow: 'rgba(55, 65, 81, 0.7)' },
+      gorilla_silver: { head: '156, 163, 175', body: '107, 114, 128', glow: 'rgba(156, 163, 175, 0.7)' },
+      gorilla_golden: { head: '251, 191, 36', body: '245, 158, 11', glow: 'rgba(251, 191, 36, 0.7)' },
+      // Elephant
+      elephant_gray: { head: '107, 114, 128', body: '75, 85, 99', glow: 'rgba(107, 114, 128, 0.7)' },
+      elephant_african: { head: '146, 64, 14', body: '120, 53, 15', glow: 'rgba(146, 64, 14, 0.7)' },
+      elephant_asian: { head: '120, 113, 108', body: '87, 83, 78', glow: 'rgba(120, 113, 108, 0.7)' },
+      // Crocodile
+      crocodile_green: { head: '22, 163, 74', body: '21, 128, 61', glow: 'rgba(22, 163, 74, 0.7)' },
+      crocodile_nile: { head: '133, 77, 14', body: '113, 63, 18', glow: 'rgba(133, 77, 14, 0.7)' },
+      crocodile_golden: { head: '251, 191, 36', body: '245, 158, 11', glow: 'rgba(251, 191, 36, 0.7)' },
+      // Whale
+      whale_blue: { head: '30, 64, 175', body: '30, 58, 138', glow: 'rgba(30, 64, 175, 0.7)' },
+      whale_humpback: { head: '55, 65, 81', body: '31, 41, 55', glow: 'rgba(55, 65, 81, 0.7)' },
+      whale_golden: { head: '251, 191, 36', body: '245, 158, 11', glow: 'rgba(251, 191, 36, 0.7)' },
+      // Octopus
+      octopus_purple: { head: '124, 58, 237', body: '109, 40, 217', glow: 'rgba(124, 58, 237, 0.7)' },
+      octopus_blue: { head: '14, 165, 233', body: '2, 132, 199', glow: 'rgba(14, 165, 233, 0.7)' },
+      octopus_golden: { head: '251, 191, 36', body: '245, 158, 11', glow: 'rgba(251, 191, 36, 0.7)' },
+      // Dinosaur
+      dinosaur_green: { head: '22, 163, 74', body: '21, 128, 61', glow: 'rgba(22, 163, 74, 0.7)' },
+      dinosaur_red: { head: '220, 38, 38', body: '185, 28, 28', glow: 'rgba(220, 38, 38, 0.7)' },
+      dinosaur_golden: { head: '251, 191, 36', body: '245, 158, 11', glow: 'rgba(251, 191, 36, 0.7)' },
+      // Alien
+      alien_green: { head: '34, 197, 94', body: '22, 163, 74', glow: 'rgba(34, 197, 94, 0.7)' },
+      alien_gray: { head: '107, 114, 128', body: '75, 85, 99', glow: 'rgba(107, 114, 128, 0.7)' },
+      alien_golden: { head: '251, 191, 36', body: '245, 158, 11', glow: 'rgba(251, 191, 36, 0.7)' },
     };
-    const [head, body] = colors[skin] || colors.classic;
     
-    if (index === 0) return { bg: `rgba(${head}, ${opacity})`, shadow: `0 0 10px rgba(${head}, 0.7)` };
+    const skinColors = characterSkins[characterSkin] || characterSkins.classic_green;
+    const { head, body, glow } = skinColors;
+    
+    if (index === 0) return { bg: `rgba(${head}, ${opacity})`, shadow: glow };
     return { bg: `rgba(${body}, ${opacity})`, shadow: 'none' };
   };
 
