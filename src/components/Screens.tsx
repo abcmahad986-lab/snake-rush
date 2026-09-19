@@ -341,6 +341,8 @@ export function MainMenu({ player, onSelectMode, onNavigate, theme, toggleTheme 
             { screen: 'visualthemes' as Screen, icon: '🎨', label: 'Themes' },
             { screen: 'realmoney' as Screen, icon: '💎', label: 'Premium' },
             { screen: 'maps' as Screen, icon: '🗺️', label: 'Maps' },
+            { screen: 'dailyreward' as Screen, icon: '🎁', label: 'Daily' },
+            { screen: 'share' as Screen, icon: '📤', label: 'Share' },
             { screen: 'settings' as Screen, icon: '⚙️', label: 'Settings' },
           ].map(item => (
             <button
