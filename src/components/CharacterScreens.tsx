@@ -14,16 +14,20 @@ export function CharactersScreen({ player, setPlayer, onBack, theme }: {
   const [selectedCharacter, setSelectedCharacter] = useState<string | null>(null);
 
   const selectCharacter = (characterId: string) => {
-    if (!player.ownedCharacters.includes(characterId)) return;
+    const character = CHARACTERS.find(c => c.id === characterId);
+    if (!character || player.level < character.unlockLevel) return;
+    
+    // Get the first available skin for this character (level-based skin)
+    const firstSkin = CHARACTER_SKINS.find(s => 
+      s.characterId === characterId && 
+      s.unlockMethod === 'level' && 
+      player.level >= (s.unlockRequirement || 0)
+    );
     
     const updated = {
       ...player,
       equippedCharacter: characterId,
-      // Reset to first owned skin for this character
-      equippedCharacterSkin: player.ownedCharacterSkins.find(skinId => {
-        const skin = CHARACTER_SKINS.find(s => s.id === skinId);
-        return skin && skin.characterId === characterId;
-      }) || player.equippedCharacterSkin
+      equippedCharacterSkin: firstSkin?.id || player.equippedCharacterSkin
     };
 
     setPlayer(updated);
@@ -31,7 +35,15 @@ export function CharactersScreen({ player, setPlayer, onBack, theme }: {
   };
 
   const selectSkin = (skinId: string) => {
-    if (!player.ownedCharacterSkins.includes(skinId)) return;
+    const skin = CHARACTER_SKINS.find(s => s.id === skinId);
+    if (!skin) return;
+    
+    // Check if skin is unlocked
+    const isUnlocked = 
+      (skin.unlockMethod === 'level' && player.level >= (skin.unlockRequirement || 0)) ||
+      player.ownedCharacterSkins.includes(skinId);
+    
+    if (!isUnlocked) return;
     
     const updated = {
       ...player,
@@ -66,34 +78,33 @@ export function CharactersScreen({ player, setPlayer, onBack, theme }: {
         {/* Character Grid */}
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-6">
           {CHARACTERS.map(character => {
-            const isOwned = player.ownedCharacters.includes(character.id);
+            const isUnlocked = player.level >= character.unlockLevel;
             const isEquipped = player.equippedCharacter === character.id;
-            const isLocked = player.level < character.unlockLevel;
 
             return (
               <button
                 key={character.id}
-                onClick={() => !isLocked && setSelectedCharacter(character.id)}
-                disabled={isLocked}
+                onClick={() => isUnlocked && setSelectedCharacter(character.id)}
+                disabled={!isUnlocked}
                 className={`${
                   isEquipped
                     ? t(theme, 'bg-gradient-to-br from-purple-900/60 to-blue-900/60 border-purple-500/50', 'bg-gradient-to-br from-purple-100 to-blue-100 border-purple-400')
-                    : isOwned
+                    : isUnlocked
                     ? t(theme, 'bg-gray-800/60 border-gray-700/50 hover:border-gray-600', 'bg-white border-gray-200 hover:border-gray-400 shadow-sm')
                     : t(theme, 'bg-gray-900/40 border-gray-800/30', 'bg-gray-100 border-gray-300')
-                } rounded-xl p-4 border transition-all ${!isLocked ? 'hover:scale-105' : 'cursor-not-allowed opacity-60'} ${isEquipped ? 'ring-2 ring-purple-500' : ''}`}
+                } rounded-xl p-4 border transition-all ${isUnlocked ? 'hover:scale-105' : 'cursor-not-allowed opacity-60'} ${isEquipped ? 'ring-2 ring-purple-500' : ''}`}
               >
                 <div className="text-5xl mb-2">{character.emoji}</div>
                 <div className={`font-bold ${t(theme, 'text-white', 'text-gray-900')} mb-1`}>{character.name}</div>
                 <div className={`text-xs ${t(theme, 'text-gray-400', 'text-gray-600')} mb-2`}>{character.description}</div>
                 
-                {isLocked ? (
+                {!isUnlocked ? (
                   <div className="text-xs text-red-400">🔒 Level {character.unlockLevel}</div>
                 ) : isEquipped ? (
                   <div className="text-xs text-purple-400 font-bold">✓ Equipped</div>
-                ) : isOwned ? (
-                  <div className="text-xs text-green-400">Owned</div>
-                ) : null}
+                ) : (
+                  <div className="text-xs text-green-400">✓ Unlocked</div>
+                )}
 
                 <div className={`mt-2 text-xs px-2 py-1 rounded-full inline-block ${
                   character.rarity === 'common' ? 'bg-gray-600/30 text-gray-300' :
@@ -132,18 +143,21 @@ export function CharactersScreen({ player, setPlayer, onBack, theme }: {
               <h4 className={`text-sm font-bold ${t(theme, 'text-white', 'text-gray-900')} mb-3`}>Skins</h4>
               <div className="grid grid-cols-3 gap-2">
                 {characterSkins.map(skin => {
-                  const isOwned = player.ownedCharacterSkins.includes(skin.id);
+                  // Check if skin is unlocked based on unlock method
+                  const isUnlocked = 
+                    (skin.unlockMethod === 'level' && player.level >= (skin.unlockRequirement || 0)) ||
+                    player.ownedCharacterSkins.includes(skin.id);
                   const isEquipped = player.equippedCharacterSkin === skin.id;
 
                   return (
                     <button
                       key={skin.id}
-                      onClick={() => isOwned && selectSkin(skin.id)}
-                      disabled={!isOwned}
+                      onClick={() => isUnlocked && selectSkin(skin.id)}
+                      disabled={!isUnlocked}
                       className={`${
                         isEquipped
                           ? 'ring-2 ring-purple-500'
-                          : isOwned
+                          : isUnlocked
                           ? t(theme, 'hover:border-gray-500', 'hover:border-gray-400')
                           : 'opacity-50 cursor-not-allowed'
                       } ${t(theme, 'bg-gray-900/40 border-gray-700/50', 'bg-gray-50 border-gray-200')} rounded-lg p-3 border transition-all`}
@@ -157,8 +171,9 @@ export function CharactersScreen({ player, setPlayer, onBack, theme }: {
                       />
                       <div className={`text-xs font-bold ${t(theme, 'text-white', 'text-gray-900')}`}>{skin.name}</div>
                       {isEquipped && <div className="text-xs text-purple-400 mt-1">✓ Equipped</div>}
-                      {!isOwned && (
+                      {!isUnlocked && (
                         <div className="text-xs text-red-400 mt-1">
+                          {skin.unlockMethod === 'level' && `🔒 Level ${skin.unlockRequirement}`}
                           {skin.unlockMethod === 'chest' && '🎁 From Chest'}
                           {skin.unlockMethod === 'purchase' && `💰 ${skin.unlockRequirement} coins`}
                           {skin.unlockMethod === 'achievement' && '🏆 Achievement'}
@@ -170,7 +185,7 @@ export function CharactersScreen({ player, setPlayer, onBack, theme }: {
               </div>
             </div>
 
-            {!player.ownedCharacters.includes(selectedChar.id) && (
+            {player.level < selectedChar.unlockLevel && (
               <div className={`${t(theme, 'bg-red-900/20 border-red-500/30', 'bg-red-50 border-red-300')} rounded-lg p-3 border`}>
                 <div className="text-sm text-red-400">🔒 Reach level {selectedChar.unlockLevel} to unlock this character</div>
               </div>
