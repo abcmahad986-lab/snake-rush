@@ -813,10 +813,10 @@ export default function Game({ player, setPlayer, mode, difficulty, onBack, isMu
   const playerLabels = getPlayerLabel();
 
   return (
-    <div className={`h-screen ${theme === 'dark' ? 'bg-gradient-to-br from-gray-900 via-slate-900 to-gray-800' : 'bg-gradient-to-br from-gray-50 via-slate-50 to-white'} flex flex-col px-2 py-2 md:px-4 md:py-3 select-none overflow-hidden`}>
+    <div className={`h-screen ${theme === 'dark' ? 'bg-gradient-to-br from-gray-900 via-slate-900 to-gray-800' : 'bg-gradient-to-br from-gray-50 via-slate-50 to-white'} flex flex-col px-1 py-1 md:px-2 md:py-2 select-none overflow-hidden`}>
       {/* Compact Scoreboard at Top */}
-      <div className="w-full flex-shrink-0 mb-2">
-        <div className={`w-full ${theme === 'dark' ? 'bg-gray-800/95 border-gray-700/50' : 'bg-white border-gray-200 shadow-md'} rounded-xl px-3 py-2 border-2`}>
+      <div className="w-full flex-shrink-0 mb-1">
+        <div className={`w-full ${theme === 'dark' ? 'bg-gray-800/95 border-gray-700/50' : 'bg-white border-gray-200 shadow-md'} rounded-xl px-2 py-1.5 border-2`}>
           {/* Single Row: All Info Horizontal */}
           <div className="flex items-center justify-between gap-3">
             {/* Player Info - Compact */}
@@ -937,9 +937,9 @@ export default function Game({ player, setPlayer, mode, difficulty, onBack, isMu
         </div>
       </div>
 
-      {/* Game Board - Square Format */}
-      <div className="w-full flex items-center justify-center py-4">
-        <div className={`w-[min(70vh,70vw)] aspect-square bg-gray-900/90 rounded-2xl border-2 overflow-hidden shadow-2xl relative ${mode === 'zen' || multiplayerType === 'zen' ? 'border-purple-500/40 shadow-purple-500/20' : 'border-gray-700/60'}`}>
+      {/* Game Board - Big & Centered */}
+      <div className="flex-1 w-full flex items-center justify-center">
+        <div className={`w-[min(85vh,95vw)] aspect-square bg-gray-900/90 rounded-2xl border-2 overflow-hidden shadow-2xl relative ${mode === 'zen' || multiplayerType === 'zen' ? 'border-purple-500/40 shadow-purple-500/20' : 'border-gray-700/60'}`}>
           {/* Grid */}
           <div className="absolute inset-0 grid grid-cols-20 grid-rows-20">
             {Array.from({ length: GRID_SIZE * GRID_SIZE }).map((_, i) => (
