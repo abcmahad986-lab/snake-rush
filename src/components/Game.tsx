@@ -938,8 +938,8 @@ export default function Game({ player, setPlayer, mode, difficulty, onBack, isMu
       </div>
 
       {/* Game Board - Square Format */}
-      <div className="flex-1 w-full flex items-center justify-center min-h-0">
-        <div className={`w-full h-full max-w-[min(80vh,80vw)] max-h-[80vh] aspect-square bg-gray-900/90 rounded-2xl border-2 overflow-hidden shadow-2xl relative ${mode === 'zen' || multiplayerType === 'zen' ? 'border-purple-500/40 shadow-purple-500/20' : 'border-gray-700/60'}`}>
+      <div className="w-full flex items-center justify-center py-4">
+        <div className={`w-[min(70vh,70vw)] aspect-square bg-gray-900/90 rounded-2xl border-2 overflow-hidden shadow-2xl relative ${mode === 'zen' || multiplayerType === 'zen' ? 'border-purple-500/40 shadow-purple-500/20' : 'border-gray-700/60'}`}>
           {/* Grid */}
           <div className="absolute inset-0 grid grid-cols-20 grid-rows-20">
             {Array.from({ length: GRID_SIZE * GRID_SIZE }).map((_, i) => (
