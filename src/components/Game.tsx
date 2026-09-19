@@ -813,17 +813,18 @@ export default function Game({ player, setPlayer, mode, difficulty, onBack, isMu
   const playerLabels = getPlayerLabel();
 
   return (
-    <div className={`h-screen ${theme === 'dark' ? 'bg-gradient-to-br from-gray-900 via-slate-900 to-gray-800' : 'bg-gradient-to-br from-gray-50 via-slate-50 to-white'} flex flex-col items-center px-2 py-2 md:px-4 md:py-3 select-none overflow-hidden`}>
+    <div className={`h-screen ${theme === 'dark' ? 'bg-gradient-to-br from-gray-900 via-slate-900 to-gray-800' : 'bg-gradient-to-br from-gray-50 via-slate-50 to-white'} flex flex-col items-center justify-center px-2 py-2 md:px-4 md:py-3 select-none overflow-hidden`}>
+      <div className="w-full max-w-5xl flex flex-col items-center gap-2">
       {/* Top Bar - Enhanced with Player Info */}
-      <div className="w-full max-w-5xl mb-2 flex-shrink-0">
-        <div className={`flex items-center justify-between ${theme === 'dark' ? 'bg-gray-800/90 border-gray-700/50' : 'bg-white border-gray-200 shadow-md'} rounded-xl px-4 py-2.5 border`}>
+      <div className="w-full flex-shrink-0">
+        <div className={`flex items-center justify-between ${theme === 'dark' ? 'bg-gray-800/90 border-gray-700/50' : 'bg-white border-gray-200 shadow-md'} rounded-xl px-3 py-1.5 border`}>
           {/* Player Info */}
-          <div className="flex items-center gap-3">
-            <div className="text-3xl">{player.avatar}</div>
+          <div className="flex items-center gap-2">
+            <div className="text-2xl">{player.avatar}</div>
             <div>
-              <div className={`text-base font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-900'} leading-tight`}>{player.username}</div>
+              <div className={`text-sm font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-900'} leading-tight`}>{player.username}</div>
               {player.equippedTitle && (
-                <div className={`text-xs ${theme === 'dark' ? 'text-indigo-300' : 'text-indigo-600'}`}>
+                <div className={`text-[10px] ${theme === 'dark' ? 'text-indigo-300' : 'text-indigo-600'}`}>
                   {TITLES.find(ti => ti.id === player.equippedTitle)?.icon} {TITLES.find(ti => ti.id === player.equippedTitle)?.name}
                 </div>
               )}
@@ -831,23 +832,23 @@ export default function Game({ player, setPlayer, mode, difficulty, onBack, isMu
           </div>
           
           {/* Game Info */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
             <div className="text-right">
-              <div className={`text-sm font-bold ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>{getModeLabel()}</div>
-              <div className={`text-xs px-2.5 py-1 rounded-full inline-block ${getDifficultyLabel().bg} ${getDifficultyLabel().color} font-bold`}>
+              <div className={`text-xs font-bold ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>{getModeLabel()}</div>
+              <div className={`text-[10px] px-2 py-0.5 rounded-full inline-block ${getDifficultyLabel().bg} ${getDifficultyLabel().color} font-bold`}>
                 {getDifficultyLabel().text}
               </div>
             </div>
             
             {/* Control Buttons */}
-            <div className="flex gap-2">
+            <div className="flex gap-1">
               <button
                 onClick={() => {
                   audioManager.playClickSound();
                   const muted = audioManager.toggleMute();
                   setIsMuted(muted);
                 }}
-                className={`p-2 rounded-lg transition-all ${
+                className={`p-1.5 rounded-lg transition-all ${
                   theme === 'dark' 
                     ? 'bg-gray-700 hover:bg-gray-600 text-gray-300' 
                     : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
@@ -858,7 +859,7 @@ export default function Game({ player, setPlayer, mode, difficulty, onBack, isMu
               </button>
               <button
                 onClick={toggleTheme}
-                className={`p-2 rounded-lg transition-all ${
+                className={`p-1.5 rounded-lg transition-all ${
                   theme === 'dark' 
                     ? 'bg-gray-700 hover:bg-gray-600 text-yellow-400' 
                     : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
@@ -873,62 +874,62 @@ export default function Game({ player, setPlayer, mode, difficulty, onBack, isMu
       </div>
 
       {/* Score Bar - Enhanced with Player Names */}
-      <div className={`w-full max-w-5xl flex justify-between items-center ${theme === 'dark' ? 'bg-gray-800/90 border-gray-700/50' : 'bg-white border-gray-200 shadow-md'} rounded-xl px-4 py-2.5 mb-2 border flex-shrink-0`}>
+      <div className={`w-full flex justify-between items-center ${theme === 'dark' ? 'bg-gray-800/90 border-gray-700/50' : 'bg-white border-gray-200 shadow-md'} rounded-xl px-3 py-1.5 border flex-shrink-0`}>
         {/* Player 1 Score */}
         <div className="text-center">
-          <div className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'} font-medium`}>
+          <div className={`text-[10px] ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'} font-medium`}>
             {isMultiplayer ? playerLabels.p1 : '🎯 Score'}
           </div>
-          <div className="text-xl font-bold text-green-400">{score}</div>
+          <div className="text-lg font-bold text-green-400">{score}</div>
         </div>
         
         {/* Mode-specific displays */}
         {mode === 'timed' && (
           <div className="text-center">
-            <div className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'} font-medium`}>⏱️ Time Left</div>
-            <div className={`text-xl font-bold ${timeLeft <= 10 ? 'text-red-400 animate-pulse' : theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>{formatTime(timeLeft)}</div>
+            <div className={`text-[10px] ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'} font-medium`}>⏱️ Time Left</div>
+            <div className={`text-lg font-bold ${timeLeft <= 10 ? 'text-red-400 animate-pulse' : theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>{formatTime(timeLeft)}</div>
           </div>
         )}
         {mode === 'survival' && (
           <>
             <div className="text-center">
-              <div className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'} font-medium`}>⏱️ Survived</div>
-              <div className={`text-xl font-bold ${survivalTime >= 60 ? 'text-yellow-400' : theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>{formatTime(survivalTime)}</div>
+              <div className={`text-[10px] ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'} font-medium`}>⏱️ Survived</div>
+              <div className={`text-lg font-bold ${survivalTime >= 60 ? 'text-yellow-400' : theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>{formatTime(survivalTime)}</div>
             </div>
             <div className="text-center">
-              <div className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'} font-medium`}>⚡ Speed</div>
-              <div className={`text-xl font-bold ${survivalSpeed >= 5 ? 'text-red-400 animate-pulse' : survivalSpeed >= 3 ? 'text-orange-400' : theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>x{survivalSpeed}</div>
+              <div className={`text-[10px] ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'} font-medium`}>⚡ Speed</div>
+              <div className={`text-lg font-bold ${survivalSpeed >= 5 ? 'text-red-400 animate-pulse' : survivalSpeed >= 3 ? 'text-orange-400' : theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>x{survivalSpeed}</div>
             </div>
           </>
         )}
         {mode === 'competitive' && (
           <div className="text-center">
-            <div className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'} font-medium`}>🏆 ELO</div>
-            <div className={`text-xl font-bold ${matchType === 'ranked' ? 'text-yellow-400' : 'text-blue-400'}`}>{player.elo}</div>
+            <div className={`text-[10px] ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'} font-medium`}>🏆 ELO</div>
+            <div className={`text-lg font-bold ${matchType === 'ranked' ? 'text-yellow-400' : 'text-blue-400'}`}>{player.elo}</div>
           </div>
         )}
         {combo > 2 && (
           <div className="text-center">
-            <div className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'} font-medium`}>🔥 Combo</div>
-            <div className="text-xl font-bold text-orange-400">x{combo}</div>
+            <div className={`text-[10px] ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'} font-medium`}>🔥 Combo</div>
+            <div className="text-lg font-bold text-orange-400">x{combo}</div>
           </div>
         )}
         
         {/* Player 2 / Bot Score */}
         {isMultiplayer && (
           <div className="text-center">
-            <div className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'} font-medium`}>
+            <div className={`text-[10px] ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'} font-medium`}>
               {playerLabels.p2}
             </div>
-            <div className="text-xl font-bold text-blue-400">{score2}</div>
+            <div className="text-lg font-bold text-blue-400">{score2}</div>
           </div>
         )}
         
         {/* Snake Length (single player) */}
         {!isMultiplayer && mode !== 'timed' && mode !== 'survival' && mode !== 'competitive' && (
           <div className="text-center">
-            <div className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'} font-medium`}>📏 Length</div>
-            <div className="text-xl font-bold text-green-400">{snake.length}</div>
+            <div className={`text-[10px] ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'} font-medium`}>📏 Length</div>
+            <div className="text-lg font-bold text-green-400">{snake.length}</div>
           </div>
         )}
         
@@ -945,8 +946,8 @@ export default function Game({ player, setPlayer, mode, difficulty, onBack, isMu
       </div>
 
       {/* Game Board - Responsive */}
-      <div className="flex-1 w-full max-w-5xl mx-auto flex items-center justify-center min-h-0 py-2">
-        <div className={`w-full h-full max-w-[min(100vh-14rem,100vw-3rem,900px)] aspect-square bg-gray-900/90 rounded-2xl border-2 overflow-hidden shadow-2xl relative ${mode === 'zen' || multiplayerType === 'zen' ? 'border-purple-500/40 shadow-purple-500/20' : 'border-gray-700/60'}`}>
+      <div className="w-full flex items-center justify-center">
+        <div className={`w-full max-w-[min(80vh,80vw,700px)] aspect-square bg-gray-900/90 rounded-2xl border-2 overflow-hidden shadow-2xl relative ${mode === 'zen' || multiplayerType === 'zen' ? 'border-purple-500/40 shadow-purple-500/20' : 'border-gray-700/60'}`}>
           {/* Grid */}
           <div className="absolute inset-0 grid grid-cols-20 grid-rows-20">
             {Array.from({ length: GRID_SIZE * GRID_SIZE }).map((_, i) => (
@@ -1344,6 +1345,7 @@ export default function Game({ player, setPlayer, mode, difficulty, onBack, isMu
             </div>
           )}
         </div>
+      </div>
       </div>
     </div>
   );
