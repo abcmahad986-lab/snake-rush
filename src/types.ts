@@ -933,7 +933,179 @@ export const CHARACTERS: Character[] = [
     unlockLevel: 25,
     rarity: 'legendary',
     skins: ['cosmic_nebula', 'cosmic_galaxy', 'cosmic_supernova']
-  }
+  },
+  // NEW FREE CHARACTERS - Lower unlock levels
+  {
+    id: 'turtle',
+    name: 'Wise Turtle',
+    emoji: '🐢',
+    description: 'Slow and steady wins the race',
+    unlockLevel: 2,
+    rarity: 'common',
+    skins: ['turtle_green', 'turtle_blue', 'turtle_gold']
+  },
+  {
+    id: 'rabbit',
+    name: 'Swift Rabbit',
+    emoji: '🐰',
+    description: 'Quick and agile',
+    unlockLevel: 3,
+    rarity: 'common',
+    skins: ['rabbit_white', 'rabbit_brown', 'rabbit_silver']
+  },
+  {
+    id: 'fox',
+    name: 'Cunning Fox',
+    emoji: '🦊',
+    description: 'Smart and strategic',
+    unlockLevel: 4,
+    rarity: 'common',
+    skins: ['fox_orange', 'fox_red', 'fox_arctic']
+  },
+  {
+    id: 'wolf',
+    name: 'Alpha Wolf',
+    emoji: '🐺',
+    description: 'Leader of the pack',
+    unlockLevel: 6,
+    rarity: 'rare',
+    skins: ['wolf_gray', 'wolf_black', 'wolf_white']
+  },
+  {
+    id: 'lion',
+    name: 'Majestic Lion',
+    emoji: '🦁',
+    description: 'King of the beasts',
+    unlockLevel: 7,
+    rarity: 'rare',
+    skins: ['lion_gold', 'lion_mane', 'lion_white']
+  },
+  {
+    id: 'eagle',
+    name: 'Soaring Eagle',
+    emoji: '🦅',
+    description: 'Master of the skies',
+    unlockLevel: 8,
+    rarity: 'rare',
+    skins: ['eagle_brown', 'eagle_golden', 'eagle_bald']
+  },
+  {
+    id: 'panda',
+    name: 'Gentle Panda',
+    emoji: '🐼',
+    description: 'Peaceful and powerful',
+    unlockLevel: 9,
+    rarity: 'rare',
+    skins: ['panda_classic', 'panda_red', 'panda_golden']
+  },
+  {
+    id: 'tiger',
+    name: 'Fierce Tiger',
+    emoji: '🐯',
+    description: 'Striped predator',
+    unlockLevel: 11,
+    rarity: 'epic',
+    skins: ['tiger_orange', 'tiger_white', 'tiger_golden']
+  },
+  {
+    id: 'bear',
+    name: 'Mighty Bear',
+    emoji: '🐻',
+    description: 'Strong and enduring',
+    unlockLevel: 12,
+    rarity: 'epic',
+    skins: ['bear_brown', 'bear_polar', 'bear_black']
+  },
+  {
+    id: 'shark',
+    name: 'Great Shark',
+    emoji: '🦈',
+    description: 'Ruler of the ocean',
+    unlockLevel: 13,
+    rarity: 'epic',
+    skins: ['shark_gray', 'shark_blue', 'shark_hammerhead']
+  },
+  {
+    id: 'owl',
+    name: 'Wise Owl',
+    emoji: '🦉',
+    description: 'Knowledge and wisdom',
+    unlockLevel: 14,
+    rarity: 'epic',
+    skins: ['owl_brown', 'owl_snowy', 'owl_golden']
+  },
+  {
+    id: 'dolphin',
+    name: 'Playful Dolphin',
+    emoji: '🐬',
+    description: 'Intelligent and friendly',
+    unlockLevel: 16,
+    rarity: 'epic',
+    skins: ['dolphin_gray', 'dolphin_blue', 'dolphin_pink']
+  },
+  {
+    id: 'gorilla',
+    name: 'Silverback Gorilla',
+    emoji: '🦍',
+    description: 'Powerful primate',
+    unlockLevel: 17,
+    rarity: 'epic',
+    skins: ['gorilla_black', 'gorilla_silver', 'gorilla_golden']
+  },
+  {
+    id: 'elephant',
+    name: 'Noble Elephant',
+    emoji: '🐘',
+    description: 'Wise and majestic',
+    unlockLevel: 18,
+    rarity: 'epic',
+    skins: ['elephant_gray', 'elephant_african', 'elephant_asian']
+  },
+  {
+    id: 'crocodile',
+    name: 'Ancient Crocodile',
+    emoji: '🐊',
+    description: 'Prehistoric predator',
+    unlockLevel: 19,
+    rarity: 'legendary',
+    skins: ['crocodile_green', 'crocodile_nile', 'crocodile_golden']
+  },
+  {
+    id: 'whale',
+    name: 'Giant Whale',
+    emoji: '🐋',
+    description: 'Largest creature alive',
+    unlockLevel: 21,
+    rarity: 'legendary',
+    skins: ['whale_blue', 'whale_humpback', 'whale_golden']
+  },
+  {
+    id: 'octopus',
+    name: 'Mystic Octopus',
+    emoji: '🐙',
+    description: 'Eight arms of power',
+    unlockLevel: 22,
+    rarity: 'legendary',
+    skins: ['octopus_purple', 'octopus_blue', 'octopus_golden']
+  },
+  {
+    id: 'dinosaur',
+    name: 'T-Rex Dinosaur',
+    emoji: '🦖',
+    description: 'Ancient ruler',
+    unlockLevel: 23,
+    rarity: 'legendary',
+    skins: ['dinosaur_green', 'dinosaur_red', 'dinosaur_golden']
+  },
+  {
+    id: 'alien',
+    name: 'Space Alien',
+    emoji: '👽',
+    description: 'From another world',
+    unlockLevel: 24,
+    rarity: 'legendary',
+    skins: ['alien_green', 'alien_gray', 'alien_golden']
+  },
 ];
 
 // ============ CHARACTER SKINS ============
@@ -966,7 +1138,103 @@ export const CHARACTER_SKINS: CharacterSkin[] = [
   // Cosmic Serpent skins
   { id: 'cosmic_nebula', characterId: 'cosmic', name: 'Nebula', colors: { head: '#818cf8', body: '#4f46e5', glow: 'rgba(129, 140, 248, 0.7)' }, unlockMethod: 'level', unlockRequirement: 25 },
   { id: 'cosmic_galaxy', characterId: 'cosmic', name: 'Galaxy', colors: { head: '#c084fc', body: '#8b5cf6', glow: 'rgba(192, 132, 252, 0.7)' }, unlockMethod: 'chest' },
-  { id: 'cosmic_supernova', characterId: 'cosmic', name: 'Supernova', colors: { head: '#fb923c', body: '#ea580c', glow: 'rgba(251, 146, 60, 0.7)' }, unlockMethod: 'achievement' }
+  { id: 'cosmic_supernova', characterId: 'cosmic', name: 'Supernova', colors: { head: '#fb923c', body: '#ea580c', glow: 'rgba(251, 146, 60, 0.7)' }, unlockMethod: 'achievement' },
+  
+  // NEW FREE CHARACTER SKINS
+  // Turtle skins
+  { id: 'turtle_green', characterId: 'turtle', name: 'Forest Green', colors: { head: '#4ade80', body: '#22c55e', glow: 'rgba(74, 222, 128, 0.7)' }, unlockMethod: 'level', unlockRequirement: 2 },
+  { id: 'turtle_blue', characterId: 'turtle', name: 'Ocean Blue', colors: { head: '#60a5fa', body: '#3b82f6', glow: 'rgba(96, 165, 250, 0.7)' }, unlockMethod: 'chest' },
+  { id: 'turtle_gold', characterId: 'turtle', name: 'Golden Shell', colors: { head: '#fbbf24', body: '#f59e0b', glow: 'rgba(251, 191, 36, 0.7)' }, unlockMethod: 'achievement' },
+  
+  // Rabbit skins
+  { id: 'rabbit_white', characterId: 'rabbit', name: 'Snow White', colors: { head: '#f8fafc', body: '#e2e8f0', glow: 'rgba(248, 250, 252, 0.7)' }, unlockMethod: 'level', unlockRequirement: 3 },
+  { id: 'rabbit_brown', characterId: 'rabbit', name: 'Earth Brown', colors: { head: '#a16207', body: '#854d0e', glow: 'rgba(161, 98, 7, 0.7)' }, unlockMethod: 'chest' },
+  { id: 'rabbit_silver', characterId: 'rabbit', name: 'Silver Swift', colors: { head: '#cbd5e1', body: '#94a3b8', glow: 'rgba(203, 213, 225, 0.7)' }, unlockMethod: 'achievement' },
+  
+  // Fox skins
+  { id: 'fox_orange', characterId: 'fox', name: 'Autumn Orange', colors: { head: '#fb923c', body: '#ea580c', glow: 'rgba(251, 146, 60, 0.7)' }, unlockMethod: 'level', unlockRequirement: 4 },
+  { id: 'fox_red', characterId: 'fox', name: 'Fire Red', colors: { head: '#ef4444', body: '#dc2626', glow: 'rgba(239, 68, 68, 0.7)' }, unlockMethod: 'chest' },
+  { id: 'fox_arctic', characterId: 'fox', name: 'Arctic White', colors: { head: '#f1f5f9', body: '#e2e8f0', glow: 'rgba(241, 245, 249, 0.7)' }, unlockMethod: 'achievement' },
+  
+  // Wolf skins
+  { id: 'wolf_gray', characterId: 'wolf', name: 'Timber Gray', colors: { head: '#6b7280', body: '#4b5563', glow: 'rgba(107, 114, 128, 0.7)' }, unlockMethod: 'level', unlockRequirement: 6 },
+  { id: 'wolf_black', characterId: 'wolf', name: 'Midnight Black', colors: { head: '#1f2937', body: '#111827', glow: 'rgba(31, 41, 55, 0.7)' }, unlockMethod: 'chest' },
+  { id: 'wolf_white', characterId: 'wolf', name: 'Arctic White', colors: { head: '#f9fafb', body: '#f3f4f6', glow: 'rgba(249, 250, 251, 0.7)' }, unlockMethod: 'achievement' },
+  
+  // Lion skins
+  { id: 'lion_gold', characterId: 'lion', name: 'Royal Gold', colors: { head: '#fbbf24', body: '#f59e0b', glow: 'rgba(251, 191, 36, 0.7)' }, unlockMethod: 'level', unlockRequirement: 7 },
+  { id: 'lion_mane', characterId: 'lion', name: 'Dark Mane', colors: { head: '#92400e', body: '#78350f', glow: 'rgba(146, 64, 14, 0.7)' }, unlockMethod: 'chest' },
+  { id: 'lion_white', characterId: 'lion', name: 'White Lion', colors: { head: '#fef3c7', body: '#fde68a', glow: 'rgba(254, 243, 199, 0.7)' }, unlockMethod: 'achievement' },
+  
+  // Eagle skins
+  { id: 'eagle_brown', characterId: 'eagle', name: 'Forest Brown', colors: { head: '#92400e', body: '#78350f', glow: 'rgba(146, 64, 14, 0.7)' }, unlockMethod: 'level', unlockRequirement: 8 },
+  { id: 'eagle_golden', characterId: 'eagle', name: 'Golden Eagle', colors: { head: '#fbbf24', body: '#f59e0b', glow: 'rgba(251, 191, 36, 0.7)' }, unlockMethod: 'chest' },
+  { id: 'eagle_bald', characterId: 'eagle', name: 'Bald Eagle', colors: { head: '#f9fafb', body: '#1f2937', glow: 'rgba(249, 250, 251, 0.7)' }, unlockMethod: 'achievement' },
+  
+  // Panda skins
+  { id: 'panda_classic', characterId: 'panda', name: 'Classic Panda', colors: { head: '#f9fafb', body: '#1f2937', glow: 'rgba(249, 250, 251, 0.7)' }, unlockMethod: 'level', unlockRequirement: 9 },
+  { id: 'panda_red', characterId: 'panda', name: 'Red Panda', colors: { head: '#dc2626', body: '#991b1b', glow: 'rgba(220, 38, 38, 0.7)' }, unlockMethod: 'chest' },
+  { id: 'panda_golden', characterId: 'panda', name: 'Golden Panda', colors: { head: '#fbbf24', body: '#f59e0b', glow: 'rgba(251, 191, 36, 0.7)' }, unlockMethod: 'achievement' },
+  
+  // Tiger skins
+  { id: 'tiger_orange', characterId: 'tiger', name: 'Bengal Orange', colors: { head: '#fb923c', body: '#ea580c', glow: 'rgba(251, 146, 60, 0.7)' }, unlockMethod: 'level', unlockRequirement: 11 },
+  { id: 'tiger_white', characterId: 'tiger', name: 'White Tiger', colors: { head: '#f9fafb', body: '#e5e7eb', glow: 'rgba(249, 250, 251, 0.7)' }, unlockMethod: 'chest' },
+  { id: 'tiger_golden', characterId: 'tiger', name: 'Golden Tiger', colors: { head: '#fbbf24', body: '#f59e0b', glow: 'rgba(251, 191, 36, 0.7)' }, unlockMethod: 'achievement' },
+  
+  // Bear skins
+  { id: 'bear_brown', characterId: 'bear', name: 'Grizzly Brown', colors: { head: '#92400e', body: '#78350f', glow: 'rgba(146, 64, 14, 0.7)' }, unlockMethod: 'level', unlockRequirement: 12 },
+  { id: 'bear_polar', characterId: 'bear', name: 'Polar White', colors: { head: '#f9fafb', body: '#f3f4f6', glow: 'rgba(249, 250, 251, 0.7)' }, unlockMethod: 'chest' },
+  { id: 'bear_black', characterId: 'bear', name: 'Black Bear', colors: { head: '#1f2937', body: '#111827', glow: 'rgba(31, 41, 55, 0.7)' }, unlockMethod: 'achievement' },
+  
+  // Shark skins
+  { id: 'shark_gray', characterId: 'shark', name: 'Ocean Gray', colors: { head: '#6b7280', body: '#4b5563', glow: 'rgba(107, 114, 128, 0.7)' }, unlockMethod: 'level', unlockRequirement: 13 },
+  { id: 'shark_blue', characterId: 'shark', name: 'Deep Blue', colors: { head: '#1e40af', body: '#1e3a8a', glow: 'rgba(30, 64, 175, 0.7)' }, unlockMethod: 'chest' },
+  { id: 'shark_hammerhead', characterId: 'shark', name: 'Hammerhead', colors: { head: '#374151', body: '#1f2937', glow: 'rgba(55, 65, 81, 0.7)' }, unlockMethod: 'achievement' },
+  
+  // Owl skins
+  { id: 'owl_brown', characterId: 'owl', name: 'Forest Brown', colors: { head: '#92400e', body: '#78350f', glow: 'rgba(146, 64, 14, 0.7)' }, unlockMethod: 'level', unlockRequirement: 14 },
+  { id: 'owl_snowy', characterId: 'owl', name: 'Snowy Owl', colors: { head: '#f9fafb', body: '#e5e7eb', glow: 'rgba(249, 250, 251, 0.7)' }, unlockMethod: 'chest' },
+  { id: 'owl_golden', characterId: 'owl', name: 'Golden Owl', colors: { head: '#fbbf24', body: '#f59e0b', glow: 'rgba(251, 191, 36, 0.7)' }, unlockMethod: 'achievement' },
+  
+  // Dolphin skins
+  { id: 'dolphin_gray', characterId: 'dolphin', name: 'Dolphin Gray', colors: { head: '#6b7280', body: '#4b5563', glow: 'rgba(107, 114, 128, 0.7)' }, unlockMethod: 'level', unlockRequirement: 16 },
+  { id: 'dolphin_blue', characterId: 'dolphin', name: 'Ocean Blue', colors: { head: '#3b82f6', body: '#2563eb', glow: 'rgba(59, 130, 246, 0.7)' }, unlockMethod: 'chest' },
+  { id: 'dolphin_pink', characterId: 'dolphin', name: 'Pink Dolphin', colors: { head: '#ec4899', body: '#db2777', glow: 'rgba(236, 72, 153, 0.7)' }, unlockMethod: 'achievement' },
+  
+  // Gorilla skins
+  { id: 'gorilla_black', characterId: 'gorilla', name: 'Silverback', colors: { head: '#374151', body: '#1f2937', glow: 'rgba(55, 65, 81, 0.7)' }, unlockMethod: 'level', unlockRequirement: 17 },
+  { id: 'gorilla_silver', characterId: 'gorilla', name: 'Silver King', colors: { head: '#9ca3af', body: '#6b7280', glow: 'rgba(156, 163, 175, 0.7)' }, unlockMethod: 'chest' },
+  { id: 'gorilla_golden', characterId: 'gorilla', name: 'Golden Ape', colors: { head: '#fbbf24', body: '#f59e0b', glow: 'rgba(251, 191, 36, 0.7)' }, unlockMethod: 'achievement' },
+  
+  // Elephant skins
+  { id: 'elephant_gray', characterId: 'elephant', name: 'African Gray', colors: { head: '#6b7280', body: '#4b5563', glow: 'rgba(107, 114, 128, 0.7)' }, unlockMethod: 'level', unlockRequirement: 18 },
+  { id: 'elephant_african', characterId: 'elephant', name: 'Savanna', colors: { head: '#92400e', body: '#78350f', glow: 'rgba(146, 64, 14, 0.7)' }, unlockMethod: 'chest' },
+  { id: 'elephant_asian', characterId: 'elephant', name: 'Asian Elephant', colors: { head: '#78716c', body: '#57534e', glow: 'rgba(120, 113, 108, 0.7)' }, unlockMethod: 'achievement' },
+  
+  // Crocodile skins
+  { id: 'crocodile_green', characterId: 'crocodile', name: 'Swamp Green', colors: { head: '#16a34a', body: '#15803d', glow: 'rgba(22, 163, 74, 0.7)' }, unlockMethod: 'level', unlockRequirement: 19 },
+  { id: 'crocodile_nile', characterId: 'crocodile', name: 'Nile Croc', colors: { head: '#854d0e', body: '#713f12', glow: 'rgba(133, 77, 14, 0.7)' }, unlockMethod: 'chest' },
+  { id: 'crocodile_golden', characterId: 'crocodile', name: 'Golden Croc', colors: { head: '#fbbf24', body: '#f59e0b', glow: 'rgba(251, 191, 36, 0.7)' }, unlockMethod: 'achievement' },
+  
+  // Whale skins
+  { id: 'whale_blue', characterId: 'whale', name: 'Blue Whale', colors: { head: '#1e40af', body: '#1e3a8a', glow: 'rgba(30, 64, 175, 0.7)' }, unlockMethod: 'level', unlockRequirement: 21 },
+  { id: 'whale_humpback', characterId: 'whale', name: 'Humpback', colors: { head: '#374151', body: '#1f2937', glow: 'rgba(55, 65, 81, 0.7)' }, unlockMethod: 'chest' },
+  { id: 'whale_golden', characterId: 'whale', name: 'Golden Whale', colors: { head: '#fbbf24', body: '#f59e0b', glow: 'rgba(251, 191, 36, 0.7)' }, unlockMethod: 'achievement' },
+  
+  // Octopus skins
+  { id: 'octopus_purple', characterId: 'octopus', name: 'Deep Purple', colors: { head: '#7c3aed', body: '#6d28d9', glow: 'rgba(124, 58, 237, 0.7)' }, unlockMethod: 'level', unlockRequirement: 22 },
+  { id: 'octopus_blue', characterId: 'octopus', name: 'Ocean Blue', colors: { head: '#0ea5e9', body: '#0284c7', glow: 'rgba(14, 165, 233, 0.7)' }, unlockMethod: 'chest' },
+  { id: 'octopus_golden', characterId: 'octopus', name: 'Golden Octopus', colors: { head: '#fbbf24', body: '#f59e0b', glow: 'rgba(251, 191, 36, 0.7)' }, unlockMethod: 'achievement' },
+  
+  // Dinosaur skins
+  { id: 'dinosaur_green', characterId: 'dinosaur', name: 'Jurassic Green', colors: { head: '#16a34a', body: '#15803d', glow: 'rgba(22, 163, 74, 0.7)' }, unlockMethod: 'level', unlockRequirement: 23 },
+  { id: 'dinosaur_red', characterId: 'dinosaur', name: 'T-Rex Red', colors: { head: '#dc2626', body: '#b91c1c', glow: 'rgba(220, 38, 38, 0.7)' }, unlockMethod: 'chest' },
+  { id: 'dinosaur_golden', characterId: 'dinosaur', name: 'Golden Dino', colors: { head: '#fbbf24', body: '#f59e0b', glow: 'rgba(251, 191, 36, 0.7)' }, unlockMethod: 'achievement' },
+  
+  // Alien skins
+  { id: 'alien_green', characterId: 'alien', name: 'Classic Green', colors: { head: '#22c55e', body: '#16a34a', glow: 'rgba(34, 197, 94, 0.7)' }, unlockMethod: 'level', unlockRequirement: 24 },
+  { id: 'alien_gray', characterId: 'alien', name: 'Gray Alien', colors: { head: '#6b7280', body: '#4b5563', glow: 'rgba(107, 114, 128, 0.7)' }, unlockMethod: 'chest' },
+  { id: 'alien_golden', characterId: 'alien', name: 'Golden Alien', colors: { head: '#fbbf24', body: '#f59e0b', glow: 'rgba(251, 191, 36, 0.7)' }, unlockMethod: 'achievement' },
 ];
 
 // ============ CHESTS ============
@@ -1176,6 +1444,39 @@ export const TITLES: Title[] = [
   { id: 'snake_god', name: 'Snake God', icon: '👁️', description: 'Score 10000 total', category: 'legendary', rarity: 'legendary', coinReward: 500, condition: (p) => p.totalScore >= 10000 },
   { id: 'eternal', name: 'Eternal', icon: '♾️', description: 'Reach length 100', category: 'legendary', rarity: 'legendary', coinReward: 500, condition: (p) => p.longestSnake >= 100 },
   { id: 'completionist', name: 'Completionist', icon: '✨', description: 'Collect all trophies', category: 'legendary', rarity: 'legendary', coinReward: 1000, condition: (p) => p.trophies.length >= TROPHIES.length },
+  
+  // NEW FREE TITLES - More Achievements
+  { id: 'quick_starter', name: 'Quick Starter', icon: '⚡', description: 'Play 5 games', category: 'beginner', rarity: 'common', coinReward: 10, condition: (p) => p.gamesPlayed >= 5 },
+  { id: 'hungry_snake', name: 'Hungry Snake', icon: '🍎', description: 'Eat 25 food items', category: 'collection', rarity: 'common', coinReward: 15, condition: (p) => p.totalFoodEaten >= 25 },
+  { id: 'growing_up', name: 'Growing Up', icon: '📈', description: 'Reach length 15', category: 'collection', rarity: 'common', coinReward: 20, condition: (p) => p.longestSnake >= 15 },
+  { id: 'score_chaser', name: 'Score Chaser', icon: '🎯', description: 'Score 25 points', category: 'score', rarity: 'common', coinReward: 10, condition: (p) => p.totalScore >= 25 },
+  { id: 'survivor', name: 'Survivor', icon: '🛡️', description: 'Survive for 1 minute', category: 'special', rarity: 'common', coinReward: 15, condition: (p) => p.totalTimePlayed >= 60 },
+  { id: 'map_explorer', name: 'Map Explorer', icon: '🗺️', description: 'Play on 3 different maps', category: 'special', rarity: 'common', coinReward: 20, condition: (p) => (p.ownedMaps?.length || 1) >= 3 },
+  { id: 'mode_master', name: 'Mode Master', icon: '🎮', description: 'Play all game modes', category: 'special', rarity: 'uncommon', coinReward: 30, condition: (p) => p.gamesPlayed >= 50 },
+  { id: 'combo_king', name: 'Combo King', icon: '🔥', description: 'Get a 10x combo', category: 'combat', rarity: 'uncommon', coinReward: 35, condition: (p) => p.totalScore >= 200 },
+  { id: 'power_collector', name: 'Power Collector', icon: '⚡', description: 'Collect 20 power-ups', category: 'collection', rarity: 'uncommon', coinReward: 30, condition: (p) => p.totalFoodEaten >= 100 },
+  { id: 'zen_peace', name: 'Zen Peace', icon: '☮️', description: 'Play 5 zen games', category: 'special', rarity: 'common', coinReward: 15, condition: (p) => (p.zenGamesPlayed || 0) >= 5 },
+  { id: 'bot_begyner', name: 'Bot Beginner', icon: '🤖', description: 'Win against bot once', category: 'combat', rarity: 'common', coinReward: 15, condition: (p) => (p.gamesWonVsBot || 0) >= 1 },
+  { id: 'streak_3', name: 'Streak Master', icon: '🔥', description: '3 day login streak', category: 'special', rarity: 'common', coinReward: 20, condition: (p) => p.dailyStreak >= 3 },
+  { id: 'level_3', name: 'Rising Player', icon: '⭐', description: 'Reach level 3', category: 'special', rarity: 'common', coinReward: 15, condition: (p) => p.level >= 3 },
+  { id: 'level_7', name: 'Skilled Player', icon: '🌟', description: 'Reach level 7', category: 'special', rarity: 'uncommon', coinReward: 30, condition: (p) => p.level >= 7 },
+  { id: 'level_15', name: 'Expert Player', icon: '💫', description: 'Reach level 15', category: 'special', rarity: 'rare', coinReward: 60, condition: (p) => p.level >= 15 },
+  { id: 'level_20', name: 'Master Player', icon: '👑', description: 'Reach level 20', category: 'special', rarity: 'epic', coinReward: 100, condition: (p) => p.level >= 20 },
+  { id: 'food_frenzy', name: 'Food Frenzy', icon: '🍔', description: 'Eat 100 food items', category: 'collection', rarity: 'uncommon', coinReward: 30, condition: (p) => p.totalFoodEaten >= 100 },
+  { id: 'snake_charmer', name: 'Snake Charmer', icon: '🐍', description: 'Reach length 35', category: 'collection', rarity: 'uncommon', coinReward: 40, condition: (p) => p.longestSnake >= 35 },
+  { id: 'high_roller', name: 'High Roller', icon: '💰', description: 'Score 500 in one game', category: 'score', rarity: 'rare', coinReward: 60, condition: (p) => p.highScores && Math.max(...Object.values(p.highScores)) >= 500 },
+  { id: 'marathon', name: 'Marathon', icon: '🏃', description: 'Play for 30 minutes total', category: 'special', rarity: 'uncommon', coinReward: 35, condition: (p) => p.totalTimePlayed >= 1800 },
+  { id: 'dedicated_week', name: 'Dedicated Week', icon: '📅', description: '14 day login streak', category: 'special', rarity: 'rare', coinReward: 60, condition: (p) => p.dailyStreak >= 14 },
+  { id: 'bot_fighter', name: 'Bot Fighter', icon: '⚔️', description: 'Win against bot 5 times', category: 'combat', rarity: 'uncommon', coinReward: 40, condition: (p) => (p.gamesWonVsBot || 0) >= 5 },
+  { id: 'bot_warrior', name: 'Bot Warrior', icon: '🛡️', description: 'Win against bot 15 times', category: 'combat', rarity: 'rare', coinReward: 80, condition: (p) => (p.gamesWonVsBot || 0) >= 15 },
+  { id: 'medium_master', name: 'Medium Master', icon: '🟡', description: 'Score 150+ on Medium', category: 'combat', rarity: 'uncommon', coinReward: 40, condition: (p) => p.highScores?.medium >= 150 },
+  { id: 'hard_hero', name: 'Hard Hero', icon: '🔴', description: 'Score 100+ on Hard', category: 'combat', rarity: 'rare', coinReward: 70, condition: (p) => p.highScores?.hard >= 100 },
+  { id: 'insane_warrior', name: 'Insane Warrior', icon: '💀', description: 'Score 50+ on Insane', category: 'combat', rarity: 'rare', coinReward: 80, condition: (p) => p.highScores?.insane >= 50 },
+  { id: 'timed_pro', name: 'Timed Pro', icon: '⏱️', description: 'Score 30+ in timed mode', category: 'combat', rarity: 'uncommon', coinReward: 35, condition: (p) => p.timedHighScores && Math.max(...Object.values(p.timedHighScores)) >= 30 },
+  { id: 'timed_master', name: 'Timed Master', icon: '⏰', description: 'Score 75+ in timed mode', category: 'combat', rarity: 'rare', coinReward: 70, condition: (p) => p.timedHighScores && Math.max(...Object.values(p.timedHighScores)) >= 75 },
+  { id: 'collector', name: 'Collector', icon: '🎁', description: 'Open 5 chests', category: 'collection', rarity: 'common', coinReward: 25, condition: (p) => (p.chests?.wooden_chest || 0) + (p.chests?.silver_chest || 0) + (p.chests?.golden_chest || 0) + (p.chests?.legendary_chest || 0) >= 5 },
+  { id: 'skin_collector', name: 'Skin Collector', icon: '🎨', description: 'Own 3 skins', category: 'collection', rarity: 'common', coinReward: 20, condition: (p) => p.ownedSkins?.length >= 3 },
+  { id: 'character_collector', name: 'Character Collector', icon: '🎭', description: 'Unlock 3 characters', category: 'collection', rarity: 'uncommon', coinReward: 35, condition: (p) => p.ownedCharacters?.length >= 3 },
 ];
 
 // ============ REAL MONEY SHOP PACKAGES ============
@@ -1472,5 +1773,129 @@ export const GAME_MAPS: GameMap[] = [
       { x: 4, y: 14 }, { x: 5, y: 14 }, { x: 6, y: 14 }, { x: 14, y: 14 }, { x: 15, y: 14 }, { x: 16, y: 14 },
       { x: 10, y: 4 }, { x: 10, y: 16 },
     ],
+  },
+  // NEW FREE MAPS
+  {
+    id: 'forest',
+    name: 'Enchanted Forest',
+    description: 'Navigate through mystical woods',
+    icon: '🌲',
+    type: 'maze',
+    price: 0,
+    currency: 'coins',
+    difficulty: 'easy',
+    features: ['Forest theme', 'Tree obstacles', 'Free map'],
+    backgroundGradient: 'from-green-900 via-emerald-900 to-teal-900',
+    wallColor: '#16a34a',
+    gridColor: 'rgba(22, 163, 74, 0.1)',
+    obstacles: [
+      { x: 3, y: 3 }, { x: 3, y: 4 }, { x: 4, y: 3 },
+      { x: 8, y: 8 }, { x: 8, y: 9 }, { x: 9, y: 8 }, { x: 9, y: 9 },
+      { x: 15, y: 5 }, { x: 15, y: 6 }, { x: 16, y: 5 },
+      { x: 5, y: 15 }, { x: 6, y: 15 }, { x: 5, y: 16 }, { x: 6, y: 16 },
+      { x: 12, y: 12 }, { x: 13, y: 12 }, { x: 12, y: 13 },
+    ],
+    free: true,
+  },
+  {
+    id: 'desert',
+    name: 'Desert Dunes',
+    description: 'Survive the scorching sands',
+    icon: '🏜️',
+    type: 'obstacles',
+    price: 0,
+    currency: 'coins',
+    difficulty: 'medium',
+    features: ['Desert theme', 'Sand dunes', 'Free map'],
+    backgroundGradient: 'from-yellow-900 via-orange-900 to-red-900',
+    wallColor: '#ca8a04',
+    gridColor: 'rgba(202, 138, 4, 0.1)',
+    obstacles: [
+      { x: 2, y: 2 }, { x: 6, y: 4 }, { x: 10, y: 2 }, { x: 14, y: 6 },
+      { x: 4, y: 10 }, { x: 8, y: 8 }, { x: 12, y: 12 }, { x: 16, y: 14 },
+      { x: 18, y: 18 }, { x: 2, y: 16 }, { x: 6, y: 18 }, { x: 10, y: 16 },
+    ],
+    free: true,
+  },
+  {
+    id: 'volcano',
+    name: 'Volcanic Lair',
+    description: 'Dance around the lava flows',
+    icon: '🌋',
+    type: 'obstacles',
+    price: 0,
+    currency: 'coins',
+    difficulty: 'hard',
+    features: ['Volcano theme', 'Lava obstacles', 'Free map'],
+    backgroundGradient: 'from-red-950 via-orange-950 to-yellow-950',
+    wallColor: '#dc2626',
+    gridColor: 'rgba(220, 38, 38, 0.15)',
+    obstacles: [
+      { x: 5, y: 5 }, { x: 6, y: 5 }, { x: 5, y: 6 }, { x: 6, y: 6 },
+      { x: 13, y: 5 }, { x: 14, y: 5 }, { x: 13, y: 6 }, { x: 14, y: 6 },
+      { x: 9, y: 9 }, { x: 10, y: 9 }, { x: 9, y: 10 }, { x: 10, y: 10 },
+      { x: 5, y: 13 }, { x: 6, y: 13 }, { x: 5, y: 14 }, { x: 6, y: 14 },
+      { x: 13, y: 13 }, { x: 14, y: 13 }, { x: 13, y: 14 }, { x: 14, y: 14 },
+    ],
+    free: true,
+  },
+  {
+    id: 'arctic',
+    name: 'Arctic Tundra',
+    description: 'Brave the frozen wilderness',
+    icon: '❄️',
+    type: 'maze',
+    price: 0,
+    currency: 'coins',
+    difficulty: 'medium',
+    features: ['Ice theme', 'Frozen paths', 'Free map'],
+    backgroundGradient: 'from-blue-950 via-cyan-950 to-slate-950',
+    wallColor: '#0ea5e9',
+    gridColor: 'rgba(14, 165, 233, 0.1)',
+    obstacles: [
+      { x: 4, y: 2 }, { x: 4, y: 3 }, { x: 4, y: 4 }, { x: 4, y: 5 }, { x: 4, y: 6 },
+      { x: 10, y: 4 }, { x: 10, y: 5 }, { x: 10, y: 6 }, { x: 10, y: 7 }, { x: 10, y: 8 },
+      { x: 16, y: 2 }, { x: 16, y: 3 }, { x: 16, y: 4 }, { x: 16, y: 5 }, { x: 16, y: 6 },
+      { x: 7, y: 12 }, { x: 7, y: 13 }, { x: 7, y: 14 }, { x: 7, y: 15 }, { x: 7, y: 16 },
+      { x: 13, y: 12 }, { x: 13, y: 13 }, { x: 13, y: 14 }, { x: 13, y: 15 }, { x: 13, y: 16 },
+    ],
+    free: true,
+  },
+  {
+    id: 'candy',
+    name: 'Candy Land',
+    description: 'Sweet treats everywhere!',
+    icon: '🍭',
+    type: 'classic',
+    price: 0,
+    currency: 'coins',
+    difficulty: 'easy',
+    features: ['Candy theme', 'No obstacles', 'Free map'],
+    backgroundGradient: 'from-pink-900 via-purple-900 to-indigo-900',
+    wallColor: '#ec4899',
+    gridColor: 'rgba(236, 72, 153, 0.1)',
+    free: true,
+  },
+  {
+    id: 'haunted',
+    name: 'Haunted Mansion',
+    description: 'Spooky scares at every turn',
+    icon: '👻',
+    type: 'labyrinth',
+    price: 0,
+    currency: 'coins',
+    difficulty: 'hard',
+    features: ['Horror theme', 'Complex maze', 'Free map'],
+    backgroundGradient: 'from-gray-950 via-purple-950 to-black',
+    wallColor: '#7c3aed',
+    gridColor: 'rgba(124, 58, 237, 0.15)',
+    obstacles: [
+      { x: 3, y: 3 }, { x: 3, y: 4 }, { x: 4, y: 3 }, { x: 4, y: 4 },
+      { x: 7, y: 7 }, { x: 7, y: 8 }, { x: 8, y: 7 }, { x: 8, y: 8 },
+      { x: 11, y: 11 }, { x: 11, y: 12 }, { x: 12, y: 11 }, { x: 12, y: 12 },
+      { x: 15, y: 15 }, { x: 15, y: 16 }, { x: 16, y: 15 }, { x: 16, y: 16 },
+      { x: 5, y: 10 }, { x: 6, y: 10 }, { x: 10, y: 5 }, { x: 10, y: 6 },
+    ],
+    free: true,
   },
 ];
