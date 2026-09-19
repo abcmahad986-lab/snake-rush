@@ -813,9 +813,9 @@ export default function Game({ player, setPlayer, mode, difficulty, onBack, isMu
   const playerLabels = getPlayerLabel();
 
   return (
-    <div className={`min-h-screen ${theme === 'dark' ? 'bg-gradient-to-br from-gray-900 via-slate-900 to-gray-800' : 'bg-gradient-to-br from-gray-50 via-slate-50 to-white'} flex flex-col items-center p-2 md:p-4 select-none`}>
+    <div className={`h-screen ${theme === 'dark' ? 'bg-gradient-to-br from-gray-900 via-slate-900 to-gray-800' : 'bg-gradient-to-br from-gray-50 via-slate-50 to-white'} flex flex-col items-center p-2 md:p-4 select-none overflow-hidden`}>
       {/* Top Bar - Enhanced with Player Info */}
-      <div className="w-full max-w-lg mb-2">
+      <div className="w-full max-w-4xl mb-2 flex-shrink-0">
         <div className={`flex items-center justify-between ${theme === 'dark' ? 'bg-gray-800/80 border-gray-700/50' : 'bg-white border-gray-200 shadow-sm'} rounded-xl px-3 py-2 border`}>
           {/* Player Info */}
           <div className="flex items-center gap-2">
@@ -873,7 +873,7 @@ export default function Game({ player, setPlayer, mode, difficulty, onBack, isMu
       </div>
 
       {/* Score Bar - Enhanced with Player Names */}
-      <div className={`w-full max-w-lg flex justify-between items-center ${theme === 'dark' ? 'bg-gray-800/80 border-gray-700/50' : 'bg-white border-gray-200 shadow-sm'} rounded-xl px-3 py-2 mb-2 border`}>
+      <div className={`w-full max-w-4xl flex justify-between items-center ${theme === 'dark' ? 'bg-gray-800/80 border-gray-700/50' : 'bg-white border-gray-200 shadow-sm'} rounded-xl px-3 py-2 mb-2 border flex-shrink-0`}>
         {/* Player 1 Score */}
         <div className="text-center">
           <div className={`text-[10px] ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'} font-medium`}>
@@ -944,9 +944,9 @@ export default function Game({ player, setPlayer, mode, difficulty, onBack, isMu
         )}
       </div>
 
-      {/* Game Board */}
-      <div className="relative w-full max-w-lg aspect-square">
-        <div className={`absolute inset-0 bg-gray-900/90 rounded-2xl border-2 overflow-hidden shadow-2xl ${mode === 'zen' || multiplayerType === 'zen' ? 'border-purple-500/40 shadow-purple-500/20' : 'border-gray-700/60'}`}>
+      {/* Game Board - Responsive */}
+      <div className="flex-1 w-full max-w-4xl mx-auto flex items-center justify-center min-h-0">
+        <div className={`w-full h-full max-w-[min(100vh-12rem,100vw-2rem,800px)] aspect-square bg-gray-900/90 rounded-2xl border-2 overflow-hidden shadow-2xl relative ${mode === 'zen' || multiplayerType === 'zen' ? 'border-purple-500/40 shadow-purple-500/20' : 'border-gray-700/60'}`}>
           {/* Grid */}
           <div className="absolute inset-0 grid grid-cols-20 grid-rows-20">
             {Array.from({ length: GRID_SIZE * GRID_SIZE }).map((_, i) => (
@@ -1343,82 +1343,6 @@ export default function Game({ player, setPlayer, mode, difficulty, onBack, isMu
               </div>
             </div>
           )}
-        </div>
-      </div>
-
-      {/* Touch Controls - Swipe Gesture Area */}
-      <div className="mt-4 w-full max-w-lg">
-        {/* Swipe Area Container */}
-        <div className={`${theme === 'dark' ? 'bg-gray-800/60 border-gray-700/50' : 'bg-white/80 border-gray-200'} rounded-2xl p-6 border backdrop-blur-sm shadow-lg relative overflow-hidden`}>
-          {/* Swipe Direction Indicator */}
-          {swipeDirection && (
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
-              <div className={`text-8xl font-black animate-pulse ${
-                swipeDirection === 'UP' ? 'text-green-400' :
-                swipeDirection === 'DOWN' ? 'text-green-400' :
-                swipeDirection === 'LEFT' ? 'text-green-400' :
-                'text-green-400'
-              }`}>
-                {swipeDirection === 'UP' && '↑'}
-                {swipeDirection === 'DOWN' && '↓'}
-                {swipeDirection === 'LEFT' && '←'}
-                {swipeDirection === 'RIGHT' && '→'}
-              </div>
-            </div>
-          )}
-          
-          {/* Swipe Area */}
-          <div 
-            className={`w-full h-48 ${theme === 'dark' ? 'bg-gray-900/50' : 'bg-gray-100/50'} rounded-xl border-2 ${theme === 'dark' ? 'border-gray-700' : 'border-gray-300'} flex items-center justify-center relative`}
-            style={{ touchAction: 'none' }}
-          >
-            {/* Center Icon */}
-            <div className={`text-center ${swipeDirection ? 'opacity-30' : 'opacity-100'} transition-opacity`}>
-              <div className="text-6xl mb-2">👆</div>
-              <div className={`text-sm font-bold ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
-                Swipe to Move
-              </div>
-              <div className={`text-xs ${theme === 'dark' ? 'text-gray-500' : 'text-gray-500'} mt-1`}>
-                Swipe in any direction
-              </div>
-            </div>
-            
-            {/* Direction Arrows (subtle) */}
-            <div className={`absolute top-4 left-1/2 -translate-x-1/2 text-2xl ${theme === 'dark' ? 'text-gray-600' : 'text-gray-400'} ${swipeDirection === 'UP' ? 'text-green-400 scale-125' : ''} transition-all`}>↑</div>
-            <div className={`absolute bottom-4 left-1/2 -translate-x-1/2 text-2xl ${theme === 'dark' ? 'text-gray-600' : 'text-gray-400'} ${swipeDirection === 'DOWN' ? 'text-green-400 scale-125' : ''} transition-all`}>↓</div>
-            <div className={`absolute left-4 top-1/2 -translate-y-1/2 text-2xl ${theme === 'dark' ? 'text-gray-600' : 'text-gray-400'} ${swipeDirection === 'LEFT' ? 'text-green-400 scale-125' : ''} transition-all`}>←</div>
-            <div className={`absolute right-4 top-1/2 -translate-y-1/2 text-2xl ${theme === 'dark' ? 'text-gray-600' : 'text-gray-400'} ${swipeDirection === 'RIGHT' ? 'text-green-400 scale-125' : ''} transition-all`}>→</div>
-          </div>
-
-          {/* Pause Button */}
-          <div className="mt-4 flex justify-center">
-            <button
-              onClick={() => {
-                audioManager.playClickSound();
-                if (gameState === 'PLAYING') setGameState('PAUSED');
-                else if (gameState === 'PAUSED') setGameState('PLAYING');
-              }}
-              className={`px-6 py-3 ${theme === 'dark' ? 'bg-purple-700 hover:bg-purple-600 border-purple-600' : 'bg-purple-100 hover:bg-purple-200 border-purple-300'} ${theme === 'dark' ? 'text-white' : 'text-purple-700'} font-bold rounded-xl border-2 transition-all transform hover:scale-105 active:scale-95 shadow-md`}
-              aria-label="Pause/Resume"
-            >
-              {gameState === 'PAUSED' ? '▶ Resume' : '⏸ Pause'}
-            </button>
-          </div>
-
-          {/* Control Info */}
-          <div className={`mt-4 text-center text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
-            {isMultiplayer && multiplayerType === 'player' ? (
-              <div>
-                <div className="font-semibold mb-1">Touch Controls</div>
-                <div><span className="text-green-400 font-bold">P1:</span> Swipe anywhere • <span className="text-blue-400 font-bold">P2:</span> IJKL keys</div>
-              </div>
-            ) : (
-              <div>
-                <div className="font-semibold mb-1">Swipe Gesture Controls</div>
-                <div>Swipe ↑↓←→ or use <kbd className={`px-1.5 py-0.5 ${theme === 'dark' ? 'bg-gray-700 text-gray-300' : 'bg-gray-200 text-gray-700'} rounded text-[10px] font-mono`}>↑↓←→</kbd> / <kbd className={`px-1.5 py-0.5 ${theme === 'dark' ? 'bg-gray-700 text-gray-300' : 'bg-gray-200 text-gray-700'} rounded text-[10px] font-mono`}>WASD</kbd></div>
-              </div>
-            )}
-          </div>
         </div>
       </div>
     </div>
