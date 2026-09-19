@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { Position, Direction, GameState, Difficulty, GameMode, GRID_SIZE, DIFFICULTY_SPEEDS, TIMED_DURATIONS, Player, PowerUp, TITLES, Theme, GAME_MAPS, MatchType } from '../types';
+import { Position, Direction, GameState, Difficulty, GameMode, GRID_SIZE, DIFFICULTY_SPEEDS, TIMED_DURATIONS, Player, PowerUp, TITLES, Theme, GAME_MAPS, MatchType, BOT_INTELLIGENCE, POWERUP_SPAWN_RATES } from '../types';
 import { savePlayer, addXp } from '../store';
 import { audioManager } from '../audio';
 import { getRankFromElo } from './CompetitiveScreen';
@@ -30,8 +30,8 @@ function getRandomFood(snake: Position[], obstacles?: Position[]): Position {
   return food;
 }
 
-function getRandomPowerUp(snake: Position[], obstacles?: Position[]): PowerUp | null {
-  if (Math.random() > 0.15) return null;
+function getRandomPowerUp(snake: Position[], obstacles?: Position[], spawnRate: number = 0.15): PowerUp | null {
+  if (Math.random() > spawnRate) return null;
   const types: PowerUp['type'][] = ['speed', 'slow', 'double', 'shrink', 'shield', 'time_slow', 'coin_magnet', 'ghost_pass', 'score_boost'];
   const icons = ['⚡', '🐌', '✖️2', '🔽', '🛡️', '⏱️', '🧲', '👻', '💫'];
   const idx = Math.floor(Math.random() * types.length);
@@ -56,7 +56,7 @@ function getRandomPowerUp(snake: Position[], obstacles?: Position[]): PowerUp | 
 }
 
 // Bot AI - moves toward food intelligently
-function getBotDirection(snake: Position[], food: Position, currentDir: Direction, otherSnake?: Position[], isZenMode?: boolean): Direction {
+function getBotDirection(snake: Position[], food: Position, currentDir: Direction, otherSnake?: Position[], isZenMode?: boolean, botIntelligence: number = 0.6): Direction {
   const head = snake[0];
   const possibleDirs: Direction[] = ['UP', 'DOWN', 'LEFT', 'RIGHT'];
   const opposites: Record<Direction, Direction> = { UP: 'DOWN', DOWN: 'UP', LEFT: 'RIGHT', RIGHT: 'LEFT' };
@@ -113,8 +113,10 @@ function getBotDirection(snake: Position[], food: Position, currentDir: Directio
         score += 100;
       }
       
-      // Small randomness to avoid predictable behavior
-      score += Math.random() * 5;
+      // Randomness based on bot intelligence
+      // Lower intelligence = more randomness
+      const randomnessFactor = (1 - botIntelligence) * 50;
+      score += Math.random() * randomnessFactor;
     }
     
     scores.push({ dir, score });
@@ -123,7 +125,13 @@ function getBotDirection(snake: Position[], food: Position, currentDir: Directio
   // Sort by score descending
   scores.sort((a, b) => b.score - a.score);
   
-  // Return best direction
+  // Return best direction (with intelligence-based chance of making suboptimal move)
+  if (Math.random() > botIntelligence && scores.length > 1) {
+    // Sometimes choose a suboptimal direction based on intelligence
+    const randomIndex = Math.floor(Math.random() * Math.min(3, scores.length));
+    return scores[randomIndex]?.dir || currentDir;
+  }
+  
   return scores[0]?.dir || currentDir;
 }
 
@@ -226,13 +234,14 @@ export default function Game({ player, setPlayer, mode, difficulty, onBack, isMu
     const interval = setInterval(() => {
       const currentMap = GAME_MAPS.find(m => m.id === player.activeMap);
       const allSnakes = isMultiplayer ? [...snakeRef.current, ...snake2Ref.current] : snakeRef.current;
-      const pu = getRandomPowerUp(allSnakes, currentMap?.obstacles);
+      const spawnRate = POWERUP_SPAWN_RATES[difficulty];
+      const pu = getRandomPowerUp(allSnakes, currentMap?.obstacles, spawnRate);
       if (pu) {
         setPowerUps(prev => [...prev.filter(p => p.expiresAt > Date.now()), pu]);
       }
     }, 5000);
     return () => clearInterval(interval);
-  }, [gameState, isMultiplayer, player.activeMap]);
+  }, [gameState, isMultiplayer, player.activeMap, difficulty]);
 
   // Coin magnet effect - move food closer to snake
   useEffect(() => {
@@ -373,7 +382,8 @@ export default function Game({ player, setPlayer, mode, difficulty, onBack, isMu
 
       // Bot AI movement (if multiplayer with bot or zen multiplayer)
       if (isMultiplayer && (multiplayerType === 'bot' || multiplayerType === 'zen')) {
-        const botDir = getBotDirection(snake2Ref.current, foodRef.current, dir2Ref.current, snakeRef.current, multiplayerType === 'zen');
+        const botIntelligence = BOT_INTELLIGENCE[difficulty];
+        const botDir = getBotDirection(snake2Ref.current, foodRef.current, dir2Ref.current, snakeRef.current, multiplayerType === 'zen', botIntelligence);
         dir2Ref.current = botDir;
         setDirection2(botDir);
       }

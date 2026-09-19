@@ -341,10 +341,34 @@ export interface TimedModeState {
 export const GRID_SIZE = 20;
 
 export const DIFFICULTY_SPEEDS: Record<Difficulty, number> = {
-  easy: 180,
-  medium: 120,
-  hard: 75,
-  insane: 45,
+  easy: 200,    // Very slow - relaxed gameplay
+  medium: 120,  // Moderate - balanced challenge
+  hard: 60,     // Fast - requires quick reflexes
+  insane: 30,   // Very fast - expert level
+};
+
+// Bot AI intelligence by difficulty
+export const BOT_INTELLIGENCE: Record<Difficulty, number> = {
+  easy: 0.3,    // 30% chance to make optimal move
+  medium: 0.6,  // 60% chance to make optimal move
+  hard: 0.85,   // 85% chance to make optimal move
+  insane: 0.98, // 98% chance to make optimal move
+};
+
+// Food spawn rate (lower = more food)
+export const FOOD_SPAWN_RATES: Record<Difficulty, number> = {
+  easy: 0.08,   // More food spawns
+  medium: 0.05, // Normal food spawn
+  hard: 0.03,   // Less food spawns
+  insane: 0.02, // Very little food
+};
+
+// Power-up spawn rate
+export const POWERUP_SPAWN_RATES: Record<Difficulty, number> = {
+  easy: 0.25,   // 25% chance
+  medium: 0.15, // 15% chance
+  hard: 0.08,   // 8% chance
+  insane: 0.05, // 5% chance
 };
 
 export const DIFFICULTY_LABELS: Record<Difficulty, string> = {
