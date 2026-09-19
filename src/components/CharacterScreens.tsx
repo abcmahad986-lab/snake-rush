@@ -188,6 +188,12 @@ export function CharactersScreen({ player, setPlayer, onBack, theme }: {
                   {selectedChar.rarity.toUpperCase()}
                 </div>
               </div>
+              <button
+                onClick={() => setSelectedCharacter(null)}
+                className={`px-3 py-1 ${t(theme, 'bg-gray-700 hover:bg-gray-600 text-white', 'bg-gray-200 hover:bg-gray-300 text-gray-900')} rounded-lg text-sm`}
+              >
+                ✕ Close
+              </button>
             </div>
 
             {/* Skins */}
@@ -196,14 +202,14 @@ export function CharactersScreen({ player, setPlayer, onBack, theme }: {
               
               {/* Skin Preview Panel */}
               {previewSkin && (
-                <div className={`${t(theme, 'bg-gray-900/60 border-gray-700', 'bg-gray-100 border-gray-300')} rounded-xl p-4 mb-4 border-2`}>
+                <div className={`${t(theme, 'bg-blue-900/20 border-blue-500/50', 'bg-blue-50 border-blue-300')} rounded-xl p-4 mb-4 border-2 shadow-lg`}>
                   <div className="flex items-center justify-between mb-3">
-                    <h5 className={`text-sm font-bold ${t(theme, 'text-white', 'text-gray-900')}`}>Skin Preview</h5>
+                    <h5 className={`text-sm font-bold ${t(theme, 'text-blue-300', 'text-blue-700')}`}>👁️ Skin Preview</h5>
                     <button 
                       onClick={() => setPreviewSkin(null)}
-                      className={`text-xs px-2 py-1 ${t(theme, 'bg-gray-700 hover:bg-gray-600 text-white', 'bg-gray-300 hover:bg-gray-400 text-gray-900')} rounded`}
+                      className={`text-xs px-3 py-1 ${t(theme, 'bg-blue-700 hover:bg-blue-600 text-white', 'bg-blue-300 hover:bg-blue-400 text-blue-900')} rounded font-bold`}
                     >
-                      ✕ Close
+                      ✕ Close Preview
                     </button>
                   </div>
                   
@@ -312,12 +318,20 @@ export function CharactersScreen({ player, setPlayer, onBack, theme }: {
                     >
                       {/* Color Preview */}
                       <div
-                        className="w-full h-16 rounded-lg mb-2 cursor-pointer hover:scale-105 transition-transform"
+                        className={`w-full h-16 rounded-lg mb-2 cursor-pointer transition-all ${
+                          isPreviewing ? 'ring-2 ring-blue-500 scale-105' : 'hover:scale-105'
+                        }`}
                         style={{
                           background: `linear-gradient(135deg, ${skin.colors.head}, ${skin.colors.body})`,
                           boxShadow: `0 0 20px ${skin.colors.glow}`
                         }}
-                        onClick={() => isUnlocked && setPreviewSkin(isPreviewing ? null : skin.id)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (isUnlocked) {
+                            console.log('Color preview clicked for skin:', skin.id);
+                            setPreviewSkin(isPreviewing ? null : skin.id);
+                          }
+                        }}
                       />
                       
                       {/* Skin Name */}
@@ -334,18 +348,25 @@ export function CharactersScreen({ player, setPlayer, onBack, theme }: {
                       {isUnlocked && !isEquipped && (
                         <div className="flex gap-1 mt-1">
                           <button
-                            onClick={() => setPreviewSkin(isPreviewing ? null : skin.id)}
-                            className={`flex-1 text-xs px-2 py-1 ${
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              console.log('View button clicked for skin:', skin.id);
+                              setPreviewSkin(isPreviewing ? null : skin.id);
+                            }}
+                            className={`flex-1 text-xs px-2 py-1.5 font-bold ${
                               isPreviewing
-                                ? 'bg-blue-600 text-white'
-                                : t(theme, 'bg-gray-700 hover:bg-gray-600 text-white', 'bg-gray-200 hover:bg-gray-300 text-gray-900')
-                            } rounded transition-all`}
+                                ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/50'
+                                : t(theme, 'bg-blue-700 hover:bg-blue-600 text-white', 'bg-blue-200 hover:bg-blue-300 text-blue-900')
+                            } rounded transition-all transform hover:scale-105`}
                           >
-                            {isPreviewing ? '👁️ Preview' : '👁️ View'}
+                            {isPreviewing ? '✓ Previewing' : '👁️ View'}
                           </button>
                           <button
-                            onClick={() => selectSkin(skin.id)}
-                            className="flex-1 text-xs px-2 py-1 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-400 hover:to-emerald-500 text-white rounded transition-all"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              selectSkin(skin.id);
+                            }}
+                            className="flex-1 text-xs px-2 py-1.5 font-bold bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-400 hover:to-emerald-500 text-white rounded transition-all transform hover:scale-105"
                           >
                             ⚔️ Equip
                           </button>
