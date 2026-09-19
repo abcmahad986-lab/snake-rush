@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { Position, Direction, GameState, Difficulty, GameMode, GRID_SIZE, DIFFICULTY_SPEEDS, TIMED_DURATIONS, Player, PowerUp, TITLES, Theme, GAME_MAPS, MatchType, BOT_INTELLIGENCE, POWERUP_SPAWN_RATES } from '../types';
+import { Position, Direction, GameState, Difficulty, GameMode, GRID_SIZE, DIFFICULTY_SPEEDS, TIMED_DURATIONS, Player, PowerUp, TITLES, Theme, GAME_MAPS, MatchType, BOT_INTELLIGENCE, POWERUP_SPAWN_RATES, CHARACTERS } from '../types';
 import { savePlayer, addXp } from '../store';
 import { audioManager } from '../audio';
 import { getRankFromElo } from './CompetitiveScreen';
@@ -763,107 +763,131 @@ export default function Game({ player, setPlayer, mode, difficulty, onBack, isMu
       console.log(`Rendering snake with skin: ${characterSkin}, character: ${player.equippedCharacter}`);
     }
     
-    const characterSkins: Record<string, { head: string; body: string; glow: string }> = {
-      // Classic Snake skins
-      classic_green: { head: '74, 222, 128', body: '34, 197, 94', glow: 'rgba(74, 222, 128, 0.7)' },
-      classic_red: { head: '248, 113, 113', body: '239, 68, 68', glow: 'rgba(248, 113, 113, 0.7)' },
-      classic_blue: { head: '96, 165, 250', body: '59, 130, 246', glow: 'rgba(96, 165, 250, 0.7)' },
-      // Dragon skins
-      dragon_fire: { head: '251, 146, 60', body: '234, 88, 12', glow: 'rgba(251, 146, 60, 0.7)' },
-      dragon_ice: { head: '147, 197, 253', body: '59, 130, 246', glow: 'rgba(147, 197, 253, 0.7)' },
-      dragon_shadow: { head: '161, 161, 170', body: '82, 82, 91', glow: 'rgba(161, 161, 170, 0.7)' },
-      // Phoenix skins
-      phoenix_gold: { head: '253, 224, 71', body: '234, 179, 8', glow: 'rgba(253, 224, 71, 0.7)' },
-      phoenix_crimson: { head: '248, 113, 113', body: '220, 38, 38', glow: 'rgba(248, 113, 113, 0.7)' },
-      phoenix_silver: { head: '209, 213, 219', body: '156, 163, 175', glow: 'rgba(209, 213, 219, 0.7)' },
-      // Unicorn skins
-      unicorn_rainbow: { head: '248, 113, 113', body: '168, 85, 247', glow: 'rgba(248, 113, 113, 0.7)' },
-      unicorn_moonlight: { head: '196, 181, 253', body: '139, 92, 246', glow: 'rgba(196, 181, 253, 0.7)' },
-      unicorn_starlight: { head: '253, 224, 71', body: '245, 158, 11', glow: 'rgba(253, 224, 71, 0.7)' },
-      // Kraken skins
-      kraken_abyss: { head: '129, 140, 248', body: '79, 70, 229', glow: 'rgba(129, 140, 248, 0.7)' },
-      kraken_storm: { head: '103, 232, 249', body: '6, 182, 212', glow: 'rgba(103, 232, 249, 0.7)' },
-      kraken_void: { head: '167, 139, 250', body: '109, 40, 217', glow: 'rgba(167, 139, 250, 0.7)' },
-      // Cosmic skins
-      cosmic_nebula: { head: '129, 140, 248', body: '79, 70, 229', glow: 'rgba(129, 140, 248, 0.7)' },
-      cosmic_galaxy: { head: '192, 132, 252', body: '139, 92, 246', glow: 'rgba(192, 132, 252, 0.7)' },
-      cosmic_supernova: { head: '251, 146, 60', body: '234, 88, 12', glow: 'rgba(251, 146, 60, 0.7)' },
-      // New character skins - Turtle
-      turtle_green: { head: '74, 222, 128', body: '34, 197, 94', glow: 'rgba(74, 222, 128, 0.7)' },
-      turtle_blue: { head: '96, 165, 250', body: '59, 130, 246', glow: 'rgba(96, 165, 250, 0.7)' },
-      turtle_gold: { head: '251, 191, 36', body: '245, 158, 11', glow: 'rgba(251, 191, 36, 0.7)' },
-      // Rabbit
-      rabbit_white: { head: '248, 250, 252', body: '226, 232, 240', glow: 'rgba(248, 250, 252, 0.7)' },
-      rabbit_brown: { head: '161, 98, 7', body: '133, 77, 14', glow: 'rgba(161, 98, 7, 0.7)' },
-      rabbit_silver: { head: '203, 213, 225', body: '148, 163, 184', glow: 'rgba(203, 213, 225, 0.7)' },
-      // Fox
-      fox_orange: { head: '251, 146, 60', body: '234, 88, 12', glow: 'rgba(251, 146, 60, 0.7)' },
-      fox_red: { head: '239, 68, 68', body: '220, 38, 38', glow: 'rgba(239, 68, 68, 0.7)' },
-      fox_arctic: { head: '241, 245, 249', body: '226, 232, 240', glow: 'rgba(241, 245, 249, 0.7)' },
-      // Wolf
-      wolf_gray: { head: '107, 114, 128', body: '75, 85, 99', glow: 'rgba(107, 114, 128, 0.7)' },
-      wolf_black: { head: '31, 41, 55', body: '17, 24, 39', glow: 'rgba(31, 41, 55, 0.7)' },
-      wolf_white: { head: '249, 250, 251', body: '243, 244, 246', glow: 'rgba(249, 250, 251, 0.7)' },
-      // Lion
-      lion_gold: { head: '251, 191, 36', body: '245, 158, 11', glow: 'rgba(251, 191, 36, 0.7)' },
-      lion_mane: { head: '146, 64, 14', body: '120, 53, 15', glow: 'rgba(146, 64, 14, 0.7)' },
-      lion_white: { head: '254, 243, 199', body: '253, 230, 138', glow: 'rgba(254, 243, 199, 0.7)' },
-      // Eagle
-      eagle_brown: { head: '146, 64, 14', body: '120, 53, 15', glow: 'rgba(146, 64, 14, 0.7)' },
-      eagle_golden: { head: '251, 191, 36', body: '245, 158, 11', glow: 'rgba(251, 191, 36, 0.7)' },
-      eagle_bald: { head: '249, 250, 251', body: '31, 41, 55', glow: 'rgba(249, 250, 251, 0.7)' },
-      // Panda
-      panda_classic: { head: '249, 250, 251', body: '31, 41, 55', glow: 'rgba(249, 250, 251, 0.7)' },
-      panda_red: { head: '220, 38, 38', body: '153, 27, 27', glow: 'rgba(220, 38, 38, 0.7)' },
-      panda_golden: { head: '251, 191, 36', body: '245, 158, 11', glow: 'rgba(251, 191, 36, 0.7)' },
-      // Tiger
-      tiger_orange: { head: '251, 146, 60', body: '234, 88, 12', glow: 'rgba(251, 146, 60, 0.7)' },
-      tiger_white: { head: '249, 250, 251', body: '229, 231, 235', glow: 'rgba(249, 250, 251, 0.7)' },
-      tiger_golden: { head: '251, 191, 36', body: '245, 158, 11', glow: 'rgba(251, 191, 36, 0.7)' },
-      // Bear
-      bear_brown: { head: '146, 64, 14', body: '120, 53, 15', glow: 'rgba(146, 64, 14, 0.7)' },
-      bear_polar: { head: '249, 250, 251', body: '243, 244, 246', glow: 'rgba(249, 250, 251, 0.7)' },
-      bear_black: { head: '31, 41, 55', body: '17, 24, 39', glow: 'rgba(31, 41, 55, 0.7)' },
-      // Shark
-      shark_gray: { head: '107, 114, 128', body: '75, 85, 99', glow: 'rgba(107, 114, 128, 0.7)' },
-      shark_blue: { head: '30, 64, 175', body: '30, 58, 138', glow: 'rgba(30, 64, 175, 0.7)' },
-      shark_hammerhead: { head: '55, 65, 81', body: '31, 41, 55', glow: 'rgba(55, 65, 81, 0.7)' },
-      // Owl
-      owl_brown: { head: '146, 64, 14', body: '120, 53, 15', glow: 'rgba(146, 64, 14, 0.7)' },
-      owl_snowy: { head: '249, 250, 251', body: '229, 231, 235', glow: 'rgba(249, 250, 251, 0.7)' },
-      owl_golden: { head: '251, 191, 36', body: '245, 158, 11', glow: 'rgba(251, 191, 36, 0.7)' },
-      // Dolphin
-      dolphin_gray: { head: '107, 114, 128', body: '75, 85, 99', glow: 'rgba(107, 114, 128, 0.7)' },
-      dolphin_blue: { head: '59, 130, 246', body: '37, 99, 235', glow: 'rgba(59, 130, 246, 0.7)' },
-      dolphin_pink: { head: '236, 72, 153', body: '219, 39, 119', glow: 'rgba(236, 72, 153, 0.7)' },
-      // Gorilla
-      gorilla_black: { head: '55, 65, 81', body: '31, 41, 55', glow: 'rgba(55, 65, 81, 0.7)' },
-      gorilla_silver: { head: '156, 163, 175', body: '107, 114, 128', glow: 'rgba(156, 163, 175, 0.7)' },
-      gorilla_golden: { head: '251, 191, 36', body: '245, 158, 11', glow: 'rgba(251, 191, 36, 0.7)' },
-      // Elephant
-      elephant_gray: { head: '107, 114, 128', body: '75, 85, 99', glow: 'rgba(107, 114, 128, 0.7)' },
-      elephant_african: { head: '146, 64, 14', body: '120, 53, 15', glow: 'rgba(146, 64, 14, 0.7)' },
-      elephant_asian: { head: '120, 113, 108', body: '87, 83, 78', glow: 'rgba(120, 113, 108, 0.7)' },
-      // Crocodile
-      crocodile_green: { head: '22, 163, 74', body: '21, 128, 61', glow: 'rgba(22, 163, 74, 0.7)' },
-      crocodile_nile: { head: '133, 77, 14', body: '113, 63, 18', glow: 'rgba(133, 77, 14, 0.7)' },
-      crocodile_golden: { head: '251, 191, 36', body: '245, 158, 11', glow: 'rgba(251, 191, 36, 0.7)' },
-      // Whale
-      whale_blue: { head: '30, 64, 175', body: '30, 58, 138', glow: 'rgba(30, 64, 175, 0.7)' },
-      whale_humpback: { head: '55, 65, 81', body: '31, 41, 55', glow: 'rgba(55, 65, 81, 0.7)' },
-      whale_golden: { head: '251, 191, 36', body: '245, 158, 11', glow: 'rgba(251, 191, 36, 0.7)' },
-      // Octopus
-      octopus_purple: { head: '124, 58, 237', body: '109, 40, 217', glow: 'rgba(124, 58, 237, 0.7)' },
-      octopus_blue: { head: '14, 165, 233', body: '2, 132, 199', glow: 'rgba(14, 165, 233, 0.7)' },
-      octopus_golden: { head: '251, 191, 36', body: '245, 158, 11', glow: 'rgba(251, 191, 36, 0.7)' },
-      // Dinosaur
-      dinosaur_green: { head: '22, 163, 74', body: '21, 128, 61', glow: 'rgba(22, 163, 74, 0.7)' },
-      dinosaur_red: { head: '220, 38, 38', body: '185, 28, 28', glow: 'rgba(220, 38, 38, 0.7)' },
-      dinosaur_golden: { head: '251, 191, 36', body: '245, 158, 11', glow: 'rgba(251, 191, 36, 0.7)' },
-      // Alien
-      alien_green: { head: '34, 197, 94', body: '22, 163, 74', glow: 'rgba(34, 197, 94, 0.7)' },
-      alien_gray: { head: '107, 114, 128', body: '75, 85, 99', glow: 'rgba(107, 114, 128, 0.7)' },
-      alien_golden: { head: '251, 191, 36', body: '245, 158, 11', glow: 'rgba(251, 191, 36, 0.7)' },
+    const characterSkins: Record<string, { head: string; body: string; glow: string; pattern?: string }> = {
+      // Classic Snake - Vibrant greens
+      classic_green: { head: '34, 197, 94', body: '22, 163, 74', glow: 'rgba(34, 197, 94, 0.9)' },
+      classic_red: { head: '239, 68, 68', body: '220, 38, 38', glow: 'rgba(239, 68, 68, 0.9)' },
+      classic_blue: { head: '59, 130, 246', body: '37, 99, 235', glow: 'rgba(59, 130, 246, 0.9)' },
+      
+      // Dragon - Fiery oranges and blues
+      dragon_fire: { head: '249, 115, 22', body: '234, 88, 12', glow: 'rgba(249, 115, 22, 1.0)' },
+      dragon_ice: { head: '56, 189, 248', body: '14, 165, 233', glow: 'rgba(56, 189, 248, 1.0)' },
+      dragon_shadow: { head: '139, 92, 246', body: '124, 58, 237', glow: 'rgba(139, 92, 246, 1.0)' },
+      
+      // Phoenix - Golden and crimson
+      phoenix_gold: { head: '250, 204, 21', body: '234, 179, 8', glow: 'rgba(250, 204, 21, 1.0)' },
+      phoenix_crimson: { head: '244, 63, 94', body: '225, 29, 72', glow: 'rgba(244, 63, 94, 1.0)' },
+      phoenix_silver: { head: '203, 213, 225', body: '148, 163, 184', glow: 'rgba(203, 213, 225, 0.9)' },
+      
+      // Unicorn - Rainbow pastels
+      unicorn_rainbow: { head: '236, 72, 153', body: '219, 39, 119', glow: 'rgba(236, 72, 153, 1.0)' },
+      unicorn_moonlight: { head: '167, 139, 250', body: '139, 92, 246', glow: 'rgba(167, 139, 250, 1.0)' },
+      unicorn_starlight: { head: '253, 224, 71', body: '250, 204, 21', glow: 'rgba(253, 224, 71, 1.0)' },
+      
+      // Kraken - Deep ocean colors
+      kraken_abyss: { head: '99, 102, 241', body: '79, 70, 229', glow: 'rgba(99, 102, 241, 1.0)' },
+      kraken_storm: { head: '6, 182, 212', body: '8, 145, 178', glow: 'rgba(6, 182, 212, 1.0)' },
+      kraken_void: { head: '168, 85, 247', body: '147, 51, 234', glow: 'rgba(168, 85, 247, 1.0)' },
+      
+      // Cosmic - Space purples and blues
+      cosmic_nebula: { head: '192, 132, 252', body: '168, 85, 247', glow: 'rgba(192, 132, 252, 1.0)' },
+      cosmic_galaxy: { head: '129, 140, 248', body: '99, 102, 241', glow: 'rgba(129, 140, 248, 1.0)' },
+      cosmic_supernova: { head: '251, 146, 60', body: '249, 115, 22', glow: 'rgba(251, 146, 60, 1.0)' },
+      
+      // Turtle - Earthy greens and browns
+      turtle_green: { head: '132, 204, 22', body: '101, 163, 13', glow: 'rgba(132, 204, 22, 0.9)' },
+      turtle_blue: { head: '14, 116, 144', body: '15, 118, 110', glow: 'rgba(14, 116, 144, 0.9)' },
+      turtle_gold: { head: '217, 119, 6', body: '180, 83, 9', glow: 'rgba(217, 119, 6, 0.9)' },
+      
+      // Rabbit - Soft whites and browns
+      rabbit_white: { head: '241, 245, 249', body: '226, 232, 240', glow: 'rgba(241, 245, 249, 0.8)' },
+      rabbit_brown: { head: '180, 83, 9', body: '146, 64, 14', glow: 'rgba(180, 83, 9, 0.9)' },
+      rabbit_silver: { head: '148, 163, 184', body: '100, 116, 139', glow: 'rgba(148, 163, 184, 0.9)' },
+      
+      // Fox - Vibrant oranges and reds
+      fox_orange: { head: '251, 146, 60', body: '234, 88, 12', glow: 'rgba(251, 146, 60, 1.0)' },
+      fox_red: { head: '220, 38, 38', body: '185, 28, 28', glow: 'rgba(220, 38, 38, 1.0)' },
+      fox_arctic: { head: '186, 230, 253', body: '125, 211, 252', glow: 'rgba(186, 230, 253, 0.9)' },
+      
+      // Wolf - Dark grays and blacks
+      wolf_gray: { head: '100, 116, 139', body: '71, 85, 105', glow: 'rgba(100, 116, 139, 0.9)' },
+      wolf_black: { head: '30, 41, 59', body: '15, 23, 42', glow: 'rgba(30, 41, 59, 1.0)' },
+      wolf_white: { head: '241, 245, 249', body: '226, 232, 240', glow: 'rgba(241, 245, 249, 0.8)' },
+      
+      // Lion - Royal golds and browns
+      lion_gold: { head: '245, 158, 11', body: '217, 119, 6', glow: 'rgba(245, 158, 11, 1.0)' },
+      lion_mane: { head: '120, 53, 15', body: '88, 28, 135', glow: 'rgba(120, 53, 15, 1.0)' },
+      lion_white: { head: '254, 240, 138', body: '250, 204, 21', glow: 'rgba(254, 240, 138, 0.9)' },
+      
+      // Eagle - Sky browns and whites
+      eagle_brown: { head: '146, 64, 14', body: '120, 53, 15', glow: 'rgba(146, 64, 14, 1.0)' },
+      eagle_golden: { head: '234, 179, 8', body: '202, 138, 4', glow: 'rgba(234, 179, 8, 1.0)' },
+      eagle_bald: { head: '248, 250, 252', body: '241, 245, 249', glow: 'rgba(248, 250, 252, 0.9)' },
+      
+      // Panda - Black and white with red accents
+      panda_classic: { head: '23, 23, 23', body: '10, 10, 10', glow: 'rgba(23, 23, 23, 1.0)' },
+      panda_red: { head: '239, 68, 68', body: '220, 38, 38', glow: 'rgba(239, 68, 68, 1.0)' },
+      panda_golden: { head: '250, 204, 21', body: '234, 179, 8', glow: 'rgba(250, 204, 21, 1.0)' },
+      
+      // Tiger - Orange with black stripes effect
+      tiger_orange: { head: '249, 115, 22', body: '234, 88, 12', glow: 'rgba(249, 115, 22, 1.0)' },
+      tiger_white: { head: '250, 250, 250', body: '244, 244, 245', glow: 'rgba(250, 250, 250, 0.9)' },
+      tiger_golden: { head: '251, 191, 36', body: '245, 158, 11', glow: 'rgba(251, 191, 36, 1.0)' },
+      
+      // Bear - Rich browns and whites
+      bear_brown: { head: '133, 77, 14', body: '108, 52, 10', glow: 'rgba(133, 77, 14, 1.0)' },
+      bear_polar: { head: '250, 250, 250', body: '244, 244, 245', glow: 'rgba(250, 250, 250, 0.9)' },
+      bear_black: { head: '23, 23, 23', body: '10, 10, 10', glow: 'rgba(23, 23, 23, 1.0)' },
+      
+      // Shark - Ocean blues and grays
+      shark_gray: { head: '107, 114, 128', body: '75, 85, 99', glow: 'rgba(107, 114, 128, 0.9)' },
+      shark_blue: { head: '30, 64, 175', body: '29, 78, 216', glow: 'rgba(30, 64, 175, 1.0)' },
+      shark_hammerhead: { head: '71, 85, 105', body: '51, 65, 85', glow: 'rgba(71, 85, 105, 1.0)' },
+      
+      // Owl - Wise browns and whites
+      owl_brown: { head: '133, 77, 14', body: '108, 52, 10', glow: 'rgba(133, 77, 14, 1.0)' },
+      owl_snowy: { head: '250, 250, 250', body: '244, 244, 245', glow: 'rgba(250, 250, 250, 0.9)' },
+      owl_golden: { head: '234, 179, 8', body: '202, 138, 4', glow: 'rgba(234, 179, 8, 1.0)' },
+      
+      // Dolphin - Playful blues and pinks
+      dolphin_gray: { head: '148, 163, 184', body: '100, 116, 139', glow: 'rgba(148, 163, 184, 0.9)' },
+      dolphin_blue: { head: '59, 130, 246', body: '37, 99, 235', glow: 'rgba(59, 130, 246, 1.0)' },
+      dolphin_pink: { head: '236, 72, 153', body: '219, 39, 119', glow: 'rgba(236, 72, 153, 1.0)' },
+      
+      // Gorilla - Strong blacks and silvers
+      gorilla_black: { head: '30, 41, 59', body: '15, 23, 42', glow: 'rgba(30, 41, 59, 1.0)' },
+      gorilla_silver: { head: '168, 162, 158', body: '120, 113, 108', glow: 'rgba(168, 162, 158, 0.9)' },
+      gorilla_golden: { head: '217, 119, 6', body: '180, 83, 9', glow: 'rgba(217, 119, 6, 1.0)' },
+      
+      // Elephant - Majestic grays
+      elephant_gray: { head: '156, 163, 175', body: '107, 114, 128', glow: 'rgba(156, 163, 175, 0.9)' },
+      elephant_african: { head: '168, 162, 158', body: '120, 113, 108', glow: 'rgba(168, 162, 158, 0.9)' },
+      elephant_asian: { head: '163, 163, 163', body: '115, 115, 115', glow: 'rgba(163, 163, 163, 0.9)' },
+      
+      // Crocodile - Swampy greens and browns
+      crocodile_green: { head: '22, 101, 52', body: '20, 83, 45', glow: 'rgba(22, 101, 52, 1.0)' },
+      crocodile_nile: { head: '133, 77, 14', body: '108, 52, 10', glow: 'rgba(133, 77, 14, 1.0)' },
+      crocodile_golden: { head: '180, 83, 9', body: '146, 64, 14', glow: 'rgba(180, 83, 9, 1.0)' },
+      
+      // Whale - Deep ocean blues
+      whale_blue: { head: '30, 58, 138', body: '30, 64, 175', glow: 'rgba(30, 58, 138, 1.0)' },
+      whale_humpback: { head: '55, 65, 81', body: '31, 41, 55', glow: 'rgba(55, 65, 81, 1.0)' },
+      whale_golden: { head: '202, 138, 4', body: '161, 98, 7', glow: 'rgba(202, 138, 4, 1.0)' },
+      
+      // Octopus - Mysterious purples and blues
+      octopus_purple: { head: '147, 51, 234', body: '126, 34, 206', glow: 'rgba(147, 51, 234, 1.0)' },
+      octopus_blue: { head: '14, 165, 233', body: '2, 132, 199', glow: 'rgba(14, 165, 233, 1.0)' },
+      octopus_golden: { head: '217, 119, 6', body: '180, 83, 9', glow: 'rgba(217, 119, 6, 1.0)' },
+      
+      // Dinosaur - Prehistoric greens and reds
+      dinosaur_green: { head: '22, 101, 52', body: '21, 128, 61', glow: 'rgba(22, 101, 52, 1.0)' },
+      dinosaur_red: { head: '185, 28, 28', body: '153, 27, 27', glow: 'rgba(185, 28, 28, 1.0)' },
+      dinosaur_golden: { head: '202, 138, 4', body: '161, 98, 7', glow: 'rgba(202, 138, 4, 1.0)' },
+      
+      // Alien - Otherworldly greens and grays
+      alien_green: { head: '34, 197, 94', body: '22, 163, 74', glow: 'rgba(34, 197, 94, 1.0)' },
+      alien_gray: { head: '156, 163, 175', body: '107, 114, 128', glow: 'rgba(156, 163, 175, 0.9)' },
+      alien_golden: { head: '234, 179, 8', body: '202, 138, 4', glow: 'rgba(234, 179, 8, 1.0)' },
     };
     
     const skinColors = characterSkins[characterSkin] || characterSkins.classic_green;
@@ -1114,21 +1138,21 @@ export default function Game({ player, setPlayer, mode, difficulty, onBack, isMu
           {/* Player 1 Snake */}
           {snake.map((seg, i) => {
             const style = getSkinColor(i, snake.length);
+            const character = CHARACTERS.find(c => c.id === player.equippedCharacter);
             return (
               <div key={`p1-${i}`} className="absolute" style={{ left: `${(seg.x / GRID_SIZE) * 100}%`, top: `${(seg.y / GRID_SIZE) * 100}%`, width: `${100 / GRID_SIZE}%`, height: `${100 / GRID_SIZE}%`, padding: '1px', zIndex: snake.length - i }}>
-                <div className="w-full h-full rounded-sm transition-all duration-75" style={{ backgroundColor: style.bg, boxShadow: style.shadow, borderRadius: i === 0 ? '5px' : '3px', transform: i === 0 ? 'scale(1.05)' : `scale(${1 - (i / snake.length) * 0.15})` }}>
+                <div className="w-full h-full rounded-sm transition-all duration-75" style={{ backgroundColor: style.bg, boxShadow: i === 0 ? style.shadow : 'none', borderRadius: i === 0 ? '5px' : '3px', transform: i === 0 ? 'scale(1.15)' : `scale(${1 - (i / snake.length) * 0.1})` }}>
                   {i === 0 && (
                     <div className="w-full h-full flex items-center justify-center relative">
+                      {/* Character Emoji */}
+                      <div className="text-[8px] md:text-[10px] z-20" style={{ filter: 'drop-shadow(0 0 2px rgba(0,0,0,0.5))' }}>
+                        {character?.emoji || '🐍'}
+                      </div>
                       {/* Direction Arrow */}
-                      <div className="absolute inset-0 flex items-center justify-center text-white font-bold opacity-80" style={{
+                      <div className="absolute inset-0 flex items-center justify-center text-white font-bold opacity-60" style={{
                         transform: direction === 'UP' ? 'rotate(-90deg)' : direction === 'DOWN' ? 'rotate(90deg)' : direction === 'LEFT' ? 'rotate(180deg)' : 'rotate(0deg)'
                       }}>
-                        <div className="text-[10px] md:text-xs">▶</div>
-                      </div>
-                      {/* Eyes */}
-                      <div className="flex gap-[15%] z-10">
-                        <div className="w-[18%] h-[18%] bg-white rounded-full" />
-                        <div className="w-[18%] h-[18%] bg-white rounded-full" />
+                        <div className="text-[8px] md:text-[10px]">▶</div>
                       </div>
                     </div>
                   )}
@@ -1142,19 +1166,18 @@ export default function Game({ player, setPlayer, mode, difficulty, onBack, isMu
             const style = getSkinColor(i, snake2.length, true);
             return (
               <div key={`p2-${i}`} className="absolute" style={{ left: `${(seg.x / GRID_SIZE) * 100}%`, top: `${(seg.y / GRID_SIZE) * 100}%`, width: `${100 / GRID_SIZE}%`, height: `${100 / GRID_SIZE}%`, padding: '1px', zIndex: snake2.length - i }}>
-                <div className="w-full h-full rounded-sm" style={{ backgroundColor: style.bg, boxShadow: style.shadow, borderRadius: i === 0 ? '5px' : '3px', transform: i === 0 ? 'scale(1.05)' : `scale(${1 - (i / snake2.length) * 0.15})` }}>
+                <div className="w-full h-full rounded-sm" style={{ backgroundColor: style.bg, boxShadow: i === 0 ? style.shadow : 'none', borderRadius: i === 0 ? '5px' : '3px', transform: i === 0 ? 'scale(1.15)' : `scale(${1 - (i / snake2.length) * 0.1})` }}>
                   {i === 0 && (
                     <div className="w-full h-full flex items-center justify-center relative">
+                      {/* Bot/Player 2 Emoji */}
+                      <div className="text-[8px] md:text-[10px] z-20" style={{ filter: 'drop-shadow(0 0 2px rgba(0,0,0,0.5))' }}>
+                        {multiplayerType === 'bot' || multiplayerType === 'zen' ? '🤖' : '🎮'}
+                      </div>
                       {/* Direction Arrow */}
-                      <div className="absolute inset-0 flex items-center justify-center text-white font-bold opacity-80" style={{
+                      <div className="absolute inset-0 flex items-center justify-center text-white font-bold opacity-60" style={{
                         transform: direction2 === 'UP' ? 'rotate(-90deg)' : direction2 === 'DOWN' ? 'rotate(90deg)' : direction2 === 'LEFT' ? 'rotate(180deg)' : 'rotate(0deg)'
                       }}>
-                        <div className="text-[10px] md:text-xs">▶</div>
-                      </div>
-                      {/* Eyes */}
-                      <div className="flex gap-[15%] z-10">
-                        <div className="w-[18%] h-[18%] bg-white rounded-full" />
-                        <div className="w-[18%] h-[18%] bg-white rounded-full" />
+                        <div className="text-[8px] md:text-[10px]">▶</div>
                       </div>
                     </div>
                   )}

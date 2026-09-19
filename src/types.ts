@@ -1110,133 +1110,132 @@ export const CHARACTERS: Character[] = [
 
 // ============ CHARACTER SKINS ============
 export const CHARACTER_SKINS: CharacterSkin[] = [
-  // Classic Snake skins
-  { id: 'classic_green', characterId: 'snake_classic', name: 'Forest Green', colors: { head: '#4ade80', body: '#22c55e', glow: 'rgba(74, 222, 128, 0.7)' }, unlockMethod: 'level', unlockRequirement: 1 },
-  { id: 'classic_red', characterId: 'snake_classic', name: 'Ruby Red', colors: { head: '#f87171', body: '#ef4444', glow: 'rgba(248, 113, 113, 0.7)' }, unlockMethod: 'chest' },
-  { id: 'classic_blue', characterId: 'snake_classic', name: 'Ocean Blue', colors: { head: '#60a5fa', body: '#3b82f6', glow: 'rgba(96, 165, 250, 0.7)' }, unlockMethod: 'purchase', unlockRequirement: 100 },
+  // Classic Snake skins - Vibrant greens
+  { id: 'classic_green', characterId: 'snake_classic', name: 'Forest Green', colors: { head: '#22c55e', body: '#16a34a', glow: 'rgba(34, 197, 94, 0.9)' }, unlockMethod: 'level', unlockRequirement: 1 },
+  { id: 'classic_red', characterId: 'snake_classic', name: 'Ruby Red', colors: { head: '#ef4444', body: '#dc2626', glow: 'rgba(239, 68, 68, 0.9)' }, unlockMethod: 'chest' },
+  { id: 'classic_blue', characterId: 'snake_classic', name: 'Ocean Blue', colors: { head: '#3b82f6', body: '#2563eb', glow: 'rgba(59, 130, 246, 0.9)' }, unlockMethod: 'purchase', unlockRequirement: 100 },
   
-  // Dragon skins
-  { id: 'dragon_fire', characterId: 'dragon', name: 'Inferno', colors: { head: '#fb923c', body: '#ea580c', glow: 'rgba(251, 146, 60, 0.7)' }, unlockMethod: 'level', unlockRequirement: 5 },
-  { id: 'dragon_ice', characterId: 'dragon', name: 'Frost', colors: { head: '#93c5fd', body: '#3b82f6', glow: 'rgba(147, 197, 253, 0.7)' }, unlockMethod: 'chest' },
-  { id: 'dragon_shadow', characterId: 'dragon', name: 'Shadow', colors: { head: '#a1a1aa', body: '#52525b', glow: 'rgba(161, 161, 170, 0.7)' }, unlockMethod: 'achievement' },
+  // Dragon skins - Fiery oranges and blues
+  { id: 'dragon_fire', characterId: 'dragon', name: 'Inferno', colors: { head: '#f97316', body: '#ea580c', glow: 'rgba(249, 115, 22, 1.0)' }, unlockMethod: 'level', unlockRequirement: 5 },
+  { id: 'dragon_ice', characterId: 'dragon', name: 'Frost', colors: { head: '#38bdf8', body: '#0ea5e9', glow: 'rgba(56, 189, 248, 1.0)' }, unlockMethod: 'chest' },
+  { id: 'dragon_shadow', characterId: 'dragon', name: 'Shadow', colors: { head: '#8b5cf6', body: '#7c3aed', glow: 'rgba(139, 92, 246, 1.0)' }, unlockMethod: 'achievement' },
   
-  // Phoenix skins
-  { id: 'phoenix_gold', characterId: 'phoenix', name: 'Golden Flame', colors: { head: '#fde047', body: '#eab308', glow: 'rgba(253, 224, 71, 0.7)' }, unlockMethod: 'level', unlockRequirement: 10 },
-  { id: 'phoenix_crimson', characterId: 'phoenix', name: 'Crimson Wing', colors: { head: '#f87171', body: '#dc2626', glow: 'rgba(248, 113, 113, 0.7)' }, unlockMethod: 'chest' },
-  { id: 'phoenix_silver', characterId: 'phoenix', name: 'Silver Ash', colors: { head: '#d1d5db', body: '#9ca3af', glow: 'rgba(209, 213, 219, 0.7)' }, unlockMethod: 'purchase', unlockRequirement: 300 },
+  // Phoenix skins - Golden and crimson
+  { id: 'phoenix_gold', characterId: 'phoenix', name: 'Golden Flame', colors: { head: '#facc15', body: '#eab308', glow: 'rgba(250, 204, 21, 1.0)' }, unlockMethod: 'level', unlockRequirement: 10 },
+  { id: 'phoenix_crimson', characterId: 'phoenix', name: 'Crimson Wing', colors: { head: '#f43f5e', body: '#e11d48', glow: 'rgba(244, 63, 94, 1.0)' }, unlockMethod: 'chest' },
+  { id: 'phoenix_silver', characterId: 'phoenix', name: 'Silver Ash', colors: { head: '#cbd5e1', body: '#94a3b8', glow: 'rgba(203, 213, 225, 0.9)' }, unlockMethod: 'purchase', unlockRequirement: 300 },
   
-  // Unicorn skins
-  { id: 'unicorn_rainbow', characterId: 'unicorn', name: 'Rainbow', colors: { head: '#f87171', body: '#a855f7', glow: 'rgba(248, 113, 113, 0.7)' }, unlockMethod: 'level', unlockRequirement: 15 },
-  { id: 'unicorn_moonlight', characterId: 'unicorn', name: 'Moonlight', colors: { head: '#c4b5fd', body: '#8b5cf6', glow: 'rgba(196, 181, 253, 0.7)' }, unlockMethod: 'chest' },
-  { id: 'unicorn_starlight', characterId: 'unicorn', name: 'Starlight', colors: { head: '#fde047', body: '#f59e0b', glow: 'rgba(253, 224, 71, 0.7)' }, unlockMethod: 'achievement' },
+  // Unicorn skins - Rainbow pastels
+  { id: 'unicorn_rainbow', characterId: 'unicorn', name: 'Rainbow', colors: { head: '#ec4899', body: '#db2777', glow: 'rgba(236, 72, 153, 1.0)' }, unlockMethod: 'level', unlockRequirement: 15 },
+  { id: 'unicorn_moonlight', characterId: 'unicorn', name: 'Moonlight', colors: { head: '#a78bfa', body: '#8b5cf6', glow: 'rgba(167, 139, 250, 1.0)' }, unlockMethod: 'chest' },
+  { id: 'unicorn_starlight', characterId: 'unicorn', name: 'Starlight', colors: { head: '#fde047', body: '#facc15', glow: 'rgba(253, 224, 71, 1.0)' }, unlockMethod: 'achievement' },
   
-  // Kraken skins
-  { id: 'kraken_abyss', characterId: 'kraken', name: 'Abyssal', colors: { head: '#818cf8', body: '#4f46e5', glow: 'rgba(129, 140, 248, 0.7)' }, unlockMethod: 'level', unlockRequirement: 20 },
-  { id: 'kraken_storm', characterId: 'kraken', name: 'Storm', colors: { head: '#67e8f9', body: '#06b6d4', glow: 'rgba(103, 232, 249, 0.7)' }, unlockMethod: 'chest' },
-  { id: 'kraken_void', characterId: 'kraken', name: 'Void', colors: { head: '#a78bfa', body: '#6d28d9', glow: 'rgba(167, 139, 250, 0.7)' }, unlockMethod: 'purchase', unlockRequirement: 500 },
+  // Kraken skins - Deep ocean colors
+  { id: 'kraken_abyss', characterId: 'kraken', name: 'Abyssal', colors: { head: '#6366f1', body: '#4f46e5', glow: 'rgba(99, 102, 241, 1.0)' }, unlockMethod: 'level', unlockRequirement: 20 },
+  { id: 'kraken_storm', characterId: 'kraken', name: 'Storm', colors: { head: '#06b6d4', body: '#0891b2', glow: 'rgba(6, 182, 212, 1.0)' }, unlockMethod: 'chest' },
+  { id: 'kraken_void', characterId: 'kraken', name: 'Void', colors: { head: '#a855f7', body: '#9333ea', glow: 'rgba(168, 85, 247, 1.0)' }, unlockMethod: 'purchase', unlockRequirement: 500 },
   
-  // Cosmic Serpent skins
-  { id: 'cosmic_nebula', characterId: 'cosmic', name: 'Nebula', colors: { head: '#818cf8', body: '#4f46e5', glow: 'rgba(129, 140, 248, 0.7)' }, unlockMethod: 'level', unlockRequirement: 25 },
-  { id: 'cosmic_galaxy', characterId: 'cosmic', name: 'Galaxy', colors: { head: '#c084fc', body: '#8b5cf6', glow: 'rgba(192, 132, 252, 0.7)' }, unlockMethod: 'chest' },
-  { id: 'cosmic_supernova', characterId: 'cosmic', name: 'Supernova', colors: { head: '#fb923c', body: '#ea580c', glow: 'rgba(251, 146, 60, 0.7)' }, unlockMethod: 'achievement' },
+  // Cosmic Serpent skins - Space purples and blues
+  { id: 'cosmic_nebula', characterId: 'cosmic', name: 'Nebula', colors: { head: '#c084fc', body: '#a855f7', glow: 'rgba(192, 132, 252, 1.0)' }, unlockMethod: 'level', unlockRequirement: 25 },
+  { id: 'cosmic_galaxy', characterId: 'cosmic', name: 'Galaxy', colors: { head: '#818cf8', body: '#6366f1', glow: 'rgba(129, 140, 248, 1.0)' }, unlockMethod: 'chest' },
+  { id: 'cosmic_supernova', characterId: 'cosmic', name: 'Supernova', colors: { head: '#fb923c', body: '#f97316', glow: 'rgba(251, 146, 60, 1.0)' }, unlockMethod: 'achievement' },
   
   // NEW FREE CHARACTER SKINS
-  // Turtle skins
-  { id: 'turtle_green', characterId: 'turtle', name: 'Forest Green', colors: { head: '#4ade80', body: '#22c55e', glow: 'rgba(74, 222, 128, 0.7)' }, unlockMethod: 'level', unlockRequirement: 2 },
-  { id: 'turtle_blue', characterId: 'turtle', name: 'Ocean Blue', colors: { head: '#60a5fa', body: '#3b82f6', glow: 'rgba(96, 165, 250, 0.7)' }, unlockMethod: 'chest' },
-  { id: 'turtle_gold', characterId: 'turtle', name: 'Golden Shell', colors: { head: '#fbbf24', body: '#f59e0b', glow: 'rgba(251, 191, 36, 0.7)' }, unlockMethod: 'achievement' },
+  // Turtle skins - Earthy greens and browns
+  { id: 'turtle_green', characterId: 'turtle', name: 'Forest Green', colors: { head: '#84cc16', body: '#65a30d', glow: 'rgba(132, 204, 22, 0.9)' }, unlockMethod: 'level', unlockRequirement: 2 },
+  { id: 'turtle_blue', characterId: 'turtle', name: 'Ocean Blue', colors: { head: '#0e7490', body: '#0f766e', glow: 'rgba(14, 116, 144, 0.9)' }, unlockMethod: 'chest' },
+  { id: 'turtle_gold', characterId: 'turtle', name: 'Golden Shell', colors: { head: '#d97706', body: '#b45309', glow: 'rgba(217, 119, 6, 0.9)' }, unlockMethod: 'achievement' },
   
-  // Rabbit skins
-  { id: 'rabbit_white', characterId: 'rabbit', name: 'Snow White', colors: { head: '#f8fafc', body: '#e2e8f0', glow: 'rgba(248, 250, 252, 0.7)' }, unlockMethod: 'level', unlockRequirement: 3 },
-  { id: 'rabbit_brown', characterId: 'rabbit', name: 'Earth Brown', colors: { head: '#a16207', body: '#854d0e', glow: 'rgba(161, 98, 7, 0.7)' }, unlockMethod: 'chest' },
-  { id: 'rabbit_silver', characterId: 'rabbit', name: 'Silver Swift', colors: { head: '#cbd5e1', body: '#94a3b8', glow: 'rgba(203, 213, 225, 0.7)' }, unlockMethod: 'achievement' },
+  // Rabbit skins - Soft whites and browns
+  { id: 'rabbit_white', characterId: 'rabbit', name: 'Snow White', colors: { head: '#f1f5f9', body: '#e2e8f0', glow: 'rgba(241, 245, 249, 0.8)' }, unlockMethod: 'level', unlockRequirement: 3 },
+  { id: 'rabbit_brown', characterId: 'rabbit', name: 'Earth Brown', colors: { head: '#b45309', body: '#92400e', glow: 'rgba(180, 83, 9, 0.9)' }, unlockMethod: 'chest' },
+  { id: 'rabbit_silver', characterId: 'rabbit', name: 'Silver Swift', colors: { head: '#94a3b8', body: '#64748b', glow: 'rgba(148, 163, 184, 0.9)' }, unlockMethod: 'achievement' },
   
-  // Fox skins
-  { id: 'fox_orange', characterId: 'fox', name: 'Autumn Orange', colors: { head: '#fb923c', body: '#ea580c', glow: 'rgba(251, 146, 60, 0.7)' }, unlockMethod: 'level', unlockRequirement: 4 },
-  { id: 'fox_red', characterId: 'fox', name: 'Fire Red', colors: { head: '#ef4444', body: '#dc2626', glow: 'rgba(239, 68, 68, 0.7)' }, unlockMethod: 'chest' },
-  { id: 'fox_arctic', characterId: 'fox', name: 'Arctic White', colors: { head: '#f1f5f9', body: '#e2e8f0', glow: 'rgba(241, 245, 249, 0.7)' }, unlockMethod: 'achievement' },
+  // Fox skins - Vibrant oranges and reds
+  { id: 'fox_orange', characterId: 'fox', name: 'Autumn Orange', colors: { head: '#fb923c', body: '#ea580c', glow: 'rgba(251, 146, 60, 1.0)' }, unlockMethod: 'level', unlockRequirement: 4 },
+  { id: 'fox_red', characterId: 'fox', name: 'Fire Red', colors: { head: '#dc2626', body: '#b91c1c', glow: 'rgba(220, 38, 38, 1.0)' }, unlockMethod: 'chest' },
+  { id: 'fox_arctic', characterId: 'fox', name: 'Arctic White', colors: { head: '#bae6fd', body: '#7dd3fc', glow: 'rgba(186, 230, 253, 0.9)' }, unlockMethod: 'achievement' },
   
-  // Wolf skins
-  { id: 'wolf_gray', characterId: 'wolf', name: 'Timber Gray', colors: { head: '#6b7280', body: '#4b5563', glow: 'rgba(107, 114, 128, 0.7)' }, unlockMethod: 'level', unlockRequirement: 6 },
-  { id: 'wolf_black', characterId: 'wolf', name: 'Midnight Black', colors: { head: '#1f2937', body: '#111827', glow: 'rgba(31, 41, 55, 0.7)' }, unlockMethod: 'chest' },
-  { id: 'wolf_white', characterId: 'wolf', name: 'Arctic White', colors: { head: '#f9fafb', body: '#f3f4f6', glow: 'rgba(249, 250, 251, 0.7)' }, unlockMethod: 'achievement' },
+  // Wolf skins - Dark grays and blacks
+  { id: 'wolf_gray', characterId: 'wolf', name: 'Timber Gray', colors: { head: '#64748b', body: '#475569', glow: 'rgba(100, 116, 139, 0.9)' }, unlockMethod: 'level', unlockRequirement: 6 },
+  { id: 'wolf_black', characterId: 'wolf', name: 'Midnight Black', colors: { head: '#1e293b', body: '#0f172a', glow: 'rgba(30, 41, 59, 1.0)' }, unlockMethod: 'chest' },
+  { id: 'wolf_white', characterId: 'wolf', name: 'Arctic White', colors: { head: '#f1f5f9', body: '#e2e8f0', glow: 'rgba(241, 245, 249, 0.8)' }, unlockMethod: 'achievement' },
   
-  // Lion skins
-  { id: 'lion_gold', characterId: 'lion', name: 'Royal Gold', colors: { head: '#fbbf24', body: '#f59e0b', glow: 'rgba(251, 191, 36, 0.7)' }, unlockMethod: 'level', unlockRequirement: 7 },
-  { id: 'lion_mane', characterId: 'lion', name: 'Dark Mane', colors: { head: '#92400e', body: '#78350f', glow: 'rgba(146, 64, 14, 0.7)' }, unlockMethod: 'chest' },
-  { id: 'lion_white', characterId: 'lion', name: 'White Lion', colors: { head: '#fef3c7', body: '#fde68a', glow: 'rgba(254, 243, 199, 0.7)' }, unlockMethod: 'achievement' },
+  // Lion skins - Royal golds and browns
+  { id: 'lion_gold', characterId: 'lion', name: 'Royal Gold', colors: { head: '#f59e0b', body: '#d97706', glow: 'rgba(245, 158, 11, 1.0)' }, unlockMethod: 'level', unlockRequirement: 7 },
+  { id: 'lion_mane', characterId: 'lion', name: 'Dark Mane', colors: { head: '#78350f', body: '#581c87', glow: 'rgba(120, 53, 15, 1.0)' }, unlockMethod: 'chest' },
+  { id: 'lion_white', characterId: 'lion', name: 'White Lion', colors: { head: '#fef08a', body: '#fde047', glow: 'rgba(254, 240, 138, 0.9)' }, unlockMethod: 'achievement' },
   
-  // Eagle skins
-  { id: 'eagle_brown', characterId: 'eagle', name: 'Forest Brown', colors: { head: '#92400e', body: '#78350f', glow: 'rgba(146, 64, 14, 0.7)' }, unlockMethod: 'level', unlockRequirement: 8 },
-  { id: 'eagle_golden', characterId: 'eagle', name: 'Golden Eagle', colors: { head: '#fbbf24', body: '#f59e0b', glow: 'rgba(251, 191, 36, 0.7)' }, unlockMethod: 'chest' },
-  { id: 'eagle_bald', characterId: 'eagle', name: 'Bald Eagle', colors: { head: '#f9fafb', body: '#1f2937', glow: 'rgba(249, 250, 251, 0.7)' }, unlockMethod: 'achievement' },
+  // Eagle skins - Sky browns and whites
+  { id: 'eagle_brown', characterId: 'eagle', name: 'Forest Brown', colors: { head: '#92400e', body: '#78350f', glow: 'rgba(146, 64, 14, 1.0)' }, unlockMethod: 'level', unlockRequirement: 8 },
+  { id: 'eagle_golden', characterId: 'eagle', name: 'Golden Eagle', colors: { head: '#eab308', body: '#ca8a04', glow: 'rgba(234, 179, 8, 1.0)' }, unlockMethod: 'chest' },
+  { id: 'eagle_bald', characterId: 'eagle', name: 'Bald Eagle', colors: { head: '#f8fafc', body: '#f1f5f9', glow: 'rgba(248, 250, 252, 0.9)' }, unlockMethod: 'achievement' },
   
-  // Panda skins
-  { id: 'panda_classic', characterId: 'panda', name: 'Classic Panda', colors: { head: '#f9fafb', body: '#1f2937', glow: 'rgba(249, 250, 251, 0.7)' }, unlockMethod: 'level', unlockRequirement: 9 },
-  { id: 'panda_red', characterId: 'panda', name: 'Red Panda', colors: { head: '#dc2626', body: '#991b1b', glow: 'rgba(220, 38, 38, 0.7)' }, unlockMethod: 'chest' },
-  { id: 'panda_golden', characterId: 'panda', name: 'Golden Panda', colors: { head: '#fbbf24', body: '#f59e0b', glow: 'rgba(251, 191, 36, 0.7)' }, unlockMethod: 'achievement' },
+  // Panda skins - Black and white with accents
+  { id: 'panda_classic', characterId: 'panda', name: 'Classic Panda', colors: { head: '#171717', body: '#0a0a0a', glow: 'rgba(23, 23, 23, 1.0)' }, unlockMethod: 'level', unlockRequirement: 9 },
+  { id: 'panda_red', characterId: 'panda', name: 'Red Panda', colors: { head: '#ef4444', body: '#dc2626', glow: 'rgba(239, 68, 68, 1.0)' }, unlockMethod: 'chest' },
+  { id: 'panda_golden', characterId: 'panda', name: 'Golden Panda', colors: { head: '#facc15', body: '#eab308', glow: 'rgba(250, 204, 21, 1.0)' }, unlockMethod: 'achievement' },
   
-  // Tiger skins
-  { id: 'tiger_orange', characterId: 'tiger', name: 'Bengal Orange', colors: { head: '#fb923c', body: '#ea580c', glow: 'rgba(251, 146, 60, 0.7)' }, unlockMethod: 'level', unlockRequirement: 11 },
-  { id: 'tiger_white', characterId: 'tiger', name: 'White Tiger', colors: { head: '#f9fafb', body: '#e5e7eb', glow: 'rgba(249, 250, 251, 0.7)' }, unlockMethod: 'chest' },
-  { id: 'tiger_golden', characterId: 'tiger', name: 'Golden Tiger', colors: { head: '#fbbf24', body: '#f59e0b', glow: 'rgba(251, 191, 36, 0.7)' }, unlockMethod: 'achievement' },
+  // Tiger skins - Orange with black stripes effect
+  { id: 'tiger_orange', characterId: 'tiger', name: 'Bengal Orange', colors: { head: '#f97316', body: '#ea580c', glow: 'rgba(249, 115, 22, 1.0)' }, unlockMethod: 'level', unlockRequirement: 11 },
+  { id: 'tiger_white', characterId: 'tiger', name: 'White Tiger', colors: { head: '#fafafa', body: '#f4f4f5', glow: 'rgba(250, 250, 250, 0.9)' }, unlockMethod: 'chest' },
+  { id: 'tiger_golden', characterId: 'tiger', name: 'Golden Tiger', colors: { head: '#fbbf24', body: '#f59e0b', glow: 'rgba(251, 191, 36, 1.0)' }, unlockMethod: 'achievement' },
   
-  // Bear skins
-  { id: 'bear_brown', characterId: 'bear', name: 'Grizzly Brown', colors: { head: '#92400e', body: '#78350f', glow: 'rgba(146, 64, 14, 0.7)' }, unlockMethod: 'level', unlockRequirement: 12 },
-  { id: 'bear_polar', characterId: 'bear', name: 'Polar White', colors: { head: '#f9fafb', body: '#f3f4f6', glow: 'rgba(249, 250, 251, 0.7)' }, unlockMethod: 'chest' },
-  { id: 'bear_black', characterId: 'bear', name: 'Black Bear', colors: { head: '#1f2937', body: '#111827', glow: 'rgba(31, 41, 55, 0.7)' }, unlockMethod: 'achievement' },
+  // Bear skins - Rich browns and whites
+  { id: 'bear_brown', characterId: 'bear', name: 'Grizzly Brown', colors: { head: '#854d0e', body: '#6c3a0a', glow: 'rgba(133, 77, 14, 1.0)' }, unlockMethod: 'level', unlockRequirement: 12 },
+  { id: 'bear_polar', characterId: 'bear', name: 'Polar White', colors: { head: '#fafafa', body: '#f4f4f5', glow: 'rgba(250, 250, 250, 0.9)' }, unlockMethod: 'chest' },
+  { id: 'bear_black', characterId: 'bear', name: 'Black Bear', colors: { head: '#171717', body: '#0a0a0a', glow: 'rgba(23, 23, 23, 1.0)' }, unlockMethod: 'achievement' },
   
-  // Shark skins
-  { id: 'shark_gray', characterId: 'shark', name: 'Ocean Gray', colors: { head: '#6b7280', body: '#4b5563', glow: 'rgba(107, 114, 128, 0.7)' }, unlockMethod: 'level', unlockRequirement: 13 },
-  { id: 'shark_blue', characterId: 'shark', name: 'Deep Blue', colors: { head: '#1e40af', body: '#1e3a8a', glow: 'rgba(30, 64, 175, 0.7)' }, unlockMethod: 'chest' },
-  { id: 'shark_hammerhead', characterId: 'shark', name: 'Hammerhead', colors: { head: '#374151', body: '#1f2937', glow: 'rgba(55, 65, 81, 0.7)' }, unlockMethod: 'achievement' },
+  // Shark skins - Ocean blues and grays
+  { id: 'shark_gray', characterId: 'shark', name: 'Ocean Gray', colors: { head: '#6b7280', body: '#4b5563', glow: 'rgba(107, 114, 128, 0.9)' }, unlockMethod: 'level', unlockRequirement: 13 },
+  { id: 'shark_blue', characterId: 'shark', name: 'Deep Blue', colors: { head: '#1e40af', body: '#1d4ed8', glow: 'rgba(30, 64, 175, 1.0)' }, unlockMethod: 'chest' },
+  { id: 'shark_hammerhead', characterId: 'shark', name: 'Hammerhead', colors: { head: '#475569', body: '#334155', glow: 'rgba(71, 85, 105, 1.0)' }, unlockMethod: 'achievement' },
   
-  // Owl skins
-  { id: 'owl_brown', characterId: 'owl', name: 'Forest Brown', colors: { head: '#92400e', body: '#78350f', glow: 'rgba(146, 64, 14, 0.7)' }, unlockMethod: 'level', unlockRequirement: 14 },
-  { id: 'owl_snowy', characterId: 'owl', name: 'Snowy Owl', colors: { head: '#f9fafb', body: '#e5e7eb', glow: 'rgba(249, 250, 251, 0.7)' }, unlockMethod: 'chest' },
-  { id: 'owl_golden', characterId: 'owl', name: 'Golden Owl', colors: { head: '#fbbf24', body: '#f59e0b', glow: 'rgba(251, 191, 36, 0.7)' }, unlockMethod: 'achievement' },
+  // Owl skins - Wise browns and whites
+  { id: 'owl_brown', characterId: 'owl', name: 'Forest Brown', colors: { head: '#854d0e', body: '#6c3a0a', glow: 'rgba(133, 77, 14, 1.0)' }, unlockMethod: 'level', unlockRequirement: 14 },
+  { id: 'owl_snowy', characterId: 'owl', name: 'Snowy Owl', colors: { head: '#fafafa', body: '#f4f4f5', glow: 'rgba(250, 250, 250, 0.9)' }, unlockMethod: 'chest' },
+  { id: 'owl_golden', characterId: 'owl', name: 'Golden Owl', colors: { head: '#eab308', body: '#ca8a04', glow: 'rgba(234, 179, 8, 1.0)' }, unlockMethod: 'achievement' },
   
-  // Dolphin skins
-  { id: 'dolphin_gray', characterId: 'dolphin', name: 'Dolphin Gray', colors: { head: '#6b7280', body: '#4b5563', glow: 'rgba(107, 114, 128, 0.7)' }, unlockMethod: 'level', unlockRequirement: 16 },
-  { id: 'dolphin_blue', characterId: 'dolphin', name: 'Ocean Blue', colors: { head: '#3b82f6', body: '#2563eb', glow: 'rgba(59, 130, 246, 0.7)' }, unlockMethod: 'chest' },
-  { id: 'dolphin_pink', characterId: 'dolphin', name: 'Pink Dolphin', colors: { head: '#ec4899', body: '#db2777', glow: 'rgba(236, 72, 153, 0.7)' }, unlockMethod: 'achievement' },
+  // Dolphin skins - Playful blues and pinks
+  { id: 'dolphin_gray', characterId: 'dolphin', name: 'Dolphin Gray', colors: { head: '#94a3b8', body: '#64748b', glow: 'rgba(148, 163, 184, 0.9)' }, unlockMethod: 'level', unlockRequirement: 16 },
+  { id: 'dolphin_blue', characterId: 'dolphin', name: 'Ocean Blue', colors: { head: '#3b82f6', body: '#2563eb', glow: 'rgba(59, 130, 246, 1.0)' }, unlockMethod: 'chest' },
+  { id: 'dolphin_pink', characterId: 'dolphin', name: 'Pink Dolphin', colors: { head: '#ec4899', body: '#db2777', glow: 'rgba(236, 72, 153, 1.0)' }, unlockMethod: 'achievement' },
   
-  // Gorilla skins
-  { id: 'gorilla_black', characterId: 'gorilla', name: 'Silverback', colors: { head: '#374151', body: '#1f2937', glow: 'rgba(55, 65, 81, 0.7)' }, unlockMethod: 'level', unlockRequirement: 17 },
-  { id: 'gorilla_silver', characterId: 'gorilla', name: 'Silver King', colors: { head: '#9ca3af', body: '#6b7280', glow: 'rgba(156, 163, 175, 0.7)' }, unlockMethod: 'chest' },
-  { id: 'gorilla_golden', characterId: 'gorilla', name: 'Golden Ape', colors: { head: '#fbbf24', body: '#f59e0b', glow: 'rgba(251, 191, 36, 0.7)' }, unlockMethod: 'achievement' },
+  // Gorilla skins - Strong blacks and silvers
+  { id: 'gorilla_black', characterId: 'gorilla', name: 'Silverback', colors: { head: '#1e293b', body: '#0f172a', glow: 'rgba(30, 41, 59, 1.0)' }, unlockMethod: 'level', unlockRequirement: 17 },
+  { id: 'gorilla_silver', characterId: 'gorilla', name: 'Silver King', colors: { head: '#a8a29e', body: '#78716c', glow: 'rgba(168, 162, 158, 0.9)' }, unlockMethod: 'chest' },
+  { id: 'gorilla_golden', characterId: 'gorilla', name: 'Golden Ape', colors: { head: '#d97706', body: '#b45309', glow: 'rgba(217, 119, 6, 1.0)' }, unlockMethod: 'achievement' },
   
-  // Elephant skins
-  { id: 'elephant_gray', characterId: 'elephant', name: 'African Gray', colors: { head: '#6b7280', body: '#4b5563', glow: 'rgba(107, 114, 128, 0.7)' }, unlockMethod: 'level', unlockRequirement: 18 },
-  { id: 'elephant_african', characterId: 'elephant', name: 'Savanna', colors: { head: '#92400e', body: '#78350f', glow: 'rgba(146, 64, 14, 0.7)' }, unlockMethod: 'chest' },
-  { id: 'elephant_asian', characterId: 'elephant', name: 'Asian Elephant', colors: { head: '#78716c', body: '#57534e', glow: 'rgba(120, 113, 108, 0.7)' }, unlockMethod: 'achievement' },
+  // Elephant skins - Majestic grays
+  { id: 'elephant_gray', characterId: 'elephant', name: 'African Gray', colors: { head: '#9ca3af', body: '#6b7280', glow: 'rgba(156, 163, 175, 0.9)' }, unlockMethod: 'level', unlockRequirement: 18 },
+  { id: 'elephant_african', characterId: 'elephant', name: 'Savanna', colors: { head: '#a8a29e', body: '#78716c', glow: 'rgba(168, 162, 158, 0.9)' }, unlockMethod: 'chest' },
+  { id: 'elephant_asian', characterId: 'elephant', name: 'Asian Elephant', colors: { head: '#a3a3a3', body: '#737373', glow: 'rgba(163, 163, 163, 0.9)' }, unlockMethod: 'achievement' },
   
-  // Crocodile skins
-  { id: 'crocodile_green', characterId: 'crocodile', name: 'Swamp Green', colors: { head: '#16a34a', body: '#15803d', glow: 'rgba(22, 163, 74, 0.7)' }, unlockMethod: 'level', unlockRequirement: 19 },
-  { id: 'crocodile_nile', characterId: 'crocodile', name: 'Nile Croc', colors: { head: '#854d0e', body: '#713f12', glow: 'rgba(133, 77, 14, 0.7)' }, unlockMethod: 'chest' },
-  { id: 'crocodile_golden', characterId: 'crocodile', name: 'Golden Croc', colors: { head: '#fbbf24', body: '#f59e0b', glow: 'rgba(251, 191, 36, 0.7)' }, unlockMethod: 'achievement' },
+  // Crocodile skins - Swampy greens and browns
+  { id: 'crocodile_green', characterId: 'crocodile', name: 'Swamp Green', colors: { head: '#166534', body: '#14532d', glow: 'rgba(22, 101, 52, 1.0)' }, unlockMethod: 'level', unlockRequirement: 19 },
+  { id: 'crocodile_nile', characterId: 'crocodile', name: 'Nile Croc', colors: { head: '#854d0e', body: '#6c3a0a', glow: 'rgba(133, 77, 14, 1.0)' }, unlockMethod: 'chest' },
+  { id: 'crocodile_golden', characterId: 'crocodile', name: 'Golden Croc', colors: { head: '#b45309', body: '#92400e', glow: 'rgba(180, 83, 9, 1.0)' }, unlockMethod: 'achievement' },
   
-  // Whale skins
-  { id: 'whale_blue', characterId: 'whale', name: 'Blue Whale', colors: { head: '#1e40af', body: '#1e3a8a', glow: 'rgba(30, 64, 175, 0.7)' }, unlockMethod: 'level', unlockRequirement: 21 },
-  { id: 'whale_humpback', characterId: 'whale', name: 'Humpback', colors: { head: '#374151', body: '#1f2937', glow: 'rgba(55, 65, 81, 0.7)' }, unlockMethod: 'chest' },
-  { id: 'whale_golden', characterId: 'whale', name: 'Golden Whale', colors: { head: '#fbbf24', body: '#f59e0b', glow: 'rgba(251, 191, 36, 0.7)' }, unlockMethod: 'achievement' },
+  // Whale skins - Deep ocean blues
+  { id: 'whale_blue', characterId: 'whale', name: 'Blue Whale', colors: { head: '#1e3a8a', body: '#1e40af', glow: 'rgba(30, 58, 138, 1.0)' }, unlockMethod: 'level', unlockRequirement: 21 },
+  { id: 'whale_humpback', characterId: 'whale', name: 'Humpback', colors: { head: '#374151', body: '#1f2937', glow: 'rgba(55, 65, 81, 1.0)' }, unlockMethod: 'chest' },
+  { id: 'whale_golden', characterId: 'whale', name: 'Golden Whale', colors: { head: '#ca8a04', body: '#a16207', glow: 'rgba(202, 138, 4, 1.0)' }, unlockMethod: 'achievement' },
   
-  // Octopus skins
-  { id: 'octopus_purple', characterId: 'octopus', name: 'Deep Purple', colors: { head: '#7c3aed', body: '#6d28d9', glow: 'rgba(124, 58, 237, 0.7)' }, unlockMethod: 'level', unlockRequirement: 22 },
-  { id: 'octopus_blue', characterId: 'octopus', name: 'Ocean Blue', colors: { head: '#0ea5e9', body: '#0284c7', glow: 'rgba(14, 165, 233, 0.7)' }, unlockMethod: 'chest' },
-  { id: 'octopus_golden', characterId: 'octopus', name: 'Golden Octopus', colors: { head: '#fbbf24', body: '#f59e0b', glow: 'rgba(251, 191, 36, 0.7)' }, unlockMethod: 'achievement' },
+  // Octopus skins - Mysterious purples and blues
+  { id: 'octopus_purple', characterId: 'octopus', name: 'Deep Purple', colors: { head: '#9333ea', body: '#7e22ce', glow: 'rgba(147, 51, 234, 1.0)' }, unlockMethod: 'level', unlockRequirement: 22 },
+  { id: 'octopus_blue', characterId: 'octopus', name: 'Ocean Blue', colors: { head: '#0ea5e9', body: '#0284c7', glow: 'rgba(14, 165, 233, 1.0)' }, unlockMethod: 'chest' },
+  { id: 'octopus_golden', characterId: 'octopus', name: 'Golden Octopus', colors: { head: '#d97706', body: '#b45309', glow: 'rgba(217, 119, 6, 1.0)' }, unlockMethod: 'achievement' },
   
-  // Dinosaur skins
-  { id: 'dinosaur_green', characterId: 'dinosaur', name: 'Jurassic Green', colors: { head: '#16a34a', body: '#15803d', glow: 'rgba(22, 163, 74, 0.7)' }, unlockMethod: 'level', unlockRequirement: 23 },
-  { id: 'dinosaur_red', characterId: 'dinosaur', name: 'T-Rex Red', colors: { head: '#dc2626', body: '#b91c1c', glow: 'rgba(220, 38, 38, 0.7)' }, unlockMethod: 'chest' },
-  { id: 'dinosaur_golden', characterId: 'dinosaur', name: 'Golden Dino', colors: { head: '#fbbf24', body: '#f59e0b', glow: 'rgba(251, 191, 36, 0.7)' }, unlockMethod: 'achievement' },
+  // Dinosaur skins - Prehistoric greens and reds
+  { id: 'dinosaur_green', characterId: 'dinosaur', name: 'Jurassic Green', colors: { head: '#166534', body: '#15803d', glow: 'rgba(22, 101, 52, 1.0)' }, unlockMethod: 'level', unlockRequirement: 23 },
+  { id: 'dinosaur_red', characterId: 'dinosaur', name: 'T-Rex Red', colors: { head: '#b91c1c', body: '#991b1b', glow: 'rgba(185, 28, 28, 1.0)' }, unlockMethod: 'chest' },
+  { id: 'dinosaur_golden', characterId: 'dinosaur', name: 'Golden Dino', colors: { head: '#ca8a04', body: '#a16207', glow: 'rgba(202, 138, 4, 1.0)' }, unlockMethod: 'achievement' },
   
-  // Alien skins
-  { id: 'alien_green', characterId: 'alien', name: 'Classic Green', colors: { head: '#22c55e', body: '#16a34a', glow: 'rgba(34, 197, 94, 0.7)' }, unlockMethod: 'level', unlockRequirement: 24 },
-  { id: 'alien_gray', characterId: 'alien', name: 'Gray Alien', colors: { head: '#6b7280', body: '#4b5563', glow: 'rgba(107, 114, 128, 0.7)' }, unlockMethod: 'chest' },
-  { id: 'alien_golden', characterId: 'alien', name: 'Golden Alien', colors: { head: '#fbbf24', body: '#f59e0b', glow: 'rgba(251, 191, 36, 0.7)' }, unlockMethod: 'achievement' },
-];
-
+  // Alien skins - Otherworldly greens and grays
+  { id: 'alien_green', characterId: 'alien', name: 'Classic Green', colors: { head: '#22c55e', body: '#16a34a', glow: 'rgba(34, 197, 94, 1.0)' }, unlockMethod: 'level', unlockRequirement: 24 },
+  { id: 'alien_gray', characterId: 'alien', name: 'Gray Alien', colors: { head: '#9ca3af', body: '#6b7280', glow: 'rgba(156, 163, 175, 0.9)' }, unlockMethod: 'chest' },
+  { id: 'alien_golden', characterId: 'alien', name: 'Golden Alien', colors: { head: '#eab308', body: '#ca8a04', glow: 'rgba(234, 179, 8, 1.0)' }, unlockMethod: 'achievement' },
+  ];
 // ============ CHESTS ============
 export const CHESTS: Chest[] = [
   {
